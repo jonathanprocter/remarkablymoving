@@ -1162,7 +1162,8 @@
                 // Calculate event duration in minutes
                 const durationMs = endDate - startDate;
                 const durationMinutes = Math.max(30, Math.round(durationMs / 60000)); // Minimum 30 minutes
-                const numSlots = Math.ceil(durationMinutes / 30); // How many 30-minute slots to span
+                // Limit to exactly 2 slots for 1-hour events
+                const numSlots = durationMinutes <= 60 ? Math.min(2, Math.ceil(durationMinutes / 30)) : Math.ceil(durationMinutes / 30);
 
                 // Get start time components
                 const hour = event.start.dateTime ? startDate.getHours() : 9;
@@ -1312,7 +1313,8 @@
                 // Calculate event duration in minutes
                 const durationMs = endDate - startDate;
                 const durationMinutes = Math.max(30, Math.round(durationMs / 60000)); // Minimum 30 minutes
-                const numSlots = Math.ceil(durationMinutes / 30); // How many 30-minute slots to span
+                // Limit to exactly 2 slots for 1-hour events
+                const numSlots = durationMinutes <= 60 ? Math.min(2, Math.ceil(durationMinutes / 30)) : Math.ceil(durationMinutes / 30);
 
                 // Only show events within our time range (07:00 - 22:00)
                 if (hour >= 7 && hour <= 22) {
@@ -1336,7 +1338,8 @@
                         if (numSlots > 1) {
                             eventEl.style.position = 'absolute';
                             // Daily slots are 30px high, so span exactly that many pixels
-                            const totalHeight = (numSlots * 30) - 2; // Account for borders
+                            // For 1-hour events (2 slots), this should be exactly 58px (60-2)
+                            const totalHeight = Math.min((numSlots * 30) - 2, 58); // Cap at 58px for 1-hour
                             eventEl.style.height = `${totalHeight}px`;
                             eventEl.style.maxHeight = `${totalHeight}px`; // Prevent overflow
                             eventEl.style.width = 'calc(100% - 4px)';
@@ -1803,7 +1806,10 @@
         function initializeDateInput() {
             const today = new Date();
             const monday = new Date(today);
-            monday.setDate(today.getDate() - today.getDay() + 1);
+            // Adjust to get Monday of current week
+            const dayOfWeek = today.getDay();
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If Sunday, go back 6 days
+            monday.setDate(today.getDate() + diff);
             document.getElementById('weekStart').value = monday.toISOString().split('T')[0];
         }
 
