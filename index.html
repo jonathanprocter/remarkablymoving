@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
+    <script src="config.js"></script>
     <style>
         .remarkable-preview {
             aspect-ratio: 4/3;
@@ -404,8 +405,8 @@
         function initializeGapi() {
             gapi.load('auth2:client', () => {
                 gapi.client.init({
-                    apiKey: 'YOUR_API_KEY', // Replace with actual API key
-                    clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com', // Replace with actual client ID
+                    apiKey: window.GOOGLE_CONFIG.apiKey,
+                    clientId: window.GOOGLE_CONFIG.clientId,
                     discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
                     scope: 'https://www.googleapis.com/auth/calendar.readonly'
                 }).then(() => {
@@ -662,16 +663,11 @@
             
             // Set default theme
             document.querySelector('.theme-btn[data-theme="sage"]').classList.add('border-purple-500');
+            
+            // Initialize Google API when page loads
+            initializeGapi();
         });
     </script>
 </body>
 </html>
-    <script id="html_badge_script1">
-        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
-            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDsIbk13xp2KCQzzvwNtPM8Gu4U1TjsSsnIoVwX7gvP6j6g4x54hXKunYK0H3Y07OlJ1Qmli8bVMv10Y%2FI%2BN%2FTcaIaIs3zS85H8IW8yC6GqRyY%2F29n9aV77QRK%2B2BYcjLmE%2BtQgLQtXOiYDgeYWndeXa0TigiNBS4iBn6IPvAvfHgHtxzQdKtpQA%2FwRT1C5esW0B4YV7jZ7wQsNhKc01m6jwZgbtUEvfvmd5ZEM8trn1Aw44%2B6%2BbJbTzZdSiD3l%2FCAcaIuf%2BaNAuy%2BWiC1fSYyfxDAsvAK%2ByyM4JjVFQDl%2FEn0l8iLPmv7lmPntuGih77BHMTdJd4Nxt%2BpRI3PcIQhGDsQTbG092scfELcmlbx0jLNnAqWkqlZDnbsblW0elm8JNyzXNKpCyIVreJ1eHt67yNcZMV02mkneR%2BOda4jHCDKGw7ezj4e2KWslaq6wZlBM0c6HxIVG36LUIX%2FprFKLMBf%2BO2hYzx4e5kmU7WMXX94%2F4dHMBmy%2B5djTu0gElLv4ImUaf6Zd3z2lOYlDYZmuI%3D";
-        window.__genspark_locale = "en-US";
-        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDsIbk13xp2KCQzzvwNtPM8Gu4U1TjsSsnIoVwX7gvP6j6g4x54hXKunYK0H3Y07OlJ1Qmli8bVMv10Y/I+N/TcaIaIs3zS85H8IW8yC6GqRyY/29n9aV77QRK+2BYcjLmE+tQgLQtXOiYDgeYWndeXa0TigiNBS4iBn6IPvAvfHgHtxzQdKtpQA/wRT1C5esW0B4YV7jZ7wQsNhKc01m6jwZgbtUEvfvmd5ZEM8trn1Aw44+6+bJbTzZdSiD3l/CAcaIuf+aNAuy+WiC1fSYyfxDAsvAK+yyM4JjVFQDl/En0l8iLPmv7lmPntuGih77BHMTdJd4Nxt+pRI3PcIQhGDsQTbG092scfELcmlbx0jLNnAqWkqlZDnbsblW0elm8JNyzXNKpCyIVreJ1eHt67yNcZMV02mkneR+Oda4jHCDKGw7ezj4e2KWslaq6wZlBM0c6HxIVG36LUIX/prFKLMBf+O2hYzx4e5kmU7WMXX94/4dHMBmy+5djTu0gElLv4ImUaf6Zd3z2lOYlDYZmuI=";
-    </script>
-    
-    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
     
