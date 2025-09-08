@@ -13,7 +13,9 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # For session management
+# Use a persistent secret key for session management
+# This ensures sessions persist across server restarts
+app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-remarkable-calendar-2025")
 
 # Google OAuth configuration
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
