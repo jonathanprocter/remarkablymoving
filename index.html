@@ -1280,11 +1280,17 @@
                 console.log('Day events:', dayEvents.map(e => `${e.summary} at ${new Date(e.start.dateTime || e.start.date).toLocaleTimeString()}`));
             }
             
-            // Place events in 30-minute time slots
+            // Place events in 30-minute time slots with duration spanning
             dayEvents.forEach(event => {
-                const eventDate = new Date(event.start.dateTime || event.start.date);
-                const hour = eventDate.getHours();
-                const minute = eventDate.getMinutes();
+                const startDate = new Date(event.start.dateTime || event.start.date);
+                const endDate = new Date(event.end.dateTime || event.end.date);
+                const hour = startDate.getHours();
+                const minute = startDate.getMinutes();
+                
+                // Calculate event duration in minutes
+                const durationMs = endDate - startDate;
+                const durationMinutes = Math.max(30, Math.round(durationMs / 60000)); // Minimum 30 minutes
+                const numSlots = Math.ceil(durationMinutes / 30); // How many 30-minute slots to span
                 
                 // Only show events within our time range (07:00 - 22:00)
                 if (hour >= 7 && hour <= 22) {
@@ -1293,14 +1299,28 @@
                     const slotId = `daily-${hour}-${slotMinute}`;
                     const slot = document.getElementById(slotId);
                     
+                    console.log(`📌 Event "${event.summary}" starts at ${hour}:${minute}, duration: ${durationMinutes} min, spanning ${numSlots} slots`);
+                    
                     if (slot) {
                         const eventEl = document.createElement('div');
                         eventEl.className = 'franklin-event';
                         const time = event.start.dateTime ? 
-                            eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                            startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
                             'All day';
                         eventEl.innerHTML = `<strong>${time}</strong><br><span style="font-size: 7px;">${event.summary || 'Untitled Event'}</span>`;
-                        eventEl.title = `${event.summary || 'Event'}\nClick to return to weekly view`;
+                        eventEl.title = `${event.summary || 'Event'}\nDuration: ${durationMinutes} min\nClick to return to weekly view`;
+                        
+                        // Make event span multiple rows based on duration
+                        if (numSlots > 1) {
+                            eventEl.style.position = 'absolute';
+                            eventEl.style.height = `${numSlots * 30 - 2}px`; // 30px per row minus border
+                            eventEl.style.width = 'calc(100% - 4px)';
+                            eventEl.style.zIndex = '1';
+                            eventEl.style.top = '0';
+                            eventEl.style.left = '0';
+                            eventEl.style.padding = '2px';
+                            slot.style.position = 'relative';
+                        }
                         
                         // Add click handler to go back to weekly view
                         eventEl.addEventListener('click', (e) => {
@@ -1310,11 +1330,11 @@
                         });
                         
                         // Store event data
-                        eventEl.dataset.eventDate = eventDate.toISOString();
+                        eventEl.dataset.eventDate = startDate.toISOString();
                         eventEl.dataset.eventSummary = event.summary || 'Event';
                         
                         slot.appendChild(eventEl);
-                        console.log(`📌 Placed event "${event.summary}" at ${slotId}`);
+                        console.log(`✅ Placed event "${event.summary}" at ${slotId}, spanning ${numSlots} slots`);
                     } else {
                         console.log(`⚠️ Could not find slot ${slotId} for event "${event.summary}"`);
                     }
@@ -1467,7 +1487,29 @@
         function navigateToDay(eventDate) {
             const date = new Date(eventDate);
             console.log(`🔗 Navigating to daily view for ${date.toDateString()}`);
-            switchPage(0, date); // This will calculate the correct day and switch to it
+            
+            // Calculate the Monday of the week containing the target date
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(date);
+            monday.setDate(diff);
+            
+            // Update the week start to the Monday of that week
+            const weekStartInput = document.getElementById('weekStart');
+            if (weekStartInput) {
+                weekStartInput.value = monday.toISOString().split('T')[0];
+            }
+            
+            // Calculate which day of the week to show (1=Mon, 7=Sun)
+            const dayIndex = day === 0 ? 7 : day;
+            
+            // Switch to the correct daily page
+            currentPage = dayIndex;
+            switchPage(dayIndex); // Use switchPage instead of showPage
+            
+            // Update the date picker
+            const dateStr = date.toISOString().split('T')[0];
+            document.getElementById('datePicker').value = dateStr;
         }
 
         // Generate PDF
