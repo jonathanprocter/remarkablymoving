@@ -1619,9 +1619,23 @@
             // Update navigation buttons
             document.querySelectorAll('.page-nav-btn').forEach((btn, index) => {
                 if (index === pageIndex) {
-                    btn.className = 'page-nav-btn bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition-colors';
+                    // Active button - purple
+                    if (index === 0) {
+                        // Week button - rectangular
+                        btn.className = 'page-nav-btn bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition-colors';
+                    } else {
+                        // Day buttons - round
+                        btn.className = 'page-nav-btn bg-purple-600 text-white px-3 py-1 rounded-full text-sm hover:bg-purple-700 transition-all hover:scale-105';
+                    }
                 } else {
-                    btn.className = 'page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors';
+                    // Inactive button - gray
+                    if (index === 0) {
+                        // Week button - rectangular
+                        btn.className = 'page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors';
+                    } else {
+                        // Day buttons - round
+                        btn.className = 'page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-400 transition-all hover:scale-105';
+                    }
                 }
             });
 
@@ -1942,6 +1956,14 @@
             const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If Sunday, go back 6 days
             monday.setDate(today.getDate() + diff);
             document.getElementById('weekStart').value = monday.toISOString().split('T')[0];
+            
+            // Set the initial page to today's day of the week
+            // 0 = Week view, 1 = Monday, 2 = Tuesday, ..., 7 = Sunday
+            const todayPageIndex = dayOfWeek === 0 ? 7 : dayOfWeek; // Sunday = 7, Mon = 1, etc.
+            currentPage = todayPageIndex;
+            
+            // Update navigation to highlight today
+            setTimeout(() => switchPage(todayPageIndex), 100);
         }
 
         // Event listeners
