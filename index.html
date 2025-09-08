@@ -1787,55 +1787,158 @@
             }
         }
 
-        // Generate PDF
-        function generatePDF() {
+        // Generate PDF using backend service with actual calendar events
+        async function generatePDF() {
             try {
-                console.log('Starting PDF generation...');
-
-                // Check if jsPDF is loaded
-                if (!window.jspdf) {
-                    alert('PDF library not loaded. Please refresh the page and try again.');
-                    console.error('jsPDF not found');
-                    return;
-                }
-
-                const {jsPDF} = window.jspdf;
-
-                // Create PDF with standard A4 landscape for better compatibility
-                const doc = new jsPDF({
-                    orientation: 'landscape',
-                    unit: 'mm',
-                    format: 'a4'
-                });
+                console.log('Starting PDF generation with backend service...');
 
                 const weekStart = document.getElementById('weekStart').value || new Date().toISOString().split('T')[0];
                 const startDate = new Date(weekStart);
+                
+                // Prepare week data with actual calendar events
+                const weekData = {
+                    weekOf: weekStart,
+                    weeklyGoals: [
+                        'Complete all scheduled appointments',
+                        'Review and update project timelines',
+                        'Prepare for upcoming presentations'
+                    ],
+                    priorityTasks: [
+                        'Follow up on client contracts',
+                        'Prepare quarterly review materials',
+                        'Update team schedules',
+                        'Review project deliverables',
+                        'Schedule follow-up meetings'
+                    ],
+                    events: formatEventsForPDF(startDate)
+                };
 
-                console.log('Generating PDF for week starting:', weekStart);
+                // Show loading state
+                const button = document.getElementById('generatePDF');
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating PDF...';
 
-                // Generate a simpler PDF that works reliably
-                generateSimpleWeeklyPDF(doc, startDate);
+                // Make request to backend PDF service
+                const response = await fetch('/api/generate-planner-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        weekData: weekData,
+                        startDate: weekStart,
+                        options: {
+                            includeWeeklyOverview: true,
+                            includeDailyPages: true,
+                            optimizeForRemarkable: true
+                        }
+                    })
+                });
 
-                // Add daily pages
-                for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-                    doc.addPage();
-                    const currentDate = new Date(startDate);
-                    currentDate.setDate(startDate.getDate() + dayOffset);
-                    generateSimpleDailyPDF(doc, currentDate, dayOffset);
+                if (!response.ok) {
+                    throw new Error(`PDF generation failed: ${response.statusText}`);
                 }
 
-                // Save the PDF
-                const filename = `remarkable_calendar_${weekStart}.pdf`;
-                console.log('Saving PDF as:', filename);
-                doc.save(filename);
+                // Get the PDF blob and download
+                const pdfBlob = await response.blob();
+                const url = window.URL.createObjectURL(pdfBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `remarkable-planner-${weekStart}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                // Restore button
+                button.disabled = false;
+                button.innerHTML = originalText;
 
                 updateLastUpdateTime();
                 console.log('PDF generation complete!');
 
+                // Show success notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                notification.innerHTML = '<i class="fas fa-check-circle mr-2"></i>PDF generated successfully!';
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+
             } catch (error) {
                 console.error('Error generating PDF:', error);
                 alert('Error generating PDF. Please check the console for details.');
+                
+                // Restore button on error
+                const button = document.getElementById('generatePDF');
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-download mr-2"></i>Generate PDF';
             }
+        }
+
+        // Format calendar events for PDF generator
+        function formatEventsForPDF(weekStart) {
+            const events = {
+                monday: [],
+                tuesday: [],
+                wednesday: [],
+                thursday: [],
+                friday: [],
+                saturday: [],
+                sunday: []
+            };
+
+            const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 7);
+
+            // Process each calendar event
+            (calendarEvents || []).forEach(event => {
+                if (!event.start) return;
+                
+                const eventDate = new Date(event.start.dateTime || event.start.date);
+                
+                // Check if event falls within the week
+                if (eventDate >= weekStart && eventDate < weekEnd) {
+                    const dayOfWeek = eventDate.getDay();
+                    const dayKey = dayNames[dayOfWeek];
+                    
+                    // Format time
+                    let time = '09:00';
+                    let duration = 60;
+                    
+                    if (event.start.dateTime) {
+                        const hours = eventDate.getHours().toString().padStart(2, '0');
+                        const minutes = eventDate.getMinutes().toString().padStart(2, '0');
+                        time = `${hours}:${minutes}`;
+                        
+                        // Calculate duration if end time exists
+                        if (event.end && event.end.dateTime) {
+                            const endDate = new Date(event.end.dateTime);
+                            duration = Math.round((endDate - eventDate) / 60000); // Duration in minutes
+                        }
+                    }
+                    
+                    events[dayKey].push({
+                        time: time,
+                        duration: duration,
+                        title: event.summary || 'Untitled Event',
+                        location: event.location || '',
+                        description: event.description || ''
+                    });
+                }
+            });
+
+            // Sort events by time for each day
+            Object.keys(events).forEach(day => {
+                events[day].sort((a, b) => {
+                    const [aHour, aMin] = a.time.split(':').map(Number);
+                    const [bHour, bMin] = b.time.split(':').map(Number);
+                    return (aHour * 60 + aMin) - (bHour * 60 + bMin);
+                });
+            });
+
+            return events;
         }
 
         // Generate simple weekly overview for PDF
