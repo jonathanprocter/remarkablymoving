@@ -26,9 +26,10 @@ router.post('/generate-planner-pdf', async (req, res) => {
     // Set content
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     
-    // Generate PDF with reMarkable Pro optimizations
+    // Generate PDF with reMarkable Pro Move dimensions (11.6" × 8.8")
     const pdf = await page.pdf({
-      format: 'A4',
+      width: '11.6in',   // 294.64mm
+      height: '8.8in',   // 223.52mm
       printBackground: true,
       preferCSSPageSize: true,
       margin: {
@@ -87,14 +88,14 @@ function generatePlannerHTML(weekData, startDate) {
 
 function getOptimizedCSS() {
   return `
-    /* reMarkable Pro E-ink Optimized Styles */
+    /* reMarkable Pro Move E-ink Optimized Styles */
     @page {
       margin: 0;
-      size: A4;
+      size: 11.6in 8.8in;  /* Remarkable Pro Move dimensions */
     }
     
     @page :first-child {
-      size: A4 landscape;
+      size: 11.6in 8.8in;
     }
     
     * {
@@ -113,10 +114,10 @@ function getOptimizedCSS() {
       background: #fff;
     }
     
-    /* Weekly Layout - Landscape for reMarkable Pro */
+    /* Weekly Layout - Landscape for reMarkable Pro Move */
     .weekly-page {
-      width: 297mm;
-      height: 210mm;
+      width: 11.6in;
+      height: 8.8in;
       padding: 8mm;
       page-break-after: always;
       display: flex;
@@ -232,10 +233,10 @@ function getOptimizedCSS() {
       background: #fff;
     }
     
-    /* Daily Layout - Portrait for reMarkable Pro */
+    /* Daily Layout - Portrait for reMarkable Pro Move */
     .daily-page {
-      width: 210mm;
-      height: 297mm;
+      width: 8.8in;
+      height: 11.6in;
       padding: 8mm;
       page-break-after: always;
       display: flex;
