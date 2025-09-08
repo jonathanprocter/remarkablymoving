@@ -17,13 +17,15 @@ GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 
-# OAuth 2.0 scopes for Google Calendar and additional permissions Google is granting
+# OAuth 2.0 scopes for Google Calendar (Google may grant additional scopes automatically)
 SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/calendar',
     'https://www.googleapis.com/auth/calendar.events',
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/drive.readonly',
+    'https://www.googleapis.com/auth/drive.file',
     'openid'
 ]
 
@@ -128,14 +130,20 @@ def oauth2callback():
         
         # Store credentials in session
         credentials = flow.credentials
+        
+        # Use the actual scopes granted by Google (not just what we requested)
+        granted_scopes = list(credentials.scopes) if credentials.scopes else SCOPES
+        
         session['credentials'] = {
             'token': credentials.token,
             'refresh_token': credentials.refresh_token,
             'token_uri': 'https://oauth2.googleapis.com/token',
             'client_id': credentials.client_id,
             'client_secret': credentials.client_secret,
-            'scopes': list(credentials.scopes) if credentials.scopes else SCOPES
+            'scopes': granted_scopes
         }
+        
+        print(f"📋 Granted scopes: {granted_scopes}")
         
         print(f"✅ OAuth successful!")
         print(f"   Token received: {credentials.token[:20]}...")
@@ -172,8 +180,9 @@ def get_calendars():
         return jsonify({"error": "Not authenticated"}), 401
     
     try:
-        # Create credentials object from session
-        creds = Credentials.from_authorized_user_info(session['credentials'], SCOPES)
+        # Create credentials object from session using granted scopes
+        granted_scopes = session['credentials'].get('scopes', SCOPES)
+        creds = Credentials.from_authorized_user_info(session['credentials'], granted_scopes)
         
         # Build the Calendar API service
         service = build('calendar', 'v3', credentials=creds)
@@ -207,8 +216,9 @@ def get_events():
         if not calendar_ids:
             return jsonify({"error": "No calendar IDs provided"}), 400
         
-        # Create credentials object from session
-        creds = Credentials.from_authorized_user_info(session['credentials'], SCOPES)
+        # Create credentials object from session using granted scopes
+        granted_scopes = session['credentials'].get('scopes', SCOPES)
+        creds = Credentials.from_authorized_user_info(session['credentials'], granted_scopes)
         
         # Build the Calendar API service
         service = build('calendar', 'v3', credentials=creds)
