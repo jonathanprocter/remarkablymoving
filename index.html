@@ -1213,9 +1213,33 @@
 
             // Place events in appropriate time/day cells with 30-minute slots and duration spanning
             weekEvents.forEach(event => {
-                const startDate = new Date(event.start.dateTime || event.start.date);
-                const endDate = new Date(event.end.dateTime || event.end.date);
+                // Parse date correctly accounting for timezone
+                let startDate;
+                if (event.start.dateTime) {
+                    // For datetime strings with timezone info
+                    startDate = new Date(event.start.dateTime);
+                } else {
+                    // For all-day events (date only), parse as local date
+                    const [year, month, day] = event.start.date.split('-').map(Number);
+                    startDate = new Date(year, month - 1, day); // month is 0-indexed
+                }
+                
+                let endDate;
+                if (event.end.dateTime) {
+                    endDate = new Date(event.end.dateTime);
+                } else {
+                    const [year, month, day] = event.end.date.split('-').map(Number);
+                    endDate = new Date(year, month - 1, day);
+                }
+                
                 const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                
+                // Debug logging to identify the issue
+                console.log(`📌 Event: "${event.summary}"`);
+                console.log(`   Raw start: ${event.start.dateTime || event.start.date}`);
+                console.log(`   Parsed date: ${startDate.toString()}`);
+                console.log(`   Day of week: ${dayOfWeek} (0=Sun, 1=Mon, 2=Tue...)`);
+                console.log(`   Will map to: ${dayOfWeek === 0 ? 'sun' : dayOfWeek === 1 ? 'mon' : dayOfWeek === 2 ? 'tue' : dayOfWeek === 3 ? 'wed' : dayOfWeek === 4 ? 'thu' : dayOfWeek === 5 ? 'fri' : 'sat'}`);
 
                 // Calculate event duration in minutes
                 const durationMs = endDate - startDate;
