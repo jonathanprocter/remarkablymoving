@@ -404,74 +404,22 @@
         let tokenClient = null;
         let accessToken = null;
 
-        // Initialize Google API (Modern Google Identity Services)
+        // Initialize Backend API (Server-side OAuth)
         function initializeGapi() {
-            console.log('Starting Google API initialization...');
-
-            // Check if gapi is available
-            if (typeof gapi === 'undefined') {
-                console.error('Google API script not loaded');
+            console.log('Starting backend API initialization...');
+            
+            // Check if backend config is available
+            if (!window.BACKEND_CONFIG) {
+                console.error('Backend config not loaded');
                 setTimeout(initializeGapi, 500);
                 return;
             }
-
-            // Check if Google Identity Services is available
-            if (typeof google === 'undefined' || !google.accounts) {
-                console.error('Google Identity Services not loaded');
-                setTimeout(initializeGapi, 500);
-                return;
-            }
-
-            // Check if config is available
-            if (!window.GOOGLE_CONFIG) {
-                console.error('Google config not loaded');
-                setTimeout(initializeGapi, 500);
-                return;
-            }
-
-            // Initialize gapi client (only for API calls, not auth)
-            gapi.load('client', () => {
-                console.log('Google API client loaded, initializing...');
-                
-                gapi.client.init({
-                    apiKey: window.GOOGLE_CONFIG.apiKey,
-                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest']
-                }).then(() => {
-                    console.log('Google API client initialized successfully');
-                    gapi_loaded = true;
-                    
-                    // Initialize the token client for OAuth (new way)
-                    tokenClient = google.accounts.oauth2.initTokenClient({
-                        client_id: window.GOOGLE_CONFIG.clientId,
-                        scope: 'https://www.googleapis.com/auth/calendar.readonly',
-                        callback: (response) => {
-                            if (response.error !== undefined) {
-                                console.error('OAuth error:', response.error);
-                                alert('Authentication failed: ' + response.error);
-                                return;
-                            }
-                            console.log('OAuth successful, got access token');
-                            accessToken = response.access_token;
-                            gapi.client.setToken({access_token: accessToken});
-                            isSignedIn = true;
-                            updateAuthUI();
-                        }
-                    });
-                    
-                    console.log('Token client initialized');
-                    updateAuthUI();
-                    
-                }).catch(error => {
-                    console.error('Failed to initialize Google API client:', error);
-                    gapi_loaded = false;
-                    
-                    const authButton = document.getElementById('authButton');
-                    authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Setup Required';
-                    authButton.disabled = true;
-                    
-                    alert('Failed to initialize Google API: ' + (error.details || error.message || error));
-                });
-            });
+            
+            console.log('Backend config loaded:', window.BACKEND_CONFIG);
+            gapi_loaded = true;
+            
+            // Check authentication status
+            checkAuthStatus();
         }
 
         // Update authentication UI

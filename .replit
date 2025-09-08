@@ -15,15 +15,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Calendar Generator Server"
+args = "Calendar Generator Backend"
 
 [[workflows.workflow]]
-name = "Calendar Generator Server"
+name = "Calendar Generator Backend"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python -m http.server 5000 --bind 0.0.0.0"
+args = "python app.py"
 waitForPort = 5000
 
 [workflows.workflow.metadata]

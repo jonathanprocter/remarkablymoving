@@ -85,7 +85,10 @@ def google_auth():
         
         # Store state in session for security
         session['state'] = state
-        session['flow'] = flow.to_json()
+        session['flow_data'] = {
+            'client_config': flow.client_config,
+            'scopes': flow.scopes
+        }
         
         print(f"🔐 Starting OAuth flow...")
         print(f"   Authorization URL: {authorization_url}")
@@ -114,8 +117,8 @@ def oauth2callback():
         
         # Recreate flow from session
         flow = Flow.from_client_config(
-            json.loads(session['flow']),
-            scopes=SCOPES
+            session['flow_data']['client_config'],
+            scopes=session['flow_data']['scopes']
         )
         flow.redirect_uri = REDIRECT_URI
         
@@ -127,11 +130,10 @@ def oauth2callback():
         session['credentials'] = {
             'token': credentials.token,
             'refresh_token': credentials.refresh_token,
-            'id_token': credentials.id_token,
-            'token_uri': credentials.token_uri,
+            'token_uri': 'https://oauth2.googleapis.com/token',
             'client_id': credentials.client_id,
             'client_secret': credentials.client_secret,
-            'scopes': credentials.scopes
+            'scopes': list(credentials.scopes) if credentials.scopes else SCOPES
         }
         
         print(f"✅ OAuth successful!")
@@ -139,7 +141,7 @@ def oauth2callback():
         
         # Clean up session
         session.pop('state', None)
-        session.pop('flow', None)
+        session.pop('flow_data', None)
         
         # Redirect back to main app with success
         return redirect('/?auth=success')
