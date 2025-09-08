@@ -424,8 +424,7 @@
                     console.log('Google API modules loaded, initializing client...');
 
                     gapi.client.init({
-                        apiKey: window.GOOGLE_CONFIG.apiKey,
-                        clientId: window.GOOGLE_CONFIG.clientId,
+                        clientId: window.INJECTED_GOOGLE_CLIENT_ID || window.GOOGLE_CONFIG.clientId,
                         discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
                         scope: 'https://www.googleapis.com/auth/calendar.readonly'
                     }).then(() => {
