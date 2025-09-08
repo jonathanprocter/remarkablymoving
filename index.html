@@ -433,6 +433,11 @@
                 
                 updateAuthUI();
                 
+                // Load calendars if authenticated
+                if (isSignedIn) {
+                    loadCalendars();
+                }
+                
             } catch (error) {
                 console.error('Error checking auth status:', error);
                 isSignedIn = false;
@@ -500,28 +505,30 @@
             }
         }
 
-        // Load user calendars
+        // Load user calendars (Server-side)
         async function loadCalendars() {
             try {
-                const response = await gapi.client.calendar.calendarList.list({
-                    showHidden: true,
-                    showDeleted: false
-                });
-                const calendars = response.result.items;
-
+                const response = await fetch('/api/calendars');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load calendars');
+                }
+                
+                const calendars = data.calendars;
                 console.log('Found calendars:', calendars.length);
                 calendars.forEach(cal => console.log(`Calendar: ${cal.summary} (${cal.id}) - Primary: ${cal.primary}`));
 
                 const calendarListEl = document.getElementById('calendarList');
                 calendarListEl.innerHTML = calendars.map(calendar => {
-                    const isMainCalendar = calendar.primary || calendar.id === calendar.id.split('@')[0] + '@gmail.com';
+                    const isMainCalendar = calendar.primary || calendar.id.includes('@gmail.com');
                     return `
                         <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded border ${isMainCalendar ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}">
                             <input type="checkbox" class="calendar-checkbox" data-calendar-id="${calendar.id}" ${calendar.primary ? 'checked' : ''}>
                             <div class="w-4 h-4 rounded" style="background-color: ${calendar.backgroundColor || '#3b82f6'}"></div>
                             <div class="flex flex-col">
                                 <span class="text-sm font-medium">${calendar.summary}</span>
-                                <span class="text-xs text-gray-500">${calendar.accessRole} ${isMainCalendar ? '(Main)' : ''}</span>
+                                <span class="text-xs text-gray-500">${calendar.accessRole || 'reader'} ${isMainCalendar ? '(Main)' : ''}</span>
                             </div>
                         </label>
                     `;
@@ -537,13 +544,13 @@
                 calendarListEl.innerHTML = `
                     <div class="text-red-500 text-center py-4">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
-                        Error loading calendars: ${error.result?.error?.message || error.message}
+                        Error loading calendars: ${error.message}
                     </div>
                 `;
             }
         }
 
-        // Sync calendar events
+        // Sync calendar events (Server-side)
         async function syncCalendarEvents() {
             if (!isSignedIn) return;
 
@@ -562,20 +569,26 @@
 
             calendarEvents = [];
 
-            for (const calendarId of selectedCalendars) {
-                try {
-                    const response = await gapi.client.calendar.events.list({
-                        calendarId: calendarId,
-                        timeMin: startDate.toISOString(),
-                        timeMax: endDate.toISOString(),
-                        singleEvents: true,
-                        orderBy: 'startTime'
-                    });
+            try {
+                // Build query parameters
+                const params = new URLSearchParams();
+                selectedCalendars.forEach(id => params.append('calendar_ids', id));
+                params.append('time_min', startDate.toISOString());
+                params.append('time_max', endDate.toISOString());
 
-                    calendarEvents.push(...response.result.items);
-                } catch (error) {
-                    console.error('Error fetching events:', error);
+                const response = await fetch(`/api/events?${params.toString()}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch events');
                 }
+                
+                calendarEvents = data.events || [];
+                console.log(`📋 Synced ${calendarEvents.length} events from ${selectedCalendars.length} calendars`);
+                
+            } catch (error) {
+                console.error('Error fetching events:', error);
+                alert('Failed to sync calendar events: ' + error.message);
             }
 
             updateLastUpdateTime();
