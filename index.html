@@ -629,7 +629,14 @@
                 console.log(`📋 Synced ${calendarEvents.length} events from ${selectedCalendars.length} calendars (${range})`);
                 
                 // Update UI with success message
-                alert(`Successfully synced ${calendarEvents.length} events from ${range}!`);
+                console.log(`✅ Successfully synced ${calendarEvents.length} events from ${range}!`);
+                
+                // Show success notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                notification.innerHTML = `<i class="fas fa-check-circle mr-2"></i>Synced ${calendarEvents.length} events from ${range}`;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 5000);
                 
                 // Restore button
                 syncButton.innerHTML = originalText;
@@ -666,49 +673,136 @@
         // Update events summary in weekly view
         function updateEventsSummary() {
             const summaryEl = document.getElementById('weeklyEventsSummary');
-            if (!summaryEl || !calendarEvents || calendarEvents.length === 0) return;
+            if (!summaryEl) return;
             
-            const upcomingEvents = calendarEvents.slice(0, 3); // Show first 3 events
-            summaryEl.innerHTML = upcomingEvents.map(event => 
-                `<div class="flex items-center">
-                    <div class="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
-                    <span>${event.summary || 'Untitled Event'}</span>
-                </div>`
-            ).join('') || '<div>No events to display</div>';
+            if (!calendarEvents || calendarEvents.length === 0) {
+                summaryEl.innerHTML = '<div class="text-gray-500">No events synced yet</div>';
+                return;
+            }
+            
+            // Filter events for current week
+            const weekStartInput = document.getElementById('weekStart');
+            const weekStart = weekStartInput ? new Date(weekStartInput.value) : new Date();
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+            
+            const weekEvents = calendarEvents.filter(event => {
+                if (!event.start) return false;
+                const eventDate = new Date(event.start.dateTime || event.start.date);
+                return eventDate >= weekStart && eventDate < weekEnd;
+            });
+            
+            console.log(`📅 Showing ${weekEvents.length} events for week starting ${weekStart.toDateString()}`);
+            
+            if (weekEvents.length === 0) {
+                summaryEl.innerHTML = '<div class="text-gray-500">No events for selected week</div>';
+                return;
+            }
+            
+            const upcomingEvents = weekEvents.slice(0, 5); // Show first 5 events of the week
+            summaryEl.innerHTML = upcomingEvents.map(event => {
+                const startTime = event.start.dateTime ? 
+                    new Date(event.start.dateTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                    'All day';
+                return `<div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+                        <span class="truncate">${event.summary || 'Untitled Event'}</span>
+                    </div>
+                    <span class="text-gray-500 text-xs ml-2">${startTime}</span>
+                </div>`;
+            }).join('');
+            
+            if (weekEvents.length > 5) {
+                summaryEl.innerHTML += `<div class="text-xs text-gray-500 mt-1">... and ${weekEvents.length - 5} more events</div>`;
+            }
         }
         
         // Update daily view with real events
         function updateDailyView() {
+            if (!calendarEvents || calendarEvents.length === 0) return;
+            
+            // Get current week range
+            const weekStartInput = document.getElementById('weekStart');
+            const weekStart = weekStartInput ? new Date(weekStartInput.value) : new Date();
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+            
+            // Filter events for current week
+            const weekEvents = calendarEvents.filter(event => {
+                if (!event.start) return false;
+                const eventDate = new Date(event.start.dateTime || event.start.date);
+                return eventDate >= weekStart && eventDate < weekEnd;
+            });
+            
             // Update day overview
             const overviewEl = document.getElementById('dayOverview');
-            if (overviewEl && calendarEvents && calendarEvents.length > 0) {
-                overviewEl.textContent = `${calendarEvents.length} events synced from your calendars`;
+            if (overviewEl) {
+                overviewEl.textContent = `${weekEvents.length} events for selected week (${calendarEvents.length} total synced)`;
             }
             
             // Update today's events list
             const todaysEl = document.getElementById('todaysEvents');
-            if (todaysEl && calendarEvents && calendarEvents.length > 0) {
-                const eventsList = calendarEvents.slice(0, 5).map(event => 
-                    `<div class="flex items-center">
-                        <div class="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
-                        <span>${event.summary || 'Untitled Event'}</span>
-                    </div>`
-                ).join('');
-                todaysEl.innerHTML = eventsList || '<div>No events for today</div>';
+            if (todaysEl) {
+                if (weekEvents.length === 0) {
+                    todaysEl.innerHTML = '<div class="text-gray-500">No events for selected week</div>';
+                    return;
+                }
+                
+                const eventsList = weekEvents.slice(0, 5).map(event => {
+                    const startTime = event.start.dateTime ? 
+                        new Date(event.start.dateTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                        'All day';
+                    const eventDate = new Date(event.start.dateTime || event.start.date);
+                    const dayName = eventDate.toLocaleDateString([], {weekday: 'short'});
+                    
+                    return `<div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
+                            <span class="truncate">${event.summary || 'Untitled Event'}</span>
+                        </div>
+                        <span class="text-gray-500 text-xs ml-1">${dayName} ${startTime}</span>
+                    </div>`;
+                }).join('');
+                
+                todaysEl.innerHTML = eventsList;
+                
+                if (weekEvents.length > 5) {
+                    todaysEl.innerHTML += `<div class="text-xs text-gray-500 mt-1">... and ${weekEvents.length - 5} more events this week</div>`;
+                }
             }
         }
         
         // Update event count display
         function updateEventCount() {
             const countEl = document.getElementById('eventCount');
-            if (countEl) {
-                const count = calendarEvents ? calendarEvents.length : 0;
-                countEl.textContent = `${count} events loaded`;
+            const statusEl = document.getElementById('syncStatus');
+            
+            if (!calendarEvents || calendarEvents.length === 0) {
+                if (countEl) countEl.textContent = '0 events loaded';
+                if (statusEl) statusEl.textContent = 'Ready to sync';
+                return;
             }
             
-            const statusEl = document.getElementById('syncStatus');
+            // Get current week range
+            const weekStartInput = document.getElementById('weekStart');
+            const weekStart = weekStartInput ? new Date(weekStartInput.value) : new Date();
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+            
+            // Filter events for current week
+            const weekEvents = calendarEvents.filter(event => {
+                if (!event.start) return false;
+                const eventDate = new Date(event.start.dateTime || event.start.date);
+                return eventDate >= weekStart && eventDate < weekEnd;
+            });
+            
+            if (countEl) {
+                countEl.textContent = `${weekEvents.length} events this week (${calendarEvents.length} total)`;
+            }
+            
             if (statusEl) {
-                statusEl.textContent = calendarEvents && calendarEvents.length > 0 ? 'Synced successfully' : 'Ready to sync';
+                statusEl.textContent = `Synced successfully - Ready for export`;
             }
         }
         
@@ -867,7 +961,10 @@
             document.getElementById('deployToReplit').addEventListener('click', deployToReplit);
 
             // Configuration changes
-            document.getElementById('weekStart').addEventListener('change', refreshPreview);
+            document.getElementById('weekStart').addEventListener('change', () => {
+                console.log('📅 Week changed, refreshing preview...');
+                refreshPreview();
+            });
             document.getElementById('timeFormat').addEventListener('change', refreshPreview);
             document.getElementById('showHabits').addEventListener('change', refreshPreview);
             document.getElementById('showDecisions').addEventListener('change', refreshPreview);
