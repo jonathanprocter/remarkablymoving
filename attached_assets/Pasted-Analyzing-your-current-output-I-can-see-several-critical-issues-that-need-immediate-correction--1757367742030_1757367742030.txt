@@ -1,0 +1,559 @@
+Analyzing your current output, I can see several critical issues that need immediate correction:
+
+## Major Problems Identified:
+
+1. **Page Overflow:** Weekly planner spans pages 1-2 instead of fitting on single landscape page
+1. **Text Truncation:** “Follow up on client” instead of full text, missing content
+1. **No Bidirectional Linking:** Events aren’t synchronized between weekly and daily views
+1. **Poor Layout:** Content doesn’t fit reMarkable Paper Pro Move’s 91mm × 163mm dimensions
+1. **Missing Grid Structure:** Time slots lack proper writing space
+
+## Complete Replit Agent Fix Instructions:
+
+### 1. HTML Structure with Proper Page Breaks
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* CSS will be provided below */
+    </style>
+</head>
+<body>
+    <!-- Page 1: Weekly Overview (Landscape) -->
+    <div class="page weekly-page">
+        <div class="weekly-container">
+            <div class="weekly-header">
+                <h1>WEEKLY PLANNER</h1>
+                <span>WEEK OF SEP 8, 2025</span>
+            </div>
+            
+            <div class="weekly-main">
+                <div class="weekly-grid">
+                    <div class="time-header">TIME</div>
+                    <div class="day-header">MON</div>
+                    <div class="day-header">TUE</div>
+                    <div class="day-header">WED</div>
+                    <div class="day-header">THU</div>
+                    <div class="day-header">FRI</div>
+                    <div class="day-header">SAT</div>
+                    <div class="day-header">SUN</div>
+                    
+                    <!-- Time slots with proper IDs for linking -->
+                    <div class="time-label">09:00</div>
+                    <div class="event-cell" id="w-mon-09" data-day="mon" data-time="09:00"></div>
+                    <div class="event-cell" id="w-tue-09" data-day="tue" data-time="09:00"></div>
+                    <div class="event-cell" id="w-wed-09" data-day="wed" data-time="09:00"></div>
+                    <div class="event-cell" id="w-thu-09" data-day="thu" data-time="09:00"></div>
+                    <div class="event-cell" id="w-fri-09" data-day="fri" data-time="09:00"></div>
+                    <div class="event-cell" id="w-sat-09" data-day="sat" data-time="09:00"></div>
+                    <div class="event-cell" id="w-sun-09" data-day="sun" data-time="09:00"></div>
+                    
+                    <!-- Repeat for 10:00 through 17:00 (9 rows total) -->
+                </div>
+                
+                <div class="weekly-sidebar">
+                    <div class="priority-section">
+                        <h3>PRIORITY TASKS</h3>
+                        <div class="task-item" id="task-1">Follow up on client contracts</div>
+                        <div class="task-item" id="task-2">Prepare quarterly review materials</div>
+                        <div class="task-item" id="task-3">Update team schedules</div>
+                        <div class="task-item" id="task-4">Review project deliverables</div>
+                        <div class="task-item" id="task-5">Schedule follow-up meetings</div>
+                    </div>
+                    
+                    <div class="goals-section">
+                        <h3>WEEKLY GOALS</h3>
+                        <div class="goal-item">Complete all scheduled appointments</div>
+                        <div class="goal-item">Review and update project timelines</div>
+                        <div class="goal-item">Prepare for upcoming presentations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pages 2-8: Daily Views (Portrait) -->
+    <div class="page daily-page" data-date="2025-09-08" data-day="mon">
+        <div class="daily-container">
+            <div class="daily-header">
+                <span class="daily-title">DAILY PLANNER - MONDAY</span>
+                <span class="daily-date">SEP 8, 2025</span>
+            </div>
+            
+            <div class="time-grid">
+                <!-- Each time slot with linking ID -->
+                <div class="time-row">
+                    <div class="time-label">07:00</div>
+                    <div class="time-content" id="d-mon-07" data-time="07:00" data-day="mon"></div>
+                </div>
+                <!-- Repeat for 08:00 through 22:00 (16 rows) -->
+            </div>
+            
+            <div class="daily-bottom">
+                <div class="priorities">
+                    <div class="section-header">PRIORITIES</div>
+                    <div class="priority-line">A) <span class="fill-line"></span></div>
+                    <div class="priority-line">B) <span class="fill-line"></span></div>
+                    <div class="priority-line">C) <span class="fill-line"></span></div>
+                </div>
+                
+                <div class="daily-goals">
+                    <div class="section-header">DAILY GOALS</div>
+                    <div class="goals-content"></div>
+                </div>
+                
+                <div class="notes">
+                    <div class="section-header">NOTES</div>
+                    <div class="notes-content"></div>
+                </div>
+                
+                <div class="status">
+                    <span id="event-count-mon">0 events</span>
+                    <span>Week: <span id="week-total">0</span> total</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Repeat daily page structure for Tuesday through Sunday -->
+</body>
+</html>
+```
+
+### 2. Optimized CSS for reMarkable Paper Pro Move
+
+```css
+/* Device specifications */
+:root {
+    --device-width-portrait: 91mm;
+    --device-height-portrait: 163mm;
+    --device-width-landscape: 163mm;
+    --device-height-landscape: 91mm;
+    --margin: 2mm;
+    --usable-width-portrait: 87mm;
+    --usable-height-portrait: 159mm;
+    --usable-width-landscape: 159mm;
+    --usable-height-landscape: 87mm;
+    
+    /* Typography */
+    --font-large: 8pt;
+    --font-medium: 6pt;
+    --font-small: 5pt;
+    --font-tiny: 4pt;
+}
+
+/* Reset and base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Times', serif;
+    color: #000000;
+    background: #ffffff;
+    -webkit-print-color-adjust: exact;
+}
+
+/* Page structure */
+.page {
+    page-break-after: always;
+    page-break-inside: avoid;
+}
+
+.page:last-child {
+    page-break-after: auto;
+}
+
+/* Weekly page - Landscape */
+@page :first {
+    size: 163mm 91mm;
+    margin: var(--margin);
+}
+
+.weekly-page {
+    width: var(--usable-width-landscape);
+    height: var(--usable-height-landscape);
+}
+
+.weekly-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.weekly-header {
+    height: 12mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1pt solid #000;
+    padding: 0 2mm;
+    margin-bottom: 2mm;
+}
+
+.weekly-header h1 {
+    font-size: var(--font-large);
+    font-weight: bold;
+}
+
+.weekly-header span {
+    font-size: var(--font-medium);
+}
+
+.weekly-main {
+    flex: 1;
+    display: flex;
+    gap: 3mm;
+}
+
+.weekly-grid {
+    flex: 2;
+    display: grid;
+    grid-template-columns: 15mm repeat(7, 1fr);
+    grid-template-rows: 8mm repeat(9, 1fr); /* 09:00-17:00 */
+    gap: 0.5pt;
+    border: 1pt solid #000;
+    font-size: var(--font-small);
+}
+
+.time-header, .day-header {
+    background: #f0f0f0;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 0.5pt solid #000;
+    border-bottom: 0.5pt solid #000;
+    font-size: var(--font-small);
+}
+
+.time-label {
+    background: #f8f8f8;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 0.5pt solid #000;
+    border-bottom: 0.5pt solid #ccc;
+    font-size: var(--font-tiny);
+}
+
+.event-cell {
+    border-right: 0.5pt solid #ccc;
+    border-bottom: 0.5pt solid #ccc;
+    padding: 0.5mm;
+    font-size: var(--font-tiny);
+    overflow: hidden;
+}
+
+.weekly-sidebar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2mm;
+}
+
+.priority-section, .goals-section {
+    border: 1pt solid #000;
+    padding: 2mm;
+    flex: 1;
+}
+
+.priority-section h3, .goals-section h3 {
+    font-size: var(--font-medium);
+    font-weight: bold;
+    margin-bottom: 1mm;
+    border-bottom: 0.5pt solid #000;
+    padding-bottom: 0.5mm;
+}
+
+.task-item, .goal-item {
+    font-size: var(--font-small);
+    margin-bottom: 0.5mm;
+    line-height: 1.2;
+}
+
+/* Daily pages - Portrait */
+@page :not(:first) {
+    size: 91mm 163mm;
+    margin: var(--margin);
+}
+
+.daily-page {
+    width: var(--usable-width-portrait);
+    height: var(--usable-height-portrait);
+}
+
+.daily-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.daily-header {
+    height: 10mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1pt solid #000;
+    padding: 0 1mm;
+    margin-bottom: 1mm;
+}
+
+.daily-title {
+    font-size: var(--font-medium);
+    font-weight: bold;
+}
+
+.daily-date {
+    font-size: var(--font-small);
+}
+
+.time-grid {
+    flex: 1;
+    border: 1pt solid #000;
+    display: flex;
+    flex-direction: column;
+}
+
+.time-row {
+    flex: 1;
+    display: flex;
+    border-bottom: 0.5pt solid #ccc;
+}
+
+.time-row:last-child {
+    border-bottom: none;
+}
+
+.time-row .time-label {
+    width: 12mm;
+    background: #f8f8f8;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1pt solid #000;
+    font-size: var(--font-tiny);
+}
+
+.time-content {
+    flex: 1;
+    padding: 0.5mm;
+    font-size: var(--font-small);
+    min-height: 8mm;
+}
+
+.daily-bottom {
+    height: 35mm;
+    margin-top: 1mm;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 15mm 10mm 8mm;
+    gap: 1mm;
+}
+
+.priorities {
+    grid-column: 1 / 3;
+    border: 1pt solid #000;
+    padding: 1mm;
+}
+
+.section-header {
+    font-size: var(--font-small);
+    font-weight: bold;
+    margin-bottom: 1mm;
+}
+
+.priority-line {
+    font-size: var(--font-small);
+    margin-bottom: 0.5mm;
+    display: flex;
+    align-items: center;
+}
+
+.fill-line {
+    flex: 1;
+    border-bottom: 0.5pt solid #ccc;
+    margin-left: 2mm;
+    height: 1px;
+}
+
+.daily-goals, .notes {
+    border: 1pt solid #000;
+    padding: 1mm;
+}
+
+.goals-content, .notes-content {
+    font-size: var(--font-small);
+    height: calc(100% - 6mm);
+}
+
+.status {
+    grid-column: 1 / 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--font-tiny);
+    color: #666;
+    padding: 0 1mm;
+}
+```
+
+### 3. JavaScript for Bidirectional Linking
+
+```javascript
+// Event management system
+class PlannerEventSystem {
+    constructor() {
+        this.events = new Map();
+        this.eventCounter = 0;
+        this.weeklyTotal = 0;
+        this.dailyCounts = {
+            mon: 0, tue: 0, wed: 0, thu: 0, 
+            fri: 0, sat: 0, sun: 0
+        };
+    }
+    
+    addEvent(day, time, title, showInWeekly = false) {
+        const eventId = `event_${++this.eventCounter}`;
+        const event = {
+            id: eventId,
+            day,
+            time,
+            title,
+            showInWeekly
+        };
+        
+        this.events.set(eventId, event);
+        
+        // Update daily view
+        const dailyCell = document.getElementById(`d-${day}-${time.replace(':', '')}`);
+        if (dailyCell) {
+            dailyCell.textContent = title;
+            dailyCell.style.backgroundColor = '#f0f0f0';
+        }
+        
+        // Update weekly view if applicable
+        if (showInWeekly && this.isBusinessHour(time)) {
+            const weeklyCell = document.getElementById(`w-${day}-${time.replace(':', '')}`);
+            if (weeklyCell) {
+                weeklyCell.textContent = title.length > 8 ? title.substring(0, 8) + '...' : title;
+                weeklyCell.style.backgroundColor = '#e0e0e0';
+            }
+        }
+        
+        this.updateCounts(day);
+        return eventId;
+    }
+    
+    isBusinessHour(time) {
+        const hour = parseInt(time.split(':')[0]);
+        return hour >= 9 && hour <= 17;
+    }
+    
+    updateCounts(day) {
+        this.dailyCounts[day]++;
+        this.weeklyTotal++;
+        
+        // Update display
+        const eventCountElement = document.getElementById(`event-count-${day}`);
+        if (eventCountElement) {
+            eventCountElement.textContent = `${this.dailyCounts[day]} events`;
+        }
+        
+        const weekTotalElements = document.querySelectorAll('#week-total');
+        weekTotalElements.forEach(el => {
+            el.textContent = this.weeklyTotal;
+        });
+    }
+    
+    // Method to populate sample events
+    populateSampleEvents() {
+        this.addEvent('mon', '09:00', 'Team Meeting', true);
+        this.addEvent('mon', '14:00', 'Client Call', true);
+        this.addEvent('tue', '10:00', 'Project Review', true);
+        this.addEvent('wed', '15:00', 'Design Session', false);
+        this.addEvent('fri', '11:00', 'Sprint Planning', true);
+    }
+}
+
+// Initialize when DOM loads
+document.addEventListener('DOMContentLoaded', function() {
+    const planner = new PlannerEventSystem();
+    
+    // Add sample events for demonstration
+    // planner.populateSampleEvents();
+    
+    // Make planner globally available for testing
+    window.planner = planner;
+});
+```
+
+### 4. PDF Generation Settings
+
+```javascript
+// Puppeteer configuration for reMarkable Paper Pro Move
+const generateRemarkablePDF = async (htmlContent) => {
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    
+    const page = await browser.newPage();
+    
+    // Set content and wait for fonts
+    await page.setContent(htmlContent, { 
+        waitUntil: 'networkidle0',
+        timeout: 30000 
+    });
+    
+    // Generate PDF with exact reMarkable specifications
+    const pdf = await page.pdf({
+        // Mixed orientation handling
+        format: 'custom',
+        
+        // First page (weekly) - landscape
+        width: '163mm',
+        height: '91mm',
+        
+        printBackground: true,
+        preferCSSPageSize: true,
+        displayHeaderFooter: false,
+        
+        margin: {
+            top: '0mm',
+            right: '0mm',
+            bottom: '0mm',
+            left: '0mm'
+        },
+        
+        // E-ink optimizations
+        omitBackground: false,
+        scale: 1.0,
+        quality: 100,
+        
+        // Ensure all pages render
+        pageRanges: '1-8'
+    });
+    
+    await browser.close();
+    return pdf;
+};
+```
+
+### 5. Critical Implementation Steps:
+
+1. **Fix Page Breaks:** Use `page-break-after: always` on each `.page` div
+1. **Implement Event System:** Initialize `PlannerEventSystem` class for bidirectional linking
+1. **Test Dimensions:** Verify weekly page fits in 163mm × 91mm landscape
+1. **Verify Typography:** Ensure all text is readable at specified font sizes
+1. **Test Linking:** Add events and confirm they appear in both weekly and daily views
+
+This code will create a properly formatted planner that fits the reMarkable Paper Pro Move’s dimensions with functional bidirectional event linking between the weekly overview and daily pages.​​​​​​​​​​​​​​​​
