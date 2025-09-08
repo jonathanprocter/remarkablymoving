@@ -1170,8 +1170,19 @@
                 const minute = event.start.dateTime ? startDate.getMinutes() : 0;
 
                 // Map day of week to our day names
-                const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-                const dayName = dayNames[dayOfWeek];
+                // JavaScript getDay(): 0=Sunday, 1=Monday, 2=Tuesday, etc.
+                // Our grid columns: Mon, Tue, Wed, Thu, Fri, Sat, Sun
+                // So we need to shift: Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+                const dayMapping = {
+                    0: 'sun', // Sunday
+                    1: 'mon', // Monday  
+                    2: 'tue', // Tuesday
+                    3: 'wed', // Wednesday
+                    4: 'thu', // Thursday
+                    5: 'fri', // Friday
+                    6: 'sat'  // Saturday
+                };
+                const dayName = dayMapping[dayOfWeek];
 
                 // Round to nearest 30-minute slot
                 const roundedMinute = minute < 30 ? 0 : 30;
@@ -1337,9 +1348,9 @@
                         // Make event span multiple rows based on duration
                         if (numSlots > 1) {
                             eventEl.style.position = 'absolute';
-                            // Daily slots are 30px high, so span exactly that many pixels
-                            // For 1-hour events (2 slots), this should be exactly 58px (60-2)
-                            const totalHeight = Math.min((numSlots * 30) - 2, 58); // Cap at 58px for 1-hour
+                            // Daily slots are 30px high, limit to exactly 2 slots for 1-hour events
+                            const slotsToSpan = Math.min(numSlots, 2); // Never more than 2 slots
+                            const totalHeight = (slotsToSpan * 30) - 2; // 58px for 2 slots
                             eventEl.style.height = `${totalHeight}px`;
                             eventEl.style.maxHeight = `${totalHeight}px`; // Prevent overflow
                             eventEl.style.width = 'calc(100% - 4px)';
@@ -1353,9 +1364,11 @@
                             slot.style.position = 'relative';
 
                             // Clear cells below this event to prevent visual conflicts
+                            // Only clear up to 2 slots for 1-hour events
+                            const slotsToClear = Math.min(numSlots, 2);
                             let clearHour = hour;
                             let clearMinute = slotMinute;
-                            for (let i = 1; i < numSlots; i++) {
+                            for (let i = 1; i < slotsToClear; i++) {
                                 clearMinute += 30;
                                 if (clearMinute >= 60) {
                                     clearMinute = 0;
