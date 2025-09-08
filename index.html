@@ -1219,17 +1219,19 @@
                     // For datetime strings with timezone info
                     startDate = new Date(event.start.dateTime);
                 } else {
-                    // For all-day events (date only), parse as local date to avoid timezone shifts
-                    // Use UTC parsing to prevent day shifting
-                    startDate = new Date(event.start.date + 'T00:00:00');
+                    // For all-day events (date only), parse as UTC and then adjust to local
+                    // This prevents timezone-related day shifting
+                    const [year, month, day] = event.start.date.split('-').map(Number);
+                    startDate = new Date(year, month - 1, day, 0, 0, 0);
                 }
                 
                 let endDate;
                 if (event.end.dateTime) {
                     endDate = new Date(event.end.dateTime);
                 } else {
-                    // For all-day events, parse as local date
-                    endDate = new Date(event.end.date + 'T00:00:00');
+                    // For all-day events, parse as local date properly
+                    const [year, month, day] = event.end.date.split('-').map(Number);
+                    endDate = new Date(year, month - 1, day, 0, 0, 0);
                 }
                 
                 // Get the correct day of week from the parsed date
@@ -1417,8 +1419,19 @@
 
             // Place events in 30-minute time slots with duration spanning
             dayEvents.forEach(event => {
-                const startDate = new Date(event.start.dateTime || event.start.date);
-                const endDate = new Date(event.end.dateTime || event.end.date);
+                let startDate, endDate;
+                if (event.start.dateTime) {
+                    startDate = new Date(event.start.dateTime);
+                } else {
+                    const [year, month, day] = event.start.date.split('-').map(Number);
+                    startDate = new Date(year, month - 1, day, 0, 0, 0);
+                }
+                if (event.end.dateTime) {
+                    endDate = new Date(event.end.dateTime);
+                } else {
+                    const [year, month, day] = event.end.date.split('-').map(Number);
+                    endDate = new Date(year, month - 1, day, 0, 0, 0);
+                }
                 const hour = startDate.getHours();
                 const minute = startDate.getMinutes();
 
