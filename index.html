@@ -405,32 +405,66 @@
         function initializeGapi() {
             console.log('Starting Google API initialization...');
             
-            // Check if config is available
-            if (!window.GOOGLE_CONFIG) {
-                console.error('Google config not loaded');
+            // Check if gapi is available
+            if (typeof gapi === 'undefined') {
+                console.error('Google API script not loaded');
+                setTimeout(initializeGapi, 500); // Retry in 500ms
                 return;
             }
             
-            gapi.load('auth2:client', () => {
-                console.log('Google API loaded, initializing client...');
-                
-                gapi.client.init({
-                    apiKey: window.GOOGLE_CONFIG.apiKey,
-                    clientId: window.GOOGLE_CONFIG.clientId,
-                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
-                    scope: 'https://www.googleapis.com/auth/calendar.readonly'
-                }).then(() => {
-                    console.log('Google API initialized successfully');
-                    gapi_loaded = true;
-                    const authInstance = gapi.auth2.getAuthInstance();
-                    isSignedIn = authInstance.isSignedIn.get();
-                    updateAuthUI();
+            // Check if config is available
+            if (!window.GOOGLE_CONFIG) {
+                console.error('Google config not loaded');
+                setTimeout(initializeGapi, 500); // Retry in 500ms
+                return;
+            }
+            
+            gapi.load('auth2:client', {
+                callback: () => {
+                    console.log('Google API modules loaded, initializing client...');
                     
-                    authInstance.isSignedIn.listen(updateAuthUI);
-                }).catch(error => {
-                    console.error('Failed to initialize Google API:', error);
-                    alert('Failed to initialize Google API. Check browser console for details.');
-                });
+                    gapi.client.init({
+                        apiKey: window.GOOGLE_CONFIG.apiKey,
+                        clientId: window.GOOGLE_CONFIG.clientId,
+                        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
+                        scope: 'https://www.googleapis.com/auth/calendar.readonly'
+                    }).then(() => {
+                        console.log('Google API initialized successfully');
+                        gapi_loaded = true;
+                        const authInstance = gapi.auth2.getAuthInstance();
+                        isSignedIn = authInstance.isSignedIn.get();
+                        updateAuthUI();
+                        
+                        authInstance.isSignedIn.listen(updateAuthUI);
+                        
+                        // Update button text to show ready state
+                        const authButton = document.getElementById('authButton');
+                        if (!isSignedIn && authButton.textContent.includes('loading')) {
+                            authButton.innerHTML = '<i class="fab fa-google mr-2"></i>Connect Google';
+                        }
+                    }).catch(error => {
+                        console.error('Failed to initialize Google API:', error);
+                        gapi_loaded = false;
+                        
+                        // Show user-friendly error message
+                        const authButton = document.getElementById('authButton');
+                        authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Setup Required';
+                        authButton.disabled = true;
+                        
+                        // More specific error handling
+                        if (error.error && error.error === 'idpiframe_initialization_failed') {
+                            alert('Google OAuth setup issue: Please ensure your domain is properly configured in Google Cloud Console.');
+                        } else {
+                            alert('Failed to initialize Google API: ' + (error.details || error.error || error));
+                        }
+                    });
+                },
+                onerror: () => {
+                    console.error('Failed to load Google API modules');
+                    const authButton = document.getElementById('authButton');
+                    authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>API Error';
+                    authButton.disabled = true;
+                }
             });
         }
         
@@ -698,8 +732,13 @@
             // Set default theme
             document.querySelector('.theme-btn[data-theme="sage"]').classList.add('border-purple-500');
             
-            // Initialize Google API when page loads (after a short delay to ensure config is loaded)
-            setTimeout(initializeGapi, 100);
+            // Show loading state initially
+            const authButton = document.getElementById('authButton');
+            authButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+            authButton.disabled = true;
+            
+            // Initialize Google API when page loads (after a delay to ensure all resources are loaded)
+            setTimeout(initializeGapi, 1000);
         });
     </script>
 </body>
