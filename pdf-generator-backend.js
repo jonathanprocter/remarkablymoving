@@ -596,7 +596,7 @@ function getOptimizedCSS() {
 }
 
 function generateWeeklyPage(weekData, weekDays, eventManager) {
-  const timeSlots = generateTimeSlots(9, 17, 60); // 9 AM to 5 PM business hours (9 slots)
+  const timeSlots = generateTimeSlots(9, 17, 30); // 9 AM to 5 PM business hours with 30-min intervals (17 slots)
   
   return `
     <div class="page weekly-page">
@@ -653,7 +653,7 @@ function generateDailyPages(weekData, weekDays, eventManager) {
 }
 
 function generateDailyPage(weekData, day, eventManager) {
-  const timeSlots = generateTimeSlots(7, 22, 60); // 7 AM to 10 PM, hourly intervals (16 slots)
+  const timeSlots = generateTimeSlots(7, 22, 30); // 7 AM to 10 PM, 30-minute intervals (31 slots)
   const dayEvents = eventManager ? eventManager.getDailyEvents(day.key) : (weekData.events?.[day.key] || []);
   const dayAbbr = day.key.substring(0, 3);
   
@@ -726,7 +726,7 @@ function getWeeklyEventsForTimeSlot(weekData, dayKey, timeSlot) {
   const dayEvents = weekData.events?.[dayKey] || [];
   const [hour, minute] = timeSlot.split(':').map(Number);
   const slotTime = hour * 60 + minute;
-  const slotEndTime = slotTime + 60; // Full hour slot
+  const slotEndTime = slotTime + 30; // 30-minute slot
   
   return dayEvents
     .filter(event => {
@@ -734,7 +734,7 @@ function getWeeklyEventsForTimeSlot(weekData, dayKey, timeSlot) {
       const eventStartTime = eventHour * 60 + eventMinute;
       const eventEndTime = eventStartTime + (event.duration || 60);
       
-      // Show event if it overlaps with this hour slot and is within business hours
+      // Show event if it overlaps with this 30-min slot and is within business hours
       return (eventStartTime < slotEndTime && eventEndTime > slotTime) && 
              (eventHour >= 9 && eventHour <= 17);
     })
@@ -749,14 +749,14 @@ function getWeeklyEventsForTimeSlot(weekData, dayKey, timeSlot) {
 function getDailyEventsForTime(events, timeSlot) {
   const [hour, minute] = timeSlot.split(':').map(Number);
   const slotTime = hour * 60 + minute;
-  const slotEndTime = slotTime + 60; // Hour slot
+  const slotEndTime = slotTime + 30; // 30-minute slot
   
   return events
     .filter(event => {
       const [eventHour, eventMinute] = (event.time || '09:00').split(':').map(Number);
       const eventStartTime = eventHour * 60 + eventMinute;
       const eventEndTime = eventStartTime + (event.duration || 60);
-      // Show events that start in or overlap with this hour
+      // Show events that start in or overlap with this 30-min slot
       return (eventStartTime >= slotTime && eventStartTime < slotEndTime) ||
              (eventStartTime < slotTime && eventEndTime > slotTime);
     })
