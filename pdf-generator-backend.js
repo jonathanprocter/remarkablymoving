@@ -76,22 +76,13 @@ router.post('/generate-planner-pdf', async (req, res) => {
     // Generate PDF with reMarkable Pro Move dimensions
     // Optimized for 7.3" screen (91mm × 163mm)
     const pdf = await page.pdf({
-      format: 'custom',
       width: '91mm',
       height: '163mm',
       printBackground: true,
       preferCSSPageSize: true,
       displayHeaderFooter: false,
       margin: { top: '0', right: '0', bottom: '0', left: '0' },
-      
-      // reMarkable specific optimizations
-      omitBackground: false,
       scale: 1.0,
-      
-      // Ensure crisp rendering for e-ink
-      quality: 100,
-      
-      // Page break handling
       pageRanges: '1-8'
     });
     
