@@ -78,12 +78,12 @@
             background: #ffffff;
             padding: 0;
             min-height: 15px;
-            max-height: 16px;
+            height: 16px;
             border-right: 1px solid #dddddd;
             border-bottom: 1px solid #f0f0f0;
             position: relative;
             font-size: 7px;
-            overflow: hidden;
+            overflow: visible; /* Changed to visible to allow spanning */
         }
 
         .franklin-day-cell.hour-start {
@@ -91,25 +91,33 @@
         }
 
         .franklin-event {
-            background: #e8e8e8;
-            border-left: 2px solid #333333;
-            padding: 0px 1px;
+            background: #4a90e2;
+            border-left: 3px solid #2c5282;
+            color: white;
+            padding: 2px 3px;
             margin: 0;
-            font-size: 6px;
-            font-weight: bold;
+            font-size: 7px;
+            font-weight: 500;
             text-overflow: ellipsis;
             overflow: hidden;
-            white-space: nowrap;
-            line-height: 1.0;
+            white-space: normal;
+            line-height: 1.2;
             cursor: pointer;
-            transition: background-color 0.2s;
-            display: block;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
             box-sizing: border-box;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
         }
 
         .franklin-event:hover {
-            background: #d0d0d0;
-            border-left-color: #000000;
+            background: #357abd;
+            border-left-color: #1a3a52;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+            transform: translateX(1px);
         }
 
         .franklin-priority-section {
@@ -1305,28 +1313,35 @@
                     const startTime = event.start.dateTime ?
                         startDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) :
                         '';
-                    eventEl.textContent = event.summary || 'Event';
+                    
+                    // Create formatted content with time and title
+                    const eventContent = `<div style="font-size: 6px; font-weight: bold;">${startTime}</div><div style="font-size: 7px; margin-top: 1px;">${event.summary || 'Event'}</div>`;
+                    eventEl.innerHTML = eventContent;
                     eventEl.title = `${startTime} ${event.summary || 'Event'}\nDuration: ${durationMinutes} min\nClick to view day details`;
 
-                    // Make event span multiple rows based on duration
+                    // Always position events absolutely to create proper visual blocks
+                    eventEl.style.position = 'absolute';
+                    eventEl.style.width = 'calc(100% - 2px)';
+                    eventEl.style.left = '1px';
+                    eventEl.style.top = '0';
+                    eventEl.style.zIndex = '10';
+                    eventEl.style.boxSizing = 'border-box';
+                    
+                    // Calculate height based on duration
                     if (actualNumSlots > 1) {
-                        // Position the event absolutely to span multiple cells
-                        eventEl.style.position = 'absolute';
-                        // Fix: Ensure proper height calculation for hour-long events
-                        eventEl.style.height = `${(actualNumSlots * 16) - 1}px`; // 16px per 30-min slot
-                        eventEl.style.width = 'calc(100% - 1px)';
-                        eventEl.style.zIndex = '10';
-                        eventEl.style.top = '0';
-                        eventEl.style.left = '0';
-                        eventEl.style.boxSizing = 'border-box';
-                        eventEl.style.display = 'flex';
-                        eventEl.style.alignItems = 'center';
-                        eventEl.style.justifyContent = 'center';
-                        eventEl.style.textAlign = 'center';
-                        eventEl.style.lineHeight = '1';
-                        cell.style.position = 'relative';
+                        // Multi-slot events: calculate total height spanning all slots
+                        const totalHeight = (actualNumSlots * 16) - 1; // 16px per 30-min slot
+                        eventEl.style.height = `${totalHeight}px`;
+                    } else {
+                        // Single-slot events: fill the cell
+                        eventEl.style.height = '15px';
+                    }
+                    
+                    // Ensure parent cell has position relative
+                    cell.style.position = 'relative';
 
-                        // Clear cells below to prevent overlap
+                    // Clear cells below to prevent overlap for multi-slot events
+                    if (actualNumSlots > 1) {
                         let clearHour = startHour;
                         let clearMinute = startMinute;
                         for (let i = 1; i < actualNumSlots; i++) {
