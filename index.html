@@ -1560,47 +1560,255 @@
         // Generate PDF
         function generatePDF() {
             const { jsPDF } = window.jspdf;
+            
+            // Create PDF with reMarkable Pro dimensions (4:3 aspect ratio)
             const doc = new jsPDF({
                 orientation: 'landscape',
                 unit: 'px',
-                format: [2880, 2160]
+                format: [2880, 2160] // reMarkable Pro resolution
             });
 
-            // This is a simplified PDF generation
-            // In a real implementation, you would render each page with proper layout
-            for (let page = 0; page < 8; page++) {
-                if (page > 0) doc.addPage();
-
-                doc.setFontSize(24);
-                if (page === 0) {
-                    doc.text('reMarkable Pro Move - Weekly Overview', 100, 100);
-                } else {
-                    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                    doc.text(`reMarkable Pro Move - ${days[page - 1]}`, 100, 100);
-                }
-
-                // Add grid lines and template structure
-                doc.setDrawColor(128, 128, 128);
-                doc.setLineWidth(1);
-
-                // Draw basic grid structure
-                for (let i = 0; i < 24; i++) {
-                    const y = 200 + (i * 60);
-                    doc.line(50, y, 2800, y);
-                    doc.text(`${i.toString().padStart(2, '0')}:00`, 20, y + 15);
-                }
-
-                // Add vertical lines for time blocks
-                for (let i = 0; i < 7; i++) {
-                    const x = 300 + (i * 350);
-                    doc.line(x, 150, x, 2000);
+            const weekStart = document.getElementById('weekStart').value || new Date().toISOString().split('T')[0];
+            const startDate = new Date(weekStart);
+            
+            // Page 1: Weekly Overview
+            generateWeeklyPDFPage(doc, startDate);
+            
+            // Pages 2-8: Daily views for each day of the week
+            for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+                doc.addPage();
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + dayOffset);
+                generateDailyPDFPage(doc, currentDate, dayOffset);
+            }
+            
+            // Save the PDF
+            doc.save(`remarkable_calendar_${weekStart}.pdf`);
+            updateLastUpdateTime();
+        }
+        
+        // Generate weekly overview page for PDF
+        function generateWeeklyPDFPage(doc, startDate) {
+            // Title
+            doc.setFont('courier', 'bold');
+            doc.setFontSize(32);
+            doc.text('Weekly Overview', 1440, 100, { align: 'center' });
+            
+            // Week dates
+            doc.setFontSize(20);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+            doc.text(`${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, 1440, 140, { align: 'center' });
+            
+            // Time slots (30-minute intervals from 07:00 to 22:00)
+            const timeSlots = [];
+            for (let hour = 7; hour <= 22; hour++) {
+                timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+                if (hour < 22) {
+                    timeSlots.push(`${hour.toString().padStart(2, '0')}:30`);
                 }
             }
-
-            const weekStart = document.getElementById('weekStart').value || new Date().toISOString().split('T')[0];
-            doc.save(`remarkable_calendar_${weekStart}.pdf`);
-
-            updateLastUpdateTime();
+            
+            // Grid setup
+            const gridStartX = 150;
+            const gridStartY = 200;
+            const timeColWidth = 100;
+            const dayColWidth = 360;
+            const rowHeight = 50; // Height for each 30-minute slot
+            
+            // Draw time column
+            doc.setFontSize(12);
+            doc.setFont('courier', 'normal');
+            timeSlots.forEach((time, index) => {
+                const y = gridStartY + (index * rowHeight) + 30;
+                doc.text(time, gridStartX - 10, y, { align: 'right' });
+                
+                // Draw horizontal grid lines
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.5);
+                doc.line(gridStartX, gridStartY + (index * rowHeight), gridStartX + timeColWidth + (7 * dayColWidth), gridStartY + (index * rowHeight));
+            });
+            
+            // Draw day columns
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            days.forEach((day, dayIndex) => {
+                const x = gridStartX + timeColWidth + (dayIndex * dayColWidth);
+                
+                // Day headers
+                doc.setFont('courier', 'bold');
+                doc.setFontSize(16);
+                doc.text(day, x + (dayColWidth / 2), gridStartY - 20, { align: 'center' });
+                
+                // Date
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + dayIndex);
+                doc.setFontSize(12);
+                doc.text(currentDate.toLocaleDateString(), x + (dayColWidth / 2), gridStartY - 5, { align: 'center' });
+                
+                // Vertical lines
+                doc.setDrawColor(150, 150, 150);
+                doc.setLineWidth(1);
+                doc.line(x, gridStartY - 40, x, gridStartY + (timeSlots.length * rowHeight));
+                
+                // Add events for this day
+                if (weeklyEvents[dayIndex]) {
+                    doc.setFont('courier', 'normal');
+                    doc.setFontSize(10);
+                    
+                    weeklyEvents[dayIndex].forEach(event => {
+                        const eventStart = new Date(event.start);
+                        const eventHour = eventStart.getHours();
+                        const eventMinute = eventStart.getMinutes();
+                        
+                        if (eventHour >= 7 && eventHour <= 22) {
+                            const slotIndex = (eventHour - 7) * 2 + (eventMinute >= 30 ? 1 : 0);
+                            const y = gridStartY + (slotIndex * rowHeight) + 20;
+                            
+                            // Draw event box
+                            doc.setFillColor(230, 230, 230);
+                            doc.rect(x + 5, y - 15, dayColWidth - 10, rowHeight - 5, 'F');
+                            
+                            // Draw event text
+                            doc.setTextColor(0, 0, 0);
+                            const eventTime = eventStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const eventText = `${eventTime} ${event.title}`;
+                            doc.text(eventText, x + 10, y, { maxWidth: dayColWidth - 20 });
+                        }
+                    });
+                }
+            });
+            
+            // Bottom border
+            doc.setDrawColor(100, 100, 100);
+            doc.setLineWidth(2);
+            doc.line(gridStartX, gridStartY + (timeSlots.length * rowHeight), gridStartX + timeColWidth + (7 * dayColWidth), gridStartY + (timeSlots.length * rowHeight));
+        }
+        
+        // Generate daily page for PDF
+        function generateDailyPDFPage(doc, date, dayIndex) {
+            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            // Title
+            doc.setFont('courier', 'bold');
+            doc.setFontSize(32);
+            doc.text(dayNames[dayIndex], 1440, 100, { align: 'center' });
+            
+            // Date
+            doc.setFontSize(20);
+            doc.text(date.toLocaleDateString(), 1440, 140, { align: 'center' });
+            
+            // Time slots (30-minute intervals)
+            const gridStartX = 200;
+            const gridStartY = 200;
+            const timeColWidth = 150;
+            const scheduleWidth = 1000;
+            const notesWidth = 800;
+            const rowHeight = 55;
+            
+            // Schedule section
+            doc.setFontSize(18);
+            doc.text('Schedule', gridStartX + timeColWidth + (scheduleWidth / 2), gridStartY - 30, { align: 'center' });
+            
+            // Notes section
+            doc.text('Notes & Actions', gridStartX + timeColWidth + scheduleWidth + (notesWidth / 2), gridStartY - 30, { align: 'center' });
+            
+            // Draw time slots and grid
+            for (let hour = 7; hour <= 22; hour++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    if (hour === 22 && minute === 30) break; // Stop at 22:00
+                    
+                    const slotIndex = (hour - 7) * 2 + (minute / 30);
+                    const y = gridStartY + (slotIndex * rowHeight);
+                    
+                    // Time label
+                    doc.setFont('courier', 'normal');
+                    doc.setFontSize(14);
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    doc.text(timeStr, gridStartX - 10, y + 35, { align: 'right' });
+                    
+                    // Horizontal lines
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.5);
+                    doc.line(gridStartX, y, gridStartX + timeColWidth + scheduleWidth + notesWidth, y);
+                    
+                    // Hour markers (thicker line)
+                    if (minute === 0) {
+                        doc.setLineWidth(1);
+                        doc.setDrawColor(150, 150, 150);
+                        doc.line(gridStartX, y, gridStartX + timeColWidth + scheduleWidth + notesWidth, y);
+                    }
+                }
+            }
+            
+            // Vertical dividers
+            doc.setLineWidth(2);
+            doc.setDrawColor(100, 100, 100);
+            // Time column divider
+            doc.line(gridStartX + timeColWidth, gridStartY - 50, gridStartX + timeColWidth, gridStartY + (31 * rowHeight));
+            // Schedule/Notes divider
+            doc.line(gridStartX + timeColWidth + scheduleWidth, gridStartY - 50, gridStartX + timeColWidth + scheduleWidth, gridStartY + (31 * rowHeight));
+            
+            // Add events for this day
+            if (weeklyEvents[dayIndex]) {
+                doc.setFont('courier', 'normal');
+                doc.setFontSize(12);
+                
+                weeklyEvents[dayIndex].forEach(event => {
+                    const eventStart = new Date(event.start);
+                    const eventHour = eventStart.getHours();
+                    const eventMinute = eventStart.getMinutes();
+                    
+                    if (eventHour >= 7 && eventHour <= 22) {
+                        const slotIndex = (eventHour - 7) * 2 + (eventMinute >= 30 ? 1 : 0);
+                        const y = gridStartY + (slotIndex * rowHeight) + 25;
+                        
+                        // Draw event in schedule column
+                        doc.setFillColor(230, 230, 230);
+                        doc.rect(gridStartX + timeColWidth + 10, y - 20, scheduleWidth - 20, rowHeight - 10, 'F');
+                        
+                        // Event text
+                        doc.setTextColor(0, 0, 0);
+                        const eventTime = eventStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const eventText = `${eventTime} - ${event.title}`;
+                        doc.text(eventText, gridStartX + timeColWidth + 20, y, { maxWidth: scheduleWidth - 40 });
+                        
+                        // Location if available
+                        if (event.location) {
+                            doc.setFontSize(10);
+                            doc.text(event.location, gridStartX + timeColWidth + 20, y + 15, { maxWidth: scheduleWidth - 40 });
+                        }
+                    }
+                });
+            }
+            
+            // Add sections at bottom
+            const bottomY = gridStartY + (31 * rowHeight) + 50;
+            
+            // Habit tracker section
+            doc.setFont('courier', 'bold');
+            doc.setFontSize(16);
+            doc.text('Daily Habits', 300, bottomY);
+            doc.setLineWidth(0.5);
+            for (let i = 0; i < 5; i++) {
+                doc.rect(300, bottomY + 10 + (i * 30), 20, 20);
+                doc.line(330, bottomY + 20 + (i * 30), 600, bottomY + 20 + (i * 30));
+            }
+            
+            // Energy levels section
+            doc.text('Energy Levels', 900, bottomY);
+            const energyTimes = ['Morning', 'Afternoon', 'Evening'];
+            energyTimes.forEach((time, index) => {
+                doc.text(time, 900, bottomY + 30 + (index * 30));
+                for (let level = 1; level <= 5; level++) {
+                    doc.circle(1050 + (level * 30), bottomY + 25 + (index * 30), 10);
+                }
+            });
+            
+            // Decision log section
+            doc.text('Key Decisions', 1500, bottomY);
+            for (let i = 0; i < 3; i++) {
+                doc.line(1500, bottomY + 20 + (i * 40), 2200, bottomY + 20 + (i * 40));
+            }
         }
 
         // Deploy to Replit
