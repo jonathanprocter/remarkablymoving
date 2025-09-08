@@ -603,17 +603,17 @@ function generateWeeklyPage(weekData, weekDays, eventManager) {
                 <span>WEEK OF ${weekDays[0].date}</span>
             </div>
             
-            <div class="weekly-main">
+            <div class="weekly-content">
                 <div class="weekly-grid">
-                    <div class="time-header">TIME</div>
-                    ${weekDays.map(day => `<div class="day-header">${day.name.substring(0, 3).toUpperCase()}</div>`).join('')}
+                    <div class="grid-cell header-cell">TIME</div>
+                    ${weekDays.map(day => `<div class="grid-cell header-cell">${day.name.substring(0, 3).toUpperCase()}</div>`).join('')}
                     
                     ${timeSlots.map(time => {
                       const timeStr = time.replace(':', '');
                       return `
-                        <div class="time-label">${time}</div>
+                        <div class="grid-cell time-cell">${time}</div>
                         ${weekDays.map(day => `
-                            <div class="event-cell" id="w-${day.key.substring(0, 3)}-${timeStr}" data-day="${day.key.substring(0, 3)}" data-time="${time}">
+                            <div class="grid-cell event-cell" id="w-${day.key.substring(0, 3)}-${timeStr}" data-day="${day.key.substring(0, 3)}" data-time="${time}">
                                 ${getWeeklyEventsForTimeSlot(weekData, day.key, time)}
                             </div>
                         `).join('')}
@@ -622,18 +622,22 @@ function generateWeeklyPage(weekData, weekDays, eventManager) {
                 </div>
                 
                 <div class="weekly-sidebar">
-                    <div class="priority-section">
+                    <div class="tasks-section">
                         <h3>PRIORITY TASKS</h3>
-                        ${(weekData.priorityTasks || ['Follow up on client contracts', 'Prepare quarterly review materials', 'Update team schedules', 'Review project deliverables', 'Schedule follow-up meetings']).slice(0, 5).map((task, i) => 
-                            `<div class="task-item" id="task-${i+1}">${task}</div>`
-                        ).join('')}
+                        <div class="task-list">
+                            ${(weekData.priorityTasks || ['Follow up on client contracts', 'Prepare quarterly review materials', 'Update team schedules', 'Review project deliverables', 'Schedule follow-up meetings']).slice(0, 5).map((task, i) => 
+                                `<div class="task-item" id="task-${i+1}">${task}</div>`
+                            ).join('')}
+                        </div>
                     </div>
                     
                     <div class="goals-section">
                         <h3>WEEKLY GOALS</h3>
-                        ${(weekData.weeklyGoals || ['Complete all scheduled appointments', 'Review and update project timelines', 'Prepare for upcoming presentations']).slice(0, 3).map(goal => 
-                            `<div class="goal-item">${goal}</div>`
-                        ).join('')}
+                        <div class="goal-list">
+                            ${(weekData.weeklyGoals || ['Complete all scheduled appointments', 'Review and update project timelines', 'Prepare for upcoming presentations']).slice(0, 3).map(goal => 
+                                `<div class="goal-item">${goal}</div>`
+                            ).join('')}
+                        </div>
                     </div>
                 </div>
             </div>
