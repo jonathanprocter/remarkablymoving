@@ -21,13 +21,13 @@
         .franklin-weekly-grid {
             display: grid;
             grid-template-columns: 45px repeat(7, minmax(60px, 1fr));
-            grid-template-rows: auto repeat(16, 20px);
+            grid-template-rows: auto repeat(31, 15px);
             gap: 0;
             background: #333333;
             border: 1px solid #333333;
             font-family: 'Courier New', monospace;
             overflow: auto;
-            max-height: 380px;
+            max-height: 400px;
             width: 100%;
         }
         .franklin-daily-grid {
@@ -60,19 +60,25 @@
             font-weight: bold;
             text-align: center;
             border-right: 1px solid #333333;
-            border-bottom: 1px solid #eeeeee;
-            height: 20px;
-            line-height: 18px;
+            border-bottom: 1px solid #f0f0f0;
+            height: 15px;
+            line-height: 13px;
+        }
+        .franklin-time-label.hour-start {
+            border-bottom: 1px solid #cccccc;
         }
         .franklin-day-cell {
             background: #ffffff;
-            padding: 1px;
-            min-height: 18px;
+            padding: 0;
+            min-height: 14px;
             border-right: 1px solid #dddddd;
-            border-bottom: 1px solid #eeeeee;
+            border-bottom: 1px solid #f0f0f0;
             position: relative;
             font-size: 6px;
-            overflow: hidden;
+            overflow: visible;
+        }
+        .franklin-day-cell.hour-start {
+            border-bottom: 1px solid #cccccc;
         }
         .franklin-event {
             background: #e8e8e8;
@@ -324,164 +330,314 @@
                                     <div class="franklin-day-header">SUN</div>
                                     
                                     <!-- 07:00 Row -->
-                                    <div class="franklin-time-label">07:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-7"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-7"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-7"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-7"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-7"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-7"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-7"></div>
+                                    <div class="franklin-time-label hour-start">07:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-7-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-7-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-7-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-7-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-7-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-7-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-7-0"></div>
+                                    
+                                    <!-- 07:30 Row -->
+                                    <div class="franklin-time-label">07:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-7-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-7-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-7-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-7-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-7-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-7-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-7-30"></div>
                                     
                                     <!-- 08:00 Row -->
-                                    <div class="franklin-time-label">08:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-8"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-8"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-8"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-8"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-8"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-8"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-8"></div>
+                                    <div class="franklin-time-label hour-start">08:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-8-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-8-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-8-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-8-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-8-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-8-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-8-0"></div>
+                                    
+                                    <!-- 08:30 Row -->
+                                    <div class="franklin-time-label">08:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-8-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-8-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-8-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-8-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-8-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-8-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-8-30"></div>
                                     
                                     <!-- 09:00 Row -->
-                                    <div class="franklin-time-label">09:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-9"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-9"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-9"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-9"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-9"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-9"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-9"></div>
+                                    <div class="franklin-time-label hour-start">09:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-9-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-9-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-9-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-9-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-9-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-9-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-9-0"></div>
+                                    
+                                    <!-- 09:30 Row -->
+                                    <div class="franklin-time-label">09:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-9-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-9-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-9-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-9-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-9-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-9-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-9-30"></div>
                                     
                                     <!-- 10:00 Row -->
-                                    <div class="franklin-time-label">10:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-10"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-10"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-10"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-10"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-10"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-10"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-10"></div>
+                                    <div class="franklin-time-label hour-start">10:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-10-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-10-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-10-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-10-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-10-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-10-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-10-0"></div>
+                                    
+                                    <!-- 10:30 Row -->
+                                    <div class="franklin-time-label">10:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-10-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-10-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-10-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-10-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-10-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-10-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-10-30"></div>
                                     
                                     <!-- 11:00 Row -->
-                                    <div class="franklin-time-label">11:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-11"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-11"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-11"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-11"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-11"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-11"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-11"></div>
+                                    <div class="franklin-time-label hour-start">11:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-11-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-11-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-11-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-11-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-11-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-11-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-11-0"></div>
+                                    
+                                    <!-- 11:30 Row -->
+                                    <div class="franklin-time-label">11:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-11-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-11-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-11-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-11-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-11-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-11-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-11-30"></div>
                                     
                                     <!-- 12:00 Row -->
-                                    <div class="franklin-time-label">12:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-12"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-12"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-12"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-12"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-12"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-12"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-12"></div>
+                                    <div class="franklin-time-label hour-start">12:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-12-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-12-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-12-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-12-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-12-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-12-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-12-0"></div>
+                                    
+                                    <!-- 12:30 Row -->
+                                    <div class="franklin-time-label">12:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-12-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-12-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-12-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-12-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-12-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-12-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-12-30"></div>
                                     
                                     <!-- 13:00 Row -->
-                                    <div class="franklin-time-label">13:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-13"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-13"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-13"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-13"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-13"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-13"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-13"></div>
+                                    <div class="franklin-time-label hour-start">13:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-13-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-13-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-13-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-13-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-13-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-13-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-13-0"></div>
+                                    
+                                    <!-- 13:30 Row -->
+                                    <div class="franklin-time-label">13:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-13-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-13-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-13-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-13-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-13-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-13-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-13-30"></div>
                                     
                                     <!-- 14:00 Row -->
-                                    <div class="franklin-time-label">14:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-14"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-14"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-14"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-14"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-14"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-14"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-14"></div>
+                                    <div class="franklin-time-label hour-start">14:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-14-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-14-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-14-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-14-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-14-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-14-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-14-0"></div>
+                                    
+                                    <!-- 14:30 Row -->
+                                    <div class="franklin-time-label">14:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-14-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-14-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-14-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-14-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-14-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-14-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-14-30"></div>
                                     
                                     <!-- 15:00 Row -->
-                                    <div class="franklin-time-label">15:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-15"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-15"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-15"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-15"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-15"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-15"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-15"></div>
+                                    <div class="franklin-time-label hour-start">15:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-15-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-15-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-15-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-15-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-15-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-15-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-15-0"></div>
+                                    
+                                    <!-- 15:30 Row -->
+                                    <div class="franklin-time-label">15:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-15-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-15-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-15-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-15-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-15-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-15-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-15-30"></div>
                                     
                                     <!-- 16:00 Row -->
-                                    <div class="franklin-time-label">16:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-16"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-16"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-16"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-16"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-16"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-16"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-16"></div>
+                                    <div class="franklin-time-label hour-start">16:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-16-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-16-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-16-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-16-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-16-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-16-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-16-0"></div>
+                                    
+                                    <!-- 16:30 Row -->
+                                    <div class="franklin-time-label">16:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-16-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-16-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-16-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-16-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-16-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-16-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-16-30"></div>
                                     
                                     <!-- 17:00 Row -->
-                                    <div class="franklin-time-label">17:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-17"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-17"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-17"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-17"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-17"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-17"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-17"></div>
+                                    <div class="franklin-time-label hour-start">17:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-17-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-17-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-17-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-17-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-17-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-17-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-17-0"></div>
+                                    
+                                    <!-- 17:30 Row -->
+                                    <div class="franklin-time-label">17:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-17-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-17-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-17-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-17-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-17-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-17-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-17-30"></div>
                                     
                                     <!-- 18:00 Row -->
-                                    <div class="franklin-time-label">18:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-18"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-18"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-18"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-18"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-18"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-18"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-18"></div>
+                                    <div class="franklin-time-label hour-start">18:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-18-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-18-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-18-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-18-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-18-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-18-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-18-0"></div>
+                                    
+                                    <!-- 18:30 Row -->
+                                    <div class="franklin-time-label">18:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-18-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-18-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-18-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-18-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-18-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-18-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-18-30"></div>
                                     
                                     <!-- 19:00 Row -->
-                                    <div class="franklin-time-label">19:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-19"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-19"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-19"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-19"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-19"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-19"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-19"></div>
+                                    <div class="franklin-time-label hour-start">19:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-19-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-19-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-19-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-19-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-19-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-19-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-19-0"></div>
+                                    
+                                    <!-- 19:30 Row -->
+                                    <div class="franklin-time-label">19:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-19-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-19-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-19-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-19-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-19-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-19-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-19-30"></div>
                                     
                                     <!-- 20:00 Row -->
-                                    <div class="franklin-time-label">20:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-20"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-20"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-20"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-20"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-20"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-20"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-20"></div>
+                                    <div class="franklin-time-label hour-start">20:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-20-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-20-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-20-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-20-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-20-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-20-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-20-0"></div>
+                                    
+                                    <!-- 20:30 Row -->
+                                    <div class="franklin-time-label">20:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-20-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-20-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-20-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-20-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-20-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-20-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-20-30"></div>
                                     
                                     <!-- 21:00 Row -->
-                                    <div class="franklin-time-label">21:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-21"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-21"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-21"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-21"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-21"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-21"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-21"></div>
+                                    <div class="franklin-time-label hour-start">21:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-21-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-21-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-21-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-21-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-21-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-21-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-21-0"></div>
+                                    
+                                    <!-- 21:30 Row -->
+                                    <div class="franklin-time-label">21:30</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-21-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-21-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-21-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-21-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-21-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-21-30"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-21-30"></div>
                                     
                                     <!-- 22:00 Row -->
-                                    <div class="franklin-time-label">22:00</div>
-                                    <div class="franklin-day-cell" id="weekly-mon-22"></div>
-                                    <div class="franklin-day-cell" id="weekly-tue-22"></div>
-                                    <div class="franklin-day-cell" id="weekly-wed-22"></div>
-                                    <div class="franklin-day-cell" id="weekly-thu-22"></div>
-                                    <div class="franklin-day-cell" id="weekly-fri-22"></div>
-                                    <div class="franklin-day-cell" id="weekly-sat-22"></div>
-                                    <div class="franklin-day-cell" id="weekly-sun-22"></div>
+                                    <div class="franklin-time-label hour-start">22:00</div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-mon-22-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-tue-22-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-wed-22-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-thu-22-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-fri-22-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sat-22-0"></div>
+                                    <div class="franklin-day-cell hour-start" id="weekly-sun-22-0"></div>
                                 </div>
                                 
                                 <!-- Franklin Priority Sections -->
@@ -977,13 +1133,16 @@
                 weekRangeEl.textContent = `Week of ${weekStart.toLocaleDateString('en-US', options)}`;
             }
             
-            // Clear all day cells first (all hours from 7 to 22)
+            // Clear all day cells first (30-minute slots from 7:00 to 22:00)
             const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
             for (let hour = 7; hour <= 22; hour++) {
-                days.forEach(day => {
-                    const cell = document.getElementById(`weekly-${day}-${hour}`);
-                    if (cell) cell.innerHTML = '';
-                });
+                for (let minute of [0, 30]) {
+                    if (hour === 22 && minute === 30) continue; // Stop at 22:00
+                    days.forEach(day => {
+                        const cell = document.getElementById(`weekly-${day}-${hour}-${minute}`);
+                        if (cell) cell.innerHTML = '';
+                    });
+                }
             }
             
             // Filter events for current week
@@ -995,44 +1154,76 @@
             
             console.log(`📅 Displaying ${weekEvents.length} events in weekly view for week of ${weekStart.toDateString()}`);
             
-            // Place events in appropriate time/day cells
+            // Place events in appropriate time/day cells with 30-minute slots and duration spanning
             weekEvents.forEach(event => {
-                const eventDate = new Date(event.start.dateTime || event.start.date);
-                const dayOfWeek = eventDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
-                const hour = event.start.dateTime ? eventDate.getHours() : 9; // Default to 9am for all-day events
+                const startDate = new Date(event.start.dateTime || event.start.date);
+                const endDate = new Date(event.end.dateTime || event.end.date);
+                const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
                 
-                // Map day of week to our day names (corrected for grid layout)
+                // Calculate event duration in minutes
+                const durationMs = endDate - startDate;
+                const durationMinutes = Math.max(30, Math.round(durationMs / 60000)); // Minimum 30 minutes
+                const numSlots = Math.ceil(durationMinutes / 30); // How many 30-minute slots to span
+                
+                // Get start time components
+                const hour = event.start.dateTime ? startDate.getHours() : 9;
+                const minute = event.start.dateTime ? startDate.getMinutes() : 0;
+                
+                // Map day of week to our day names
                 const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
                 const dayName = dayNames[dayOfWeek];
                 
-                // Use exact hour for placement (within 7-22 range)
-                let timeSlot = hour;
-                if (hour < 7) timeSlot = 7;
-                if (hour > 22) timeSlot = 22;
+                // Round to nearest 30-minute slot
+                const roundedMinute = minute < 30 ? 0 : 30;
                 
-                const cellId = `weekly-${dayName}-${timeSlot}`;
+                // Create cell ID based on 30-minute slots
+                let startHour = hour;
+                let startMinute = roundedMinute;
+                
+                // Constrain to 7-22 range
+                if (startHour < 7) {
+                    startHour = 7;
+                    startMinute = 0;
+                }
+                if (startHour > 22 || (startHour === 22 && startMinute > 0)) {
+                    startHour = 22;
+                    startMinute = 0;
+                }
+                
+                const cellId = `weekly-${dayName}-${startHour}-${startMinute}`;
                 const cell = document.getElementById(cellId);
                 
-                console.log(`📍 Event "${event.summary}" on ${eventDate.toDateString()} (${dayName}) at ${hour}:00 -> ${cellId}`);
+                console.log(`📍 Event "${event.summary}" on ${startDate.toDateString()} (${dayName}) at ${startHour}:${startMinute.toString().padStart(2, '0')} -> ${cellId}, spanning ${numSlots} slots`);
                 
                 if (cell) {
                     const eventEl = document.createElement('div');
                     eventEl.className = 'franklin-event';
                     const startTime = event.start.dateTime ? 
-                        eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                        startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
                         '';
                     eventEl.textContent = event.summary || 'Event';
-                    eventEl.title = `${startTime} ${event.summary || 'Event'}\nClick to view day details`;
+                    eventEl.title = `${startTime} ${event.summary || 'Event'}\nDuration: ${durationMinutes} min\nClick to view day details`;
+                    
+                    // Make event span multiple rows based on duration
+                    if (numSlots > 1) {
+                        eventEl.style.position = 'absolute';
+                        eventEl.style.height = `${numSlots * 15 - 2}px`; // 15px per row minus border
+                        eventEl.style.width = 'calc(100% - 2px)';
+                        eventEl.style.zIndex = '1';
+                        eventEl.style.top = '0';
+                        eventEl.style.left = '0';
+                        cell.style.position = 'relative';
+                    }
                     
                     // Add click handler for bidirectional navigation to daily view
                     eventEl.addEventListener('click', (e) => {
                         e.stopPropagation();
                         console.log(`🔗 Navigating from weekly to daily view for: ${event.summary}`);
-                        navigateToDay(eventDate);
+                        navigateToDay(startDate);
                     });
                     
                     // Store event data for reference
-                    eventEl.dataset.eventDate = eventDate.toISOString();
+                    eventEl.dataset.eventDate = startDate.toISOString();
                     eventEl.dataset.eventSummary = event.summary || 'Event';
                     
                     cell.appendChild(eventEl);
