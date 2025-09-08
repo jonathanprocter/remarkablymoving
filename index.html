@@ -464,55 +464,39 @@
             }
         }
 
-        // Handle authentication (Modern Google Identity Services)
+        // Handle authentication (Server-side OAuth)
         function handleAuth() {
             console.log('=== AUTH BUTTON CLICKED ===');
             console.log('gapi_loaded:', gapi_loaded);
             console.log('isSignedIn:', isSignedIn);
-            console.log('tokenClient:', tokenClient);
-            console.log('Current domain:', window.location.hostname);
-            console.log('Client ID being used:', window.GOOGLE_CONFIG?.clientId);
             
-            if (!gapi_loaded || !tokenClient) {
-                console.error('Google API not ready yet');
-                console.log('gapi_loaded:', gapi_loaded, 'tokenClient:', tokenClient);
-                alert('Google API is still loading. Please try again in a moment.');
+            if (!gapi_loaded) {
+                console.error('Backend API not ready yet');
+                alert('Backend is still loading. Please try again in a moment.');
                 return;
             }
             
             if (isSignedIn) {
-                console.log('Signing out...');
-                // Revoke the token
-                if (accessToken) {
-                    google.accounts.oauth2.revoke(accessToken, () => {
-                        console.log('Token revoked');
+                console.log('Logging out...');
+                fetch('/auth/logout', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Logout successful:', data);
+                        isSignedIn = false;
+                        updateAuthUI();
+                        
+                        // Clear calendar list
+                        const calendarListEl = document.getElementById('calendarList');
+                        calendarListEl.innerHTML = '<div class="text-gray-500 text-center py-4">Connect Google Calendar to sync events</div>';
+                    })
+                    .catch(error => {
+                        console.error('Logout error:', error);
+                        alert('Error logging out: ' + error.message);
                     });
-                }
-                
-                // Clear the token
-                gapi.client.setToken(null);
-                accessToken = null;
-                isSignedIn = false;
-                updateAuthUI();
-                
-                // Clear calendar list
-                const calendarListEl = document.getElementById('calendarList');
-                calendarListEl.innerHTML = '<div class="text-gray-500 text-center py-4">Connect Google Calendar to sync events</div>';
-                
             } else {
-                console.log('=== STARTING OAUTH FLOW ===');
-                console.log('About to request access token...');
-                try {
-                    // Request an access token (this will open the OAuth popup)
-                    tokenClient.requestAccessToken({
-                        prompt: 'consent',
-                        hint: 'user@example.com'
-                    });
-                    console.log('requestAccessToken called successfully');
-                } catch (error) {
-                    console.error('Error requesting access token:', error);
-                    alert('Error starting authentication: ' + error.message);
-                }
+                console.log('=== STARTING SERVER-SIDE OAUTH FLOW ===');
+                // Redirect to server-side OAuth endpoint
+                window.location.href = '/auth/google';
             }
         }
 
@@ -751,6 +735,14 @@
 
             // Initialize Google API when page loads (after a delay to ensure all resources are loaded)
             setTimeout(initializeGapi, 1000);
+            
+            // Check for OAuth success parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('auth') === 'success') {
+                console.log('OAuth success detected, will refresh auth status');
+                // Remove the parameter from URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         });
     </script>
 </body>
