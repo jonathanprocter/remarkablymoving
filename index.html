@@ -1219,27 +1219,29 @@
                     // For datetime strings with timezone info
                     startDate = new Date(event.start.dateTime);
                 } else {
-                    // For all-day events (date only), parse as local date
-                    const [year, month, day] = event.start.date.split('-').map(Number);
-                    startDate = new Date(year, month - 1, day); // month is 0-indexed
+                    // For all-day events (date only), parse as local date to avoid timezone shifts
+                    // Use UTC parsing to prevent day shifting
+                    startDate = new Date(event.start.date + 'T00:00:00');
                 }
                 
                 let endDate;
                 if (event.end.dateTime) {
                     endDate = new Date(event.end.dateTime);
                 } else {
-                    const [year, month, day] = event.end.date.split('-').map(Number);
-                    endDate = new Date(year, month - 1, day);
+                    // For all-day events, parse as local date
+                    endDate = new Date(event.end.date + 'T00:00:00');
                 }
                 
+                // Get the correct day of week from the parsed date
                 const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
                 
                 // Debug logging to identify the issue
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                 console.log(`📌 Event: "${event.summary}"`);
                 console.log(`   Raw start: ${event.start.dateTime || event.start.date}`);
                 console.log(`   Parsed date: ${startDate.toString()}`);
-                console.log(`   Day of week: ${dayOfWeek} (0=Sun, 1=Mon, 2=Tue...)`);
-                console.log(`   Will map to: ${dayOfWeek === 0 ? 'sun' : dayOfWeek === 1 ? 'mon' : dayOfWeek === 2 ? 'tue' : dayOfWeek === 3 ? 'wed' : dayOfWeek === 4 ? 'thu' : dayOfWeek === 5 ? 'fri' : 'sat'}`);
+                console.log(`   Actual day: ${dayNames[dayOfWeek]} (getDay=${dayOfWeek})`);
+                console.log(`   Expected column: ${dayNames[dayOfWeek].substring(0, 3).toUpperCase()}`);
 
                 // Calculate event duration in minutes
                 const durationMs = endDate - startDate;
@@ -1255,16 +1257,17 @@
 
                 // Map day of week to our day names
                 // JavaScript getDay(): 0=Sunday, 1=Monday, 2=Tuesday, etc.
-                // Our grid columns: Mon, Tue, Wed, Thu, Fri, Sat, Sun
-                // So we need to shift: Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+                // Our grid columns are arranged: Mon, Tue, Wed, Thu, Fri, Sat, Sun
+                // Grid IDs use: weekly-mon-, weekly-tue-, weekly-wed-, etc.
+                // Fix the mapping to align correctly
                 const dayMapping = {
-                    0: 'sun', // Sunday
-                    1: 'mon', // Monday  
-                    2: 'tue', // Tuesday
-                    3: 'wed', // Wednesday
-                    4: 'thu', // Thursday
-                    5: 'fri', // Friday
-                    6: 'sat'  // Saturday
+                    0: 'sun', // Sunday (getDay=0) -> 'sun' column
+                    1: 'mon', // Monday (getDay=1) -> 'mon' column  
+                    2: 'tue', // Tuesday (getDay=2) -> 'tue' column
+                    3: 'wed', // Wednesday (getDay=3) -> 'wed' column
+                    4: 'thu', // Thursday (getDay=4) -> 'thu' column
+                    5: 'fri', // Friday (getDay=5) -> 'fri' column
+                    6: 'sat'  // Saturday (getDay=6) -> 'sat' column
                 };
                 const dayName = dayMapping[dayOfWeek];
                 
