@@ -390,17 +390,27 @@ def get_events():
         if not calendar_ids:
             return jsonify({"error": "No calendar IDs provided"}), 400
         
-        # Use reasonable date range for the frontend (not the full 15-year range by default)
-        if not time_min:
-            # Default to current week if not specified
-            today = datetime.now()
-            monday = today - timedelta(days=today.weekday())
-            time_min = monday.isoformat() + "Z"
-        if not time_max:
-            # Default to one week after time_min
-            start_date = datetime.fromisoformat(time_min.replace('Z', '+00:00'))
-            end_date = start_date + timedelta(days=7)
-            time_max = end_date.isoformat()
+        # Check if full range is requested
+        load_full_range = request.args.get('full_range', 'false').lower() == 'true'
+        
+        if load_full_range:
+            # Load full historical range (2015-2030)
+            if not time_min:
+                time_min = "2015-01-01T00:00:00Z"
+            if not time_max:
+                time_max = "2030-12-31T23:59:59Z"
+        else:
+            # Use reasonable date range for the frontend (current week by default)
+            if not time_min:
+                # Default to current week if not specified
+                today = datetime.now()
+                monday = today - timedelta(days=today.weekday())
+                time_min = monday.isoformat() + "Z"
+            if not time_max:
+                # Default to one week after time_min
+                start_date = datetime.fromisoformat(time_min.replace('Z', '+00:00'))
+                end_date = start_date + timedelta(days=7)
+                time_max = end_date.isoformat()
         
         # Create credentials object from session
         granted_scopes = session['credentials'].get('scopes', SCOPES)
@@ -415,16 +425,54 @@ def get_events():
         # Fetch events from each selected calendar
         for calendar_id in calendar_ids:
             try:
-                events_result = service.events().list(
-                    calendarId=calendar_id,
-                    timeMin=time_min,
-                    timeMax=time_max,
-                    singleEvents=True,
-                    orderBy='startTime',
-                    maxResults=2500  # Max per request
-                ).execute()
-                
-                events = events_result.get('items', [])
+                if load_full_range:
+                    # For full range, fetch in chunks to avoid API limits
+                    current_time_min = time_min
+                    calendar_events = []
+                    
+                    while current_time_min < time_max:
+                        # Calculate chunk end (1 year at a time to avoid API limits)
+                        chunk_start = datetime.fromisoformat(current_time_min.replace('Z', '+00:00'))
+                        chunk_end = min(
+                            chunk_start + timedelta(days=365),
+                            datetime.fromisoformat(time_max.replace('Z', '+00:00'))
+                        )
+                        
+                        print(f"📅 Fetching events for {calendar_id} from {chunk_start.year}")
+                        
+                        events_result = service.events().list(
+                            calendarId=calendar_id,
+                            timeMin=chunk_start.isoformat(),
+                            timeMax=chunk_end.isoformat(),
+                            singleEvents=True,
+                            orderBy='startTime',
+                            maxResults=2500  # Max per request
+                        ).execute()
+                        
+                        chunk_events = events_result.get('items', [])
+                        calendar_events.extend(chunk_events)
+                        print(f"  📋 Found {len(chunk_events)} events for {chunk_start.year}")
+                        
+                        # Move to next chunk
+                        current_time_min = chunk_end.isoformat()
+                        
+                        if chunk_start.year >= 2030:
+                            break  # Don't go beyond 2030
+                    
+                    events = calendar_events
+                    
+                else:
+                    # For weekly range, single request
+                    events_result = service.events().list(
+                        calendarId=calendar_id,
+                        timeMin=time_min,
+                        timeMax=time_max,
+                        singleEvents=True,
+                        orderBy='startTime',
+                        maxResults=2500  # Max per request
+                    ).execute()
+                    
+                    events = events_result.get('items', [])
                 
                 # Add calendar info to each event
                 for event in events:
@@ -442,9 +490,10 @@ def get_events():
             except Exception as e:
                 print(f"❌ Error fetching events from calendar {calendar_id}: {e}")
         
-        print(f"📋 Found {len(all_events)} events across {len(calendar_ids)} calendars")
+        date_range_desc = "2015-2030" if load_full_range else "current selection"
+        print(f"📋 Found {len(all_events)} events across {len(calendar_ids)} calendars ({date_range_desc})")
         
-        return jsonify({"events": all_events})
+        return jsonify({"events": all_events, "date_range": date_range_desc, "total_events": len(all_events)})
         
     except Exception as e:
         print(f"❌ Error fetching events: {e}")
