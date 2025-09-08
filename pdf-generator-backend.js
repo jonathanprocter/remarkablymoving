@@ -684,20 +684,41 @@ function generateDailyPage(weekData, day, eventManager) {
             <div class="daily-bottom">
                 <div class="priorities-section">
                     <div class="section-title">PRIORITIES</div>
-                    <div class="priority-line">A) <div class="write-line"></div></div>
-                    <div class="priority-line">B) <div class="write-line"></div></div>
-                    <div class="priority-line">C) <div class="write-line"></div></div>
+                    <div class="priority-line">
+                        <span class="bullet-point">•</span>
+                        <div class="write-line"></div>
+                    </div>
+                    <div class="priority-line">
+                        <span class="bullet-point">•</span>
+                        <div class="write-line"></div>
+                    </div>
+                    <div class="priority-line">
+                        <span class="bullet-point">•</span>
+                        <div class="write-line"></div>
+                    </div>
                 </div>
                 
                 <div class="bottom-sections">
                     <div class="goals-box">
-                        <div class="section-title">DAILY GOALS</div>
-                        <div class="write-area"></div>
+                        <div class="section-title">TOP THREE PRIORITIES</div>
+                        <div class="write-area">
+                            <div class="write-line-note"></div>
+                            <div class="write-line-note"></div>
+                            <div class="write-line-note"></div>
+                            <div class="write-line-note"></div>
+                        </div>
                     </div>
                     
                     <div class="notes-box">
                         <div class="section-title">NOTES</div>
-                        <div class="write-area"></div>
+                        <div class="write-area">
+                            <div class="write-line-note"></div>
+                            <div class="write-line-note"></div>
+                            <div class="write-line-note"></div>
+                            <div class="write-line-note"></div>
+                            <div class="write-line-note"></div>
+                            <div class="write-line-note"></div>
+                        </div>
                     </div>
                 </div>
                 

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>reMarkable Paper Pro Planner - Final Version</title>
+<style>
+/* reMarkable Paper Pro Move Specifications */
+:root {
+  --portrait-width: 91mm;
+  --portrait-height: 163mm;
+  --landscape-width: 163mm;
+  --landscape-height: 91mm;
+  --margin: 2mm;
+  /* Typography optimized for e-ink */
+  --font-xlarge: 9pt;
+  --font-large: 7pt;
+  --font-medium: 6pt;
+  --font-small: 5pt;
+  --font-tiny: 4pt;
+  --font-micro: 3pt;
+  /* Colors for e-ink display */
+  --black: #000000;
+  --gray: #666666;
+  --light-gray: #cccccc;
+  --white: #ffffff;
+}
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Times', serif;
+  color: var(--black);
+  background: var(--white);
+  font-size: var(--font-medium);
+  line-height: 1.2;
+}
+
+/* Page management */
+.page {
+  page-break-after: always;
+  page-break-inside: avoid;
+  overflow: hidden;
+}
+
+.page:last-child {
+  page-break-after: auto;
+}
+
+/* Weekly Page - Landscape */
+@page :first {
+  size: 163mm 91mm;
+  margin: var(--margin);
+}
+
+.weekly-page {
+  width: calc(var(--landscape-width) - 2 * var(--margin));
+  height: calc(var(--landscape-height) - 2 * var(--margin));
+}
+
+.weekly-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.weekly-header {
+  height: 6mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2pt solid var(--black);
+  padding: 0 1mm;
+  margin-bottom: 1mm;
+}
+
+.weekly-header h1 {
+  font-size: var(--font-large);
+  font-weight: bold;
+}
+
+.weekly-header span {
+  font-size: var(--font-medium);
+}
+
+.weekly-content {
+  flex: 1;
+  display: flex;
+  gap: 1mm;
+}
+
+.weekly-grid {
+  flex: 3.2;
+  display: grid;
+  grid-template-columns: 10mm repeat(7, 1fr);
+  grid-template-rows: 4mm repeat(31, 1fr);
+  border: 2pt solid var(--black);
+}
+
+.grid-cell {
+  border-right: 1pt solid var(--black);
+  border-bottom: 1pt solid var(--black);
+  padding: 0.2mm;
+  overflow: hidden;
+}
+
+.header-cell {
+  background: #f0f0f0;
+  font-weight: bold;
+  font-size: var(--font-tiny);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-cell {
+  background: #f8f8f8;
+  font-weight: bold;
+  font-size: var(--font-micro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-cell {
+  font-size: var(--font-micro);
+  min-height: 2mm;
+}
+
+.weekly-sidebar {
+  flex: 0.8;
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+}
+
+.tasks-section, .goals-section {
+  flex: 1;
+  border: 2pt solid var(--black);
+  padding: 1mm;
+}
+
+.tasks-section h3, .goals-section h3 {
+  font-size: var(--font-tiny);
+  font-weight: bold;
+  margin-bottom: 0.5mm;
+  border-bottom: 1pt solid var(--black);
+  padding-bottom: 0.3mm;
+}
+
+.task-item, .goal-item {
+  font-size: var(--font-micro);
+  margin-bottom: 0.3mm;
+  line-height: 1.1;
+}
+
+/* Daily Pages - Portrait */
+@page :not(:first) {
+  size: 91mm 163mm;
+  margin: var(--margin);
+}
+
+.daily-page {
+  width: calc(var(--portrait-width) - 2 * var(--margin));
+  height: calc(var(--portrait-height) - 2 * var(--margin));
+}
+
+.daily-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.daily-header {
+  height: 8mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2pt solid var(--black);
+  padding: 0 1mm;
+  margin-bottom: 1mm;
+}
+
+.daily-title {
+  font-size: var(--font-large);
+  font-weight: bold;
+}
+
+.daily-date {
+  font-size: var(--font-medium);
+}
+
+.daily-main {
+  height: 105mm;
+  border: 2pt solid var(--black);
+  margin-bottom: 2mm;
+}
+
+.time-section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.time-row {
+  flex: 1;
+  display: flex;
+  border-bottom: 1pt solid var(--light-gray);
+  min-height: 3.3mm;
+}
+
+.time-row:last-child {
+  border-bottom: none;
+}
+
+.time-label {
+  width: 12mm;
+  background: #f8f8f8;
+  border-right: 2pt solid var(--black);
+  font-size: var(--font-tiny);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-space {
+  flex: 1;
+  padding: 0.3mm;
+  font-size: var(--font-tiny);
+}
+
+.daily-bottom {
+  height: 45mm;
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+}
+
+.priorities-section {
+  height: 16mm;
+  border: 2pt solid var(--black);
+  padding: 1.5mm;
+}
+
+.section-title {
+  font-size: var(--font-small);
+  font-weight: bold;
+  margin-bottom: 1.5mm;
+}
+
+.priority-line {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1mm;
+  font-size: var(--font-tiny);
+}
+
+.bullet-point {
+  width: 4mm;
+  font-size: var(--font-small);
+  font-weight: bold;
+}
+
+.write-line {
+  flex: 1;
+  height: 1pt;
+  background: var(--light-gray);
+  margin-left: 1mm;
+}
+
+.bottom-sections {
+  height: 20mm;
+  display: flex;
+  gap: 2mm;
+}
+
+.goals-box, .notes-box {
+  flex: 1;
+  border: 2pt solid var(--black);
+  padding: 1.5mm;
+}
+
+.write-area {
+  height: calc(100% - 6mm);
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+}
+
+.write-line-note {
+  height: 1pt;
+  background: var(--light-gray);
+  width: 100%;
+}
+
+.status-line {
+  height: 6mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-tiny);
+  color: var(--gray);
+  padding: 0 1mm;
+}
+</style>
+</head>
+<body>
+<!-- Page 1: Weekly Overview with 30-minute intervals 07:00-22:00 -->
+<div class="page weekly-page">
+  <div class="weekly-container">
+    <div class="weekly-header">
+      <h1>WEEKLY PLANNER</h1>
+      <span>WEEK OF SEP 8, 2025</span>
+    </div>
+    <div class="weekly-content">
+      <div class="weekly-grid">
+        <div class="grid-cell header-cell">TIME</div>
+        <div class="grid-cell header-cell">MON</div>
+        <div class="grid-cell header-cell">TUE</div>
+        <div class="grid-cell header-cell">WED</div>
+        <div class="grid-cell header-cell">THU</div>
+        <div class="grid-cell header-cell">FRI</div>
+        <div class="grid-cell header-cell">SAT</div>
+        <div class="grid-cell header-cell">SUN</div>
+        
+        <!-- 30-minute intervals from 07:00 to 22:00 (31 time slots) -->
+        <div class="grid-cell time-cell">07:00</div>
+        <div class="grid-cell event-cell" id="w-mon-0700"></div>
+        <div class="grid-cell event-cell" id="w-tue-0700"></div>
+        <div class="grid-cell event-cell" id="w-wed-0700"></div>
+        <div class="grid-cell event-cell" id="w-thu-0700"></div>
+        <div class="grid-cell event-cell" id="w-fri-0700"></div>
+        <div class="grid-cell event-cell" id="w-sat-0700"></div>
+        <div class="grid-cell event-cell" id="w-sun-0700"></div>
+        
+        <div class="grid-cell time-cell">07:30</div>
+        <div class="grid-cell event-cell" id="w-mon-0730"></div>
+        <div class="grid-cell event-cell" id="w-tue-0730"></div>
+        <div class="grid-cell event-cell" id="w-wed-0730"></div>
+        <div class="grid-cell event-cell" id="w-thu-0730"></div>
+        <div class="grid-cell event-cell" id="w-fri-0730"></div>
+        <div class="grid-cell event-cell" id="w-sat-0730"></div>
+        <div class="grid-cell event-cell" id="w-sun-0730"></div>
+        
+        <div class="grid-cell time-cell">08:00</div>
+        <div class="grid-cell event-cell" id="w-mon-0800"></div>
+        <div class="grid-cell event-cell" id="w-tue-0800"></div>
+        <div class="grid-cell event-cell" id="w-wed-0800"></div>
+        <div class="grid-cell event-cell" id="w-thu-0800"></div>
+        <div class="grid-cell event-cell" id="w-fri-0800"></div>
+        <div class="grid-cell event-cell" id="w-sat-0800"></div>
+        <div class="grid-cell event-cell" id="w-sun-0800"></div>
+        
+        <div class="grid-cell time-cell">08:30</div>
+        <div class="grid-cell event-cell" id="w-mon-0830"></div>
+        <div class="grid-cell event-cell" id="w-tue-0830"></div>
+        <div class="grid-cell event-cell" id="w-wed-0830"></div>
+        <div class="grid-cell event-cell" id="w-thu-0830"></div>
+        <div class="grid-cell event-cell" id="w-fri-0830"></div>
+        <div class="grid-cell event-cell" id="w-sat-0830"></div>
+        <div class="grid-cell event-cell" id="w-sun-0830"></div>
+        
+        <div class="grid-cell time-cell">09:00</div>
+        <div class="grid-cell event-cell" id="w-mon-0900"></div>
+        <div class="grid-cell event-cell" id="w-tue-0900"></div>
+        <div class="grid-cell event-cell" id="w-wed-0900"></div>
+        <div class="grid-cell event-cell" id="w-thu-0900"></div>
+        <div class="grid-cell event-cell" id="w-fri-0900"></div>
+        <div class="grid-cell event-cell" id="w-sat-0900"></div>
+        <div class="grid-cell event-cell" id="w-sun-0900"></div>
+        
+        <div class="grid-cell time-cell">09:30</div>
+        <div class="grid-cell event-cell" id="w-mon-0930"></div>
+        <div class="grid-cell event-cell" id="w-tue-0930"></div>
+        <div class="grid-cell event-cell" id="w-wed-0930"></div>
+        <div class="grid-cell event-cell" id="w-thu-0930"></div>
+        <div class="grid-cell event-cell" id="w-fri-0930"></div>
+        <div class="grid-cell event-cell" id="w-sat-0930"></div>
+        <div class="grid-cell event-cell" id="w-sun-0930"></div>
+        
+        <div class="grid-cell time-cell">10:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1000"></div>
+        <div class="grid-cell event-cell" id="w-tue-1000"></div>
+        <div class="grid-cell event-cell" id="w-wed-1000"></div>
+        <div class="grid-cell event-cell" id="w-thu-1000"></div>
+        <div class="grid-cell event-cell" id="w-fri-1000"></div>
+        <div class="grid-cell event-cell" id="w-sat-1000"></div>
+        <div class="grid-cell event-cell" id="w-sun-1000"></div>
+        
+        <div class="grid-cell time-cell">10:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1030"></div>
+        <div class="grid-cell event-cell" id="w-tue-1030"></div>
+        <div class="grid-cell event-cell" id="w-wed-1030"></div>
+        <div class="grid-cell event-cell" id="w-thu-1030"></div>
+        <div class="grid-cell event-cell" id="w-fri-1030"></div>
+        <div class="grid-cell event-cell" id="w-sat-1030"></div>
+        <div class="grid-cell event-cell" id="w-sun-1030"></div>
+        
+        <div class="grid-cell time-cell">11:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1100"></div>
+        <div class="grid-cell event-cell" id="w-tue-1100"></div>
+        <div class="grid-cell event-cell" id="w-wed-1100"></div>
+        <div class="grid-cell event-cell" id="w-thu-1100"></div>
+        <div class="grid-cell event-cell" id="w-fri-1100"></div>
+        <div class="grid-cell event-cell" id="w-sat-1100"></div>
+        <div class="grid-cell event-cell" id="w-sun-1100"></div>
+        
+        <div class="grid-cell time-cell">11:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1130"></div>
+        <div class="grid-cell event-cell" id="w-tue-1130"></div>
+        <div class="grid-cell event-cell" id="w-wed-1130"></div>
+        <div class="grid-cell event-cell" id="w-thu-1130"></div>
+        <div class="grid-cell event-cell" id="w-fri-1130"></div>
+        <div class="grid-cell event-cell" id="w-sat-1130"></div>
+        <div class="grid-cell event-cell" id="w-sun-1130"></div>
+        
+        <div class="grid-cell time-cell">12:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1200"></div>
+        <div class="grid-cell event-cell" id="w-tue-1200"></div>
+        <div class="grid-cell event-cell" id="w-wed-1200"></div>
+        <div class="grid-cell event-cell" id="w-thu-1200"></div>
+        <div class="grid-cell event-cell" id="w-fri-1200"></div>
+        <div class="grid-cell event-cell" id="w-sat-1200"></div>
+        <div class="grid-cell event-cell" id="w-sun-1200"></div>
+        
+        <div class="grid-cell time-cell">12:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1230"></div>
+        <div class="grid-cell event-cell" id="w-tue-1230"></div>
+        <div class="grid-cell event-cell" id="w-wed-1230"></div>
+        <div class="grid-cell event-cell" id="w-thu-1230"></div>
+        <div class="grid-cell event-cell" id="w-fri-1230"></div>
+        <div class="grid-cell event-cell" id="w-sat-1230"></div>
+        <div class="grid-cell event-cell" id="w-sun-1230"></div>
+        
+        <div class="grid-cell time-cell">13:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1300"></div>
+        <div class="grid-cell event-cell" id="w-tue-1300"></div>
+        <div class="grid-cell event-cell" id="w-wed-1300"></div>
+        <div class="grid-cell event-cell" id="w-thu-1300"></div>
+        <div class="grid-cell event-cell" id="w-fri-1300"></div>
+        <div class="grid-cell event-cell" id="w-sat-1300"></div>
+        <div class="grid-cell event-cell" id="w-sun-1300"></div>
+        
+        <div class="grid-cell time-cell">13:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1330"></div>
+        <div class="grid-cell event-cell" id="w-tue-1330"></div>
+        <div class="grid-cell event-cell" id="w-wed-1330"></div>
+        <div class="grid-cell event-cell" id="w-thu-1330"></div>
+        <div class="grid-cell event-cell" id="w-fri-1330"></div>
+        <div class="grid-cell event-cell" id="w-sat-1330"></div>
+        <div class="grid-cell event-cell" id="w-sun-1330"></div>
+        
+        <div class="grid-cell time-cell">14:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1400"></div>
+        <div class="grid-cell event-cell" id="w-tue-1400"></div>
+        <div class="grid-cell event-cell" id="w-wed-1400"></div>
+        <div class="grid-cell event-cell" id="w-thu-1400"></div>
+        <div class="grid-cell event-cell" id="w-fri-1400"></div>
+        <div class="grid-cell event-cell" id="w-sat-1400"></div>
+        <div class="grid-cell event-cell" id="w-sun-1400"></div>
+        
+        <div class="grid-cell time-cell">14:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1430"></div>
+        <div class="grid-cell event-cell" id="w-tue-1430"></div>
+        <div class="grid-cell event-cell" id="w-wed-1430"></div>
+        <div class="grid-cell event-cell" id="w-thu-1430"></div>
+        <div class="grid-cell event-cell" id="w-fri-1430"></div>
+        <div class="grid-cell event-cell" id="w-sat-1430"></div>
+        <div class="grid-cell event-cell" id="w-sun-1430"></div>
+        
+        <div class="grid-cell time-cell">15:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1500"></div>
+        <div class="grid-cell event-cell" id="w-tue-1500"></div>
+        <div class="grid-cell event-cell" id="w-wed-1500"></div>
+        <div class="grid-cell event-cell" id="w-thu-1500"></div>
+        <div class="grid-cell event-cell" id="w-fri-1500"></div>
+        <div class="grid-cell event-cell" id="w-sat-1500"></div>
+        <div class="grid-cell event-cell" id="w-sun-1500"></div>
+        
+        <div class="grid-cell time-cell">15:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1530"></div>
+        <div class="grid-cell event-cell" id="w-tue-1530"></div>
+        <div class="grid-cell event-cell" id="w-wed-1530"></div>
+        <div class="grid-cell event-cell" id="w-thu-1530"></div>
+        <div class="grid-cell event-cell" id="w-fri-1530"></div>
+        <div class="grid-cell event-cell" id="w-sat-1530"></div>
+        <div class="grid-cell event-cell" id="w-sun-1530"></div>
+        
+        <div class="grid-cell time-cell">16:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1600"></div>
+        <div class="grid-cell event-cell" id="w-tue-1600"></div>
+        <div class="grid-cell event-cell" id="w-wed-1600"></div>
+        <div class="grid-cell event-cell" id="w-thu-1600"></div>
+        <div class="grid-cell event-cell" id="w-fri-1600"></div>
+        <div class="grid-cell event-cell" id="w-sat-1600"></div>
+        <div class="grid-cell event-cell" id="w-sun-1600"></div>
+        
+        <div class="grid-cell time-cell">16:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1630"></div>
+        <div class="grid-cell event-cell" id="w-tue-1630"></div>
+        <div class="grid-cell event-cell" id="w-wed-1630"></div>
+        <div class="grid-cell event-cell" id="w-thu-1630"></div>
+        <div class="grid-cell event-cell" id="w-fri-1630"></div>
+        <div class="grid-cell event-cell" id="w-sat-1630"></div>
+        <div class="grid-cell event-cell" id="w-sun-1630"></div>
+        
+        <div class="grid-cell time-cell">17:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1700"></div>
+        <div class="grid-cell event-cell" id="w-tue-1700"></div>
+        <div class="grid-cell event-cell" id="w-wed-1700"></div>
+        <div class="grid-cell event-cell" id="w-thu-1700"></div>
+        <div class="grid-cell event-cell" id="w-fri-1700"></div>
+        <div class="grid-cell event-cell" id="w-sat-1700"></div>
+        <div class="grid-cell event-cell" id="w-sun-1700"></div>
+        
+        <div class="grid-cell time-cell">17:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1730"></div>
+        <div class="grid-cell event-cell" id="w-tue-1730"></div>
+        <div class="grid-cell event-cell" id="w-wed-1730"></div>
+        <div class="grid-cell event-cell" id="w-thu-1730"></div>
+        <div class="grid-cell event-cell" id="w-fri-1730"></div>
+        <div class="grid-cell event-cell" id="w-sat-1730"></div>
+        <div class="grid-cell event-cell" id="w-sun-1730"></div>
+        
+        <div class="grid-cell time-cell">18:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1800"></div>
+        <div class="grid-cell event-cell" id="w-tue-1800"></div>
+        <div class="grid-cell event-cell" id="w-wed-1800"></div>
+        <div class="grid-cell event-cell" id="w-thu-1800"></div>
+        <div class="grid-cell event-cell" id="w-fri-1800"></div>
+        <div class="grid-cell event-cell" id="w-sat-1800"></div>
+        <div class="grid-cell event-cell" id="w-sun-1800"></div>
+        
+        <div class="grid-cell time-cell">18:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1830"></div>
+        <div class="grid-cell event-cell" id="w-tue-1830"></div>
+        <div class="grid-cell event-cell" id="w-wed-1830"></div>
+        <div class="grid-cell event-cell" id="w-thu-1830"></div>
+        <div class="grid-cell event-cell" id="w-fri-1830"></div>
+        <div class="grid-cell event-cell" id="w-sat-1830"></div>
+        <div class="grid-cell event-cell" id="w-sun-1830"></div>
+        
+        <div class="grid-cell time-cell">19:00</div>
+        <div class="grid-cell event-cell" id="w-mon-1900"></div>
+        <div class="grid-cell event-cell" id="w-tue-1900"></div>
+        <div class="grid-cell event-cell" id="w-wed-1900"></div>
+        <div class="grid-cell event-cell" id="w-thu-1900"></div>
+        <div class="grid-cell event-cell" id="w-fri-1900"></div>
+        <div class="grid-cell event-cell" id="w-sat-1900"></div>
+        <div class="grid-cell event-cell" id="w-sun-1900"></div>
+        
+        <div class="grid-cell time-cell">19:30</div>
+        <div class="grid-cell event-cell" id="w-mon-1930"></div>
+        <div class="grid-cell event-cell" id="w-tue-1930"></div>
+        <div class="grid-cell event-cell" id="w-wed-1930"></div>
+        <div class="grid-cell event-cell" id="w-thu-1930"></div>
+        <div class="grid-cell event-cell" id="w-fri-1930"></div>
+        <div class="grid-cell event-cell" id="w-sat-1930"></div>
+        <div class="grid-cell event-cell" id="w-sun-1930"></div>
+        
+        <div class="grid-cell time-cell">20:00</div>
+        <div class="grid-cell event-cell" id="w-mon-2000"></div>
+        <div class="grid-cell event-cell" id="w-tue-2000"></div>
+        <div class="grid-cell event-cell" id="w-wed-2000"></div>
+        <div class="grid-cell event-cell" id="w-thu-2000"></div>
+        <div class="grid-cell event-cell" id="w-fri-2000"></div>
+        <div class="grid-cell event-cell" id="w-sat-2000"></div>
+        <div class="grid-cell event-cell" id="w-sun-2000"></div>
+        
+        <div class="grid-cell time-cell">20:30</div>
+        <div class="grid-cell event-cell" id="w-mon-2030"></div>
+        <div class="grid-cell event-cell" id="w-tue-2030"></div>
+        <div class="grid-cell event-cell" id="w-wed-2030"></div>
+        <div class="grid-cell event-cell" id="w-thu-2030"></div>
+        <div class="grid-cell event-cell" id="w-fri-2030"></div>
+        <div class="grid-cell event-cell" id="w-sat-2030"></div>
+        <div class="grid-cell event-cell" id="w-sun-2030"></div>
+        
+        <div class="grid-cell time-cell">21:00</div>
+        <div class="grid-cell event-cell" id="w-mon-2100"></div>
+        <div class="grid-cell event-cell" id="w-tue-2100"></div>
+        <div class="grid-cell event-cell" id="w-wed-2100"></div>
+        <div class="grid-cell event-cell" id="w-thu-2100"></div>
+        <div class="grid-cell event-cell" id="w-fri-2100"></div>
+        <div class="grid-cell event-cell" id="w-sat-2100"></div>
+        <div class="grid-cell event-cell" id="w-sun-2100"></div>
+        
+        <div class="grid-cell time-cell">21:30</div>
+        <div class="grid-cell event-cell" id="w-mon-2130"></div>
+        <div class="grid-cell event-cell" id="w-tue-2130"></div>
+        <div class="grid-cell event-cell" id="w-wed-2130"></div>
+        <div class="grid-cell event-cell" id="w-thu-2130"></div>
+        <div class="grid-cell event-cell" id="w-fri-2130"></div>
+        <div class="grid-cell event-cell" id="w-sat-2130"></div>
+        <div class="grid-cell event-cell" id="w-sun-2130"></div>
+        
+        <div class="grid-cell time-cell">22:00</div>
+        <div class="grid-cell event-cell" id="w-mon-2200"></div>
+        <div class="grid-cell event-cell" id="w-tue-2200"></div>
+        <div class="grid-cell event-cell" id="w-wed-2200"></div>
+        <div class="grid-cell event-cell" id="w-thu-2200"></div>
+        <div class="grid-cell event-cell" id="w-fri-2200"></div>
+        <div class="grid-cell event-cell" id="w-sat-2200"></div>
+        <div class="grid-cell event-cell" id="w-sun-2200"></div>
+      </div>
+      
+      <div class="weekly-sidebar">
+        <div class="tasks-section">
+          <h3>PRIORITY TASKS</h3>
+          <div class="task-list">
+            <div class="task-item">Follow up on client contracts</div>
+            <div class="task-item">Prepare quarterly review materials</div>
+            <div class="task-item">Update team schedules</div>
+            <div class="task-item">Review project deliverables</div>
+            <div class="task-item">Schedule follow-up meetings</div>
+          </div>
+        </div>
+        <div class="goals-section">
+          <h3>WEEKLY GOALS</h3>
+          <div class="goal-list">
+            <div class="goal-item">Complete all scheduled appointments</div>
+            <div class="goal-item">Review and update project timelines</div>
+            <div class="goal-item">Prepare for upcoming presentations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MONDAY PAGE with updated priorities and notes sections -->
+<div class="page daily-page" data-date="2025-09-08" data-day="mon">
+  <div class="daily-container">
+    <div class="daily-header">
+      <span class="daily-title">DAILY PLANNER - MONDAY</span>
+      <span class="daily-date">SEP 8, 2025</span>
+    </div>
+    <div class="daily-main">
+      <div class="time-section">
+        <!-- 31 time slots: 07:00, 07:30, 08:00, 08:30, ... 22:00 -->
+        <div class="time-row"><div class="time-label">07:00</div><div class="time-space" id="d-mon-0700"></div></div>
+        <div class="time-row"><div class="time-label">07:30</div><div class="time-space" id="d-mon-0730"></div></div>
+        <div class="time-row"><div class="time-label">08:00</div><div class="time-space" id="d-mon-0800"></div></div>
+        <div class="time-row"><div class="time-label">08:30</div><div class="time-space" id="d-mon-0830"></div></div>
+        <div class="time-row"><div class="time-label">09:00</div><div class="time-space" id="d-mon-0900"></div></div>
+        <div class="time-row"><div class="time-label">09:30</div><div class="time-space" id="d-mon-0930"></div></div>
+        <div class="time-row"><div class="time-label">10:00</div><div class="time-space" id="d-mon-1000"></div></div>
+        <div class="time-row"><div class="time-label">10:30</div><div class="time-space" id="d-mon-1030"></div></div>
+        <div class="time-row"><div class="time-label">11:00</div><div class="time-space" id="d-mon-1100"></div></div>
+        <div class="time-row"><div class="time-label">11:30</div><div class="time-space" id="d-mon-1130"></div></div>
+        <div class="time-row"><div class="time-label">12:00</div><div class="time-space" id="d-mon-1200"></div></div>
+        <div class="time-row"><div class="time-label">12:30</div><div class="time-space" id="d-mon-1230"></div></div>
+        <div class="time-row"><div class="time-label">13:00</div><div class="time-space" id="d-mon-1300"></div></div>
+        <div class="time-row"><div class="time-label">13:30</div><div class="time-space" id="d-mon-1330"></div></div>
+        <div class="time-row"><div class="time-label">14:00</div><div class="time-space" id="d-mon-1400"></div></div>
+        <div class="time-row"><div class="time-label">14:30</div><div class="time-space" id="d-mon-1430"></div></div>
+        <div class="time-row"><div class="time-label">15:00</div><div class="time-space" id="d-mon-1500"></div></div>
+        <div class="time-row"><div class="time-label">15:30</div><div class="time-space" id="d-mon-1530"></div></div>
+        <div class="time-row"><div class="time-label">16:00</div><div class="time-space" id="d-mon-1600"></div></div>
+        <div class="time-row"><div class="time-label">16:30</div><div class="time-space" id="d-mon-1630"></div></div>
+        <div class="time-row"><div class="time-label">17:00</div><div class="time-space" id="d-mon-1700"></div></div>
+        <div class="time-row"><div class="time-label">17:30</div><div class="time-space" id="d-mon-1730"></div></div>
+        <div class="time-row"><div class="time-label">18:00</div><div class="time-space" id="d-mon-1800"></div></div>
+        <div class="time-row"><div class="time-label">18:30</div><div class="time-space" id="d-mon-1830"></div></div>
+        <div class="time-row"><div class="time-label">19:00</div><div class="time-space" id="d-mon-1900"></div></div>
+        <div class="time-row"><div class="time-label">19:30</div><div class="time-space" id="d-mon-1930"></div></div>
+        <div class="time-row"><div class="time-label">20:00</div><div class="time-space" id="d-mon-2000"></div></div>
+        <div class="time-row"><div class="time-label">20:30</div><div class="time-space" id="d-mon-2030"></div></div>
+        <div class="time-row"><div class="time-label">21:00</div><div class="time-space" id="d-mon-2100"></div></div>
+        <div class="time-row"><div class="time-label">21:30</div><div class="time-space" id="d-mon-2130"></div></div>
+        <div class="time-row"><div class="time-label">22:00</div><div class="time-space" id="d-mon-2200"></div></div>
+      </div>
+    </div>
+    <div class="daily-bottom">
+      <div class="priorities-section">
+        <div class="section-title">TOP THREE PRIORITIES</div>
+        <div class="priority-line">
+          <span class="bullet-point">•</span>
+          <div class="write-line"></div>
+        </div>
+        <div class="priority-line">
+          <span class="bullet-point">•</span>
+          <div class="write-line"></div>
+        </div>
+        <div class="priority-line">
+          <span class="bullet-point">•</span>
+          <div class="write-line"></div>
+        </div>
+      </div>
+      <div class="bottom-sections">
+        <div class="goals-box">
+          <div class="section-title">DAILY GOALS</div>
+          <div class="write-area">
+            <div class="write-line-note"></div>
+            <div class="write-line-note"></div>
+            <div class="write-line-note"></div>
+            <div class="write-line-note"></div>
+          </div>
+        </div>
+        <div class="notes-box">
+          <div class="section-title">NOTES</div>
+          <div class="write-area">
+            <div class="write-line-note"></div>
+            <div class="write-line-note"></div>
+            <div class="write-line-note"></div>
+            <div class="write-line-note"></div>
+            <div class="write-line-note"></div>
+            <div class="write-line-note"></div>
+          </div>
+        </div>
+      </div>
+      <div class="status-line">
+        <span class="event-count" id="count-mon">0 events</span>
+        <span class="week-total">Week: <span id="total-events">0</span> total</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+class RemarkablePlanner {
+  constructor() {
+    this.events = new Map();
+    this.dailyCounts = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
+    this.totalEvents = 0;
+    this.init();
+  }
+
+  init() {
+    document.addEventListener('DOMContentLoaded', () => {
+      this.updateAllCounts();
+    });
+  }
+
+  addEvent(day, time, title, priority = 'normal') {
+    const eventId = `${day}-${time}-${Date.now()}`;
+    const event = {
+      id: eventId,
+      day,
+      time,
+      title,
+      priority,
+      showInWeekly: this.shouldShowInWeekly(time, priority)
+    };
+
+    this.events.set(eventId, event);
+    this.updateDailyView(event);
+    this.updateWeeklyView(event);
+
+    this.updateCounts(day);
+    return eventId;
+  }
+
+  shouldShowInWeekly(time, priority) {
+    const hour = parseInt(time.substring(0, 2));
+    return (hour >= 7 && hour <= 22) || priority === 'high';
+  }
+
+  updateDailyView(event) {
+    const dailyCell = document.getElementById(`d-${event.day}-${event.time}`);
+    if (dailyCell) {
+      dailyCell.textContent = event.title;
+      dailyCell.style.backgroundColor = event.priority === 'high' ? '#ffeeee' : '#f0f0f0';
+    }
+  }
+
+  updateWeeklyView(event) {
+    const weeklyCell = document.getElementById(`w-${event.day}-${event.time}`);
+    if (weeklyCell) {
+      const shortTitle = event.title.length > 3 ? 
+        event.title.substring(0, 3) + '...' : event.title;
+      weeklyCell.textContent = shortTitle;
+      weeklyCell.style.backgroundColor = event.priority === 'high' ? '#ffeeee' : '#e8e8e8';
+    }
+  }
+
+  updateCounts(day) {
+    this.dailyCounts[day]++;
+    this.totalEvents++;
+
+    const countElement = document.getElementById(`count-${day}`);
+    if (countElement) {
+      countElement.textContent = `${this.dailyCounts[day]} events`;
+    }
+
+    document.querySelectorAll('#total-events').forEach(el => {
+      el.textContent = this.totalEvents;
+    });
+  }
+
+  updateAllCounts() {
+    Object.keys(this.dailyCounts).forEach(day => {
+      const countElement = document.getElementById(`count-${day}`);
+      if (countElement) {
+        countElement.textContent = `${this.dailyCounts[day]} events`;
+      }
+    });
+
+    document.querySelectorAll('#total-events').forEach(el => {
+      el.textContent = this.totalEvents;
+    });
+  }
+
+  addSampleEvents() {
+    this.addEvent('mon', '0900', 'Team Meeting', 'high');
+    this.addEvent('mon', '1430', 'Client Call', 'normal');
+    this.addEvent('mon', '1530', 'Design Review', 'normal');
+    console.log('Sample events added with bullet points and updated sections!');
+  }
+}
+
+const planner = new RemarkablePlanner();
+
+// Note: This template shows the complete weekly view with 30-minute intervals
+// and the updated Monday daily structure with bullet points for priorities,
+// "TOP THREE PRIORITIES" section title, and multiple lines for notes.
+// Duplicate this structure for Tuesday through Sunday.
+</script>
+
+</body>
+</html>
+
