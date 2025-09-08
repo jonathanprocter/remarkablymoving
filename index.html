@@ -1298,39 +1298,7 @@
                 // CORRECTED: Fix Monday events being placed in Sunday column
                 // The issue is in our date parsing and day calculation
                 // Let's use a more explicit approach
-
-                // Define day mapping arrays (avoiding duplicate declarations)
-                const jsGetDayToColumnName = {
-                    0: 'sun',    // Sunday -> 'sun' column
-                    1: 'mon',    // Monday -> 'mon' column  
-                    2: 'tue',    // Tuesday -> 'tue' column
-                    3: 'wed',    // Wednesday -> 'wed' column
-                    4: 'thu',    // Thursday -> 'thu' column
-                    5: 'fri',    // Friday -> 'fri' column
-                    6: 'sat'     // Saturday -> 'sat' column
-                };
-
-                const jsGetDayToFullName = {
-                    0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 
-                    4: 'Thursday', 5: 'Friday', 6: 'Saturday'
-                };
-
-                // Get the correct column name for this day
-                const dayName = jsGetDayToColumnName[dayOfWeek];
-                const fullDayName = jsGetDayToFullName[dayOfWeek];
-
-                console.log(`   📅 Event "${event.summary}"`);
-                console.log(`   📍 Date: ${startDate.toDateString()}`);  
-                console.log(`   🔢 getDay() = ${dayOfWeek} (JS: 0=Sun, 1=Mon, 2=Tue, etc.)`);
-                console.log(`   📋 Full day name: ${fullDayName}`);
-                console.log(`   🎯 Target column: '${dayName}'`);
-                console.log(`   🏷️ Cell ID prefix: weekly-${dayName}-`);
-
-                // Validate mapping
-                if (!dayName) {
-                    console.error(`❌ Invalid dayOfWeek: ${dayOfWeek}`);
-                    return;
-                }
+                // Using the already defined variables above
 
                 // Ensure 1-hour events show as 2 blocks (60 minutes = 2 slots)
                 // Force exact slot count for hour appointments
