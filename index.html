@@ -421,6 +421,24 @@
             // Check authentication status
             checkAuthStatus();
         }
+        
+        // Check authentication status with backend
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/auth/status');
+                const data = await response.json();
+                
+                isSignedIn = data.authenticated;
+                console.log('Auth status:', isSignedIn ? 'authenticated' : 'not authenticated');
+                
+                updateAuthUI();
+                
+            } catch (error) {
+                console.error('Error checking auth status:', error);
+                isSignedIn = false;
+                updateAuthUI();
+            }
+        }
 
         // Update authentication UI
         function updateAuthUI() {
