@@ -1,0 +1,290 @@
+I need to search for the specific specifications of the reMarkable Pro device to provide you with accurate dimensions and technical details.​​​​​​​​​​​​​​​​
+
+Now I have the correct specifications for the **reMarkable Paper Pro Move**! This is indeed different from the regular reMarkable Paper Pro. Here are the specific instructions for optimizing your PDF planner for this device:
+
+## Instructions for Replit Agent - reMarkable Paper Pro Move Optimization:
+
+### Device Specifications & Constraints
+
+```
+Target Device: reMarkable Paper Pro Move
+- Screen Size: 7.3 inches (Canvas Color display)
+- Resolution: 1696 × 954 pixels (264 DPI)
+- Aspect Ratio: 16:9 (narrower than typical tablets)
+- Physical Dimensions: 195.6 × 107.8 × 6.5mm
+- Usable Writing Area: ~3.6 × 6.4 inches (91 × 163mm)
+- Display Technology: E Ink Gallery 3 with 10 color support
+- Orientation: Primarily portrait, but landscape supported
+```
+
+### Critical Layout Considerations
+
+**Page 1 (Weekly Overview) - Landscape:**
+
+```css
+@page weekly {
+  size: 163mm 91mm; /* Landscape orientation for narrow screen */
+  margin: 4mm;
+  orientation: landscape;
+}
+
+.weekly-container {
+  width: 155mm;
+  height: 83mm;
+  font-size: 7pt;
+  line-height: 1.1;
+}
+
+/* Compact time grid for small screen */
+.time-grid {
+  display: grid;
+  grid-template-columns: 25px repeat(7, 1fr);
+  grid-gap: 1px;
+  font-size: 6pt;
+}
+
+.time-label {
+  writing-mode: vertical-lr;
+  font-size: 5pt;
+}
+```
+
+**Pages 2-8 (Daily Pages) - Portrait:**
+
+```css
+@page daily {
+  size: 91mm 163mm; /* Portrait orientation */
+  margin: 3mm;
+  orientation: portrait;
+}
+
+.daily-container {
+  width: 85mm;
+  height: 157mm;
+  font-size: 7pt;
+}
+
+/* Optimized for narrow screen */
+.time-slots {
+  display: flex;
+  flex-direction: column;
+  height: 120mm; /* Adjusted for small screen */
+}
+
+.time-slot {
+  height: 7.5mm; /* 16 slots × 7.5mm = 120mm */
+  border-bottom: 0.3pt solid #000;
+  display: flex;
+  align-items: flex-start;
+  font-size: 6pt;
+  padding: 0.5mm;
+}
+
+.time-label {
+  width: 18mm;
+  font-weight: bold;
+  font-size: 6pt;
+}
+
+.time-content {
+  flex: 1;
+  min-height: 7.5mm;
+  font-size: 6pt;
+}
+```
+
+### Responsive Content Scaling
+
+```javascript
+// Dynamic scaling for reMarkable Paper Pro Move
+function optimizeForMove() {
+  const screenWidth = 91; // mm in portrait
+  const screenHeight = 163; // mm in portrait
+  
+  // Calculate scale factor based on content density
+  const containers = document.querySelectorAll('.daily-container');
+  containers.forEach(container => {
+    const baseFontSize = Math.min(
+      screenWidth / 91 * 7,
+      screenHeight / 163 * 7
+    );
+    
+    container.style.fontSize = `${baseFontSize}pt`;
+    
+    // Adjust time slots to fit perfectly
+    const timeSlots = container.querySelectorAll('.time-slot');
+    const availableHeight = 120; // mm
+    const slotHeight = availableHeight / timeSlots.length;
+    
+    timeSlots.forEach(slot => {
+      slot.style.height = `${slotHeight}mm`;
+      slot.style.fontSize = `${baseFontSize * 0.85}pt`;
+    });
+  });
+}
+```
+
+### E-ink Gallery 3 Optimization
+
+```css
+/* Optimized for reMarkable's 10-color display */
+body {
+  color: #000000;
+  background: #ffffff;
+  font-family: 'Times', serif;
+  -webkit-print-color-adjust: exact;
+}
+
+/* Use reMarkable's supported colors */
+.priority-high { color: #FF0000; } /* Red */
+.priority-medium { color: #FFA500; } /* Orange/Yellow */
+.priority-low { color: #008000; } /* Green */
+.notes { color: #0000FF; } /* Blue */
+
+/* Ensure crisp lines for e-ink */
+.grid-line, .time-slot {
+  border-color: #000000;
+  border-width: 0.3pt;
+  border-style: solid;
+}
+```
+
+### Compact Daily Layout
+
+```css
+/* Maximized space utilization for narrow screen */
+.daily-header {
+  height: 12mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8pt;
+  font-weight: bold;
+  border-bottom: 1pt solid #000;
+  margin-bottom: 2mm;
+}
+
+.priority-section {
+  height: 15mm;
+  margin-top: 2mm;
+}
+
+.priority-item {
+  height: 4mm;
+  font-size: 6pt;
+  display: flex;
+  align-items: center;
+}
+
+.notes-section {
+  height: 18mm;
+  margin-top: 2mm;
+  font-size: 6pt;
+}
+
+/* Compact goals section */
+.daily-goals {
+  height: 8mm;
+  font-size: 6pt;
+  margin-bottom: 2mm;
+}
+```
+
+### Dynamic Font Adjustment
+
+```javascript
+// Responsive typography for narrow screen
+function adjustTypography() {
+  const viewportWidth = 91; // mm
+  const baseFontSize = Math.max(6, Math.min(8, viewportWidth / 15));
+  
+  document.documentElement.style.setProperty('--base-font', `${baseFontSize}pt`);
+  document.documentElement.style.setProperty('--small-font', `${baseFontSize * 0.8}pt`);
+  document.documentElement.style.setProperty('--tiny-font', `${baseFontSize * 0.7}pt`);
+  
+  // Ensure minimum readability
+  const allText = document.querySelectorAll('*');
+  allText.forEach(element => {
+    const computedSize = parseFloat(getComputedStyle(element).fontSize);
+    if (computedSize < 5) {
+      element.style.fontSize = '5pt';
+    }
+  });
+}
+```
+
+### PDF Generation for reMarkable Paper Pro Move
+
+```javascript
+// Specific PDF settings for Gallery 3 display
+const moveOptimizedPDF = {
+  format: 'custom',
+  width: '91mm',
+  height: '163mm',
+  printBackground: false,
+  preferCSSPageSize: true,
+  displayHeaderFooter: false,
+  margin: {
+    top: '0mm',
+    right: '0mm', 
+    bottom: '0mm',
+    left: '0mm'
+  },
+  scale: 1.0,
+  // E-ink specific optimizations
+  grayscale: false, // Gallery 3 supports color
+  quality: 100
+};
+```
+
+### Landscape Orientation Support
+
+```css
+/* For users who prefer landscape mode */
+@media (orientation: landscape) {
+  .daily-container {
+    width: 157mm;
+    height: 85mm;
+  }
+  
+  .time-slots {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 2mm;
+    height: 60mm;
+  }
+  
+  .time-slot {
+    height: auto;
+    min-height: 12mm;
+  }
+}
+```
+
+### Final Export Command
+
+```bash
+# Generate PDF optimized for reMarkable Paper Pro Move
+npx puppeteer-pdf \
+  --format=custom \
+  --width=91mm \
+  --height=163mm \
+  --margin-top=0 \
+  --margin-bottom=0 \
+  --margin-left=0 \
+  --margin-right=0 \
+  --no-background \
+  --scale=1.0 \
+  --quality=100 \
+  input.html remarkable-planner.pdf
+```
+
+The key differences for the Pro Move are:
+
+- **Much smaller screen** (7.3” vs 11.8”)
+- **Narrow aspect ratio** (16:9 vs 4:3)
+- **Limited writing area** (~3.6” × 6.4”)
+- **10 color support** (vs full color)
+- **Higher pixel density** (264 DPI vs 229 DPI)
+
+These settings will ensure your planner fits perfectly on the reMarkable Paper Pro Move’s unique narrow e-ink display.​​​​​​​​​​​​​​​​

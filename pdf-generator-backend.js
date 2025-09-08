@@ -87,15 +87,15 @@ function generatePlannerHTML(weekData, startDate) {
 
 function getOptimizedCSS() {
   return `
-    /* reMarkable Pro Move E-ink Optimized Styles */
+    /* reMarkable Paper Pro Move E-ink Optimized Styles (7.3" screen) */
     @page {
       margin: 0;
-      size: 8.8in 11.6in;  /* Default to portrait for daily pages */
+      size: 91mm 163mm;  /* Portrait for daily pages - Pro Move dimensions */
     }
     
-    /* Weekly page - landscape orientation */
+    /* Weekly page - landscape orientation for narrow screen */
     @page :first {
-      size: 11.6in 8.8in;  /* Landscape for weekly overview */
+      size: 163mm 91mm;  /* Landscape for weekly overview - Pro Move dimensions */
     }
     
     * {
@@ -108,17 +108,17 @@ function getOptimizedCSS() {
     
     body {
       font-family: 'Courier New', 'Liberation Mono', monospace;
-      font-size: 11px;
-      line-height: 1.2;
+      font-size: 7pt;  /* Smaller font for 7.3" screen */
+      line-height: 1.1;
       color: #000;
       background: #fff;
     }
     
-    /* Weekly Layout - Landscape for reMarkable Pro Move */
+    /* Weekly Layout - Landscape for reMarkable Paper Pro Move (7.3" screen) */
     .weekly-page {
-      width: 11.6in;
-      height: 8.8in;
-      padding: 8mm;
+      width: 163mm;  /* Pro Move landscape width */
+      height: 91mm;   /* Pro Move landscape height */
+      padding: 4mm;   /* Reduced padding for small screen */
       page-break-after: always;
       display: flex;
       flex-direction: column;
@@ -126,35 +126,35 @@ function getOptimizedCSS() {
     
     .weekly-header {
       text-align: center;
-      border-bottom: 2px solid #000;
-      padding-bottom: 4mm;
-      margin-bottom: 4mm;
+      border-bottom: 1pt solid #000;
+      padding-bottom: 2mm;
+      margin-bottom: 2mm;
     }
     
     .weekly-title {
-      font-size: 16px;
+      font-size: 10pt;  /* Reduced for small screen */
       font-weight: bold;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
     
     .weekly-subtitle {
-      font-size: 12px;
-      margin-top: 2mm;
+      font-size: 8pt;  /* Reduced for small screen */
+      margin-top: 1mm;
     }
     
     .weekly-grid {
       flex: 1;
       display: grid;
-      grid-template-columns: 50px repeat(7, 1fr);
-      border: 2px solid #000;
-      max-height: 140mm;
+      grid-template-columns: 25px repeat(7, 1fr);  /* Narrower time column for small screen */
+      border: 0.5pt solid #000;
+      max-height: 65mm;  /* Adjusted for Pro Move screen height */
     }
     
     .time-slot, .day-header, .grid-cell {
-      border-right: 1px solid #000;
-      border-bottom: 1px solid #000;
-      padding: 1px 2px;
-      font-size: 9px;
+      border-right: 0.5pt solid #000;
+      border-bottom: 0.5pt solid #000;
+      padding: 0.5px 1px;
+      font-size: 6pt;  /* Smaller for narrow screen */
       overflow: hidden;
     }
     
@@ -163,8 +163,8 @@ function getOptimizedCSS() {
       text-align: center;
       background: #000;
       color: #fff;
-      padding: 3px;
-      font-size: 10px;
+      padding: 1px;
+      font-size: 7pt;  /* Smaller for narrow screen */
     }
     
     .time-slot {
@@ -179,68 +179,68 @@ function getOptimizedCSS() {
     
     .grid-cell {
       position: relative;
-      min-height: 10mm;
+      min-height: 5mm;  /* Reduced for small screen */
       vertical-align: top;
     }
     
     .weekly-event {
       background: #000;
       color: #fff;
-      padding: 2px 3px;
-      margin: 0.5px;
-      font-size: 8px;
-      border-radius: 1px;
+      padding: 0.5px 1px;
+      margin: 0.25px;
+      font-size: 5pt;  /* Very small for narrow cells */
+      border-radius: 0.5px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      line-height: 1.2;
+      line-height: 1;
       display: block;
-      width: calc(100% - 4px);
+      width: calc(100% - 2px);
     }
     
     .weekly-footer {
-      margin-top: 4mm;
+      margin-top: 2mm;
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 6mm;
-      height: 35mm;
+      gap: 2mm;
+      height: 15mm;  /* Much smaller for Pro Move */
     }
     
     .footer-section {
-      border: 2px solid #000;
-      padding: 3mm;
+      border: 0.5pt solid #000;
+      padding: 1mm;
     }
     
     .footer-title {
       font-weight: bold;
-      font-size: 11px;
-      border-bottom: 1px solid #000;
-      padding-bottom: 2mm;
-      margin-bottom: 2mm;
+      font-size: 7pt;  /* Smaller for Pro Move */
+      border-bottom: 0.5pt solid #000;
+      padding-bottom: 1mm;
+      margin-bottom: 1mm;
       text-align: center;
     }
     
     .checkbox-item {
       display: flex;
       align-items: center;
-      margin: 1.5mm 0;
-      font-size: 9px;
+      margin: 0.75mm 0;
+      font-size: 6pt;  /* Smaller for Pro Move */
     }
     
     .checkbox {
-      width: 3mm;
-      height: 3mm;
-      border: 1px solid #000;
-      margin-right: 2mm;
+      width: 2mm;
+      height: 2mm;
+      border: 0.5pt solid #000;
+      margin-right: 1mm;
       flex-shrink: 0;
       background: #fff;
     }
     
-    /* Daily Layout - Portrait for reMarkable Pro Move */
+    /* Daily Layout - Portrait for reMarkable Paper Pro Move (7.3" screen) */
     .daily-page {
-      width: calc(8.8in - 16mm);  /* Account for padding */
-      height: calc(11.6in - 16mm); /* Account for padding */
-      padding: 8mm;
+      width: 91mm;   /* Pro Move portrait width */
+      height: 163mm;  /* Pro Move portrait height */
+      padding: 3mm;   /* Minimal padding for small screen */
       page-break-before: always;
       page-break-after: always;
       display: flex;
@@ -250,99 +250,99 @@ function getOptimizedCSS() {
     
     .daily-main {
       flex: 1;
-      margin-right: 4mm;
+      margin-right: 2mm;
     }
     
     .daily-sidebar {
-      width: 45mm;
-      border-left: 2px solid #000;
-      padding-left: 3mm;
+      width: 25mm;  /* Narrower sidebar for small screen */
+      border-left: 0.5pt solid #000;
+      padding-left: 1mm;
     }
     
     .daily-header {
-      border-bottom: 2px solid #000;
-      padding-bottom: 3mm;
-      margin-bottom: 4mm;
+      border-bottom: 1pt solid #000;
+      padding-bottom: 1mm;
+      margin-bottom: 2mm;
     }
     
     .daily-title {
-      font-size: 14px;
+      font-size: 8pt;  /* Smaller for Pro Move */
       font-weight: bold;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
     }
     
     .daily-subtitle {
-      font-size: 10px;
-      margin-top: 2mm;
+      font-size: 6pt;  /* Smaller for Pro Move */
+      margin-top: 1mm;
       color: #333;
     }
     
     .schedule-grid {
       display: grid;
-      grid-template-columns: 45px 1fr;
-      border-top: 2px solid #000;
+      grid-template-columns: 18mm 1fr;  /* Narrower time column */
+      border-top: 0.5pt solid #000;
     }
     
     .time-label {
-      border-right: 1px solid #000;
-      border-bottom: 1px solid #000;
-      padding: 2px;
-      font-size: 8px;
+      border-right: 0.5pt solid #000;
+      border-bottom: 0.5pt solid #000;
+      padding: 0.5mm;
+      font-size: 6pt;  /* Smaller for Pro Move */
       text-align: center;
       background: #f5f5f5;
       font-weight: bold;
     }
     
     .time-content {
-      border-bottom: 1px solid #000;
-      padding: 2px 4px;
-      min-height: 12mm;
+      border-bottom: 0.5pt solid #000;
+      padding: 0.5mm 1mm;
+      min-height: 7.5mm;  /* Reduced height for small screen */
       position: relative;
     }
     
     .daily-event {
       background: #000;
       color: #fff;
-      padding: 1px 3px;
-      margin: 1px 0;
-      border-radius: 1px;
-      font-size: 8px;
-      line-height: 1.2;
+      padding: 0.5mm 1mm;
+      margin: 0.25mm 0;
+      border-radius: 0.5px;
+      font-size: 6pt;  /* Smaller for Pro Move */
+      line-height: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     
     .sidebar-section {
-      border: 1px solid #000;
-      margin-bottom: 4mm;
-      padding: 2.5mm;
+      border: 0.5pt solid #000;
+      margin-bottom: 2mm;
+      padding: 1mm;
     }
     
     .sidebar-title {
       font-weight: bold;
-      font-size: 9px;
-      border-bottom: 1px solid #000;
-      padding-bottom: 1.5mm;
-      margin-bottom: 2mm;
+      font-size: 6pt;  /* Smaller for Pro Move */
+      border-bottom: 0.5pt solid #000;
+      padding-bottom: 0.5mm;
+      margin-bottom: 1mm;
       text-align: center;
     }
     
     .goal-line {
-      border-bottom: 1px solid #ccc;
-      margin: 1.5mm 0;
-      height: 3mm;
+      border-bottom: 0.5pt solid #ccc;
+      margin: 0.5mm 0;
+      height: 2mm;
     }
     
     .event-summary {
-      font-size: 7px;
-      line-height: 1.3;
-      margin: 1mm 0;
+      font-size: 5pt;  /* Smaller for Pro Move */
+      line-height: 1.1;
+      margin: 0.5mm 0;
     }
     
     .status-text {
-      font-size: 8px;
-      margin: 1mm 0;
+      font-size: 6pt;  /* Smaller for Pro Move */
+      margin: 0.5mm 0;
     }
     
     /* High contrast mode for better e-ink visibility */
@@ -394,7 +394,7 @@ function generateWeeklyPage(weekData, weekDays) {
             <div class="footer-section">
                 <div class="footer-title">WEEKLY GOALS</div>
                 ${(weekData.weeklyGoals || []).slice(0, 3).map(goal => 
-                    `<div style="margin: 2mm 0; font-size: 9px;">${goal}</div>`
+                    `<div style="margin: 0.5mm 0; font-size: 6pt;">${goal}</div>`
                 ).join('')}
                 ${Array(Math.max(0, 4 - (weekData.weeklyGoals || []).length)).fill().map(() => '<div class="goal-line"></div>').join('')}
             </div>
