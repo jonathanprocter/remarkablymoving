@@ -76,14 +76,10 @@ router.post('/generate-planner-pdf', async (req, res) => {
     // Generate PDF with reMarkable Pro Move dimensions
     // Optimized for 7.3" screen (91mm × 163mm)
     const pdf = await page.pdf({
-      width: '91mm',
-      height: '163mm',
       printBackground: true,
-      preferCSSPageSize: true,
+      preferCSSPageSize: true,  // Let CSS control page sizes
       displayHeaderFooter: false,
-      margin: { top: '0', right: '0', bottom: '0', left: '0' },
-      scale: 1.0,
-      pageRanges: '1-8'
+      margin: { top: '0', right: '0', bottom: '0', left: '0' }
     });
     
     await browser.close();
@@ -162,26 +158,15 @@ function getOptimizedCSS() {
       --tiny-font: 4pt;
     }
     
-    /* Weekly Overview - Landscape */
-    @page weekly {
-      size: 163mm 91mm;
-      margin: 3mm;
-    }
-    
-    /* Daily Pages - Portrait */
-    @page daily {
-      size: 91mm 163mm;
-      margin: 2mm;
-    }
-    
+    /* Page sizing for reMarkable Paper Pro Move */
     @page {
       margin: 0;
-      size: 91mm 163mm;  /* Portrait for daily pages - Pro Move dimensions */
     }
     
-    /* Weekly page - landscape orientation for narrow screen */
+    /* First page (weekly) - landscape */
     @page :first {
-      size: 163mm 91mm;  /* Landscape for weekly overview - Pro Move dimensions */
+      size: 163mm 91mm;
+      margin: 0;
     }
     
     * {
@@ -206,9 +191,9 @@ function getOptimizedCSS() {
       height: 91mm;   /* Pro Move landscape height */
       padding: 3mm;   /* Minimal padding for small screen */
       page-break-after: always;
-      display: grid;
-      grid-template-rows: 15mm 1fr 20mm;
-      gap: 1mm;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
     
     .weekly-header {
@@ -229,12 +214,20 @@ function getOptimizedCSS() {
       margin-top: 1mm;
     }
     
+    .weekly-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 2mm;
+    }
+    
     .weekly-grid {
+      flex: 1;
       display: grid;
-      grid-template-columns: 20mm repeat(7, 1fr);
-      grid-template-rows: 8mm repeat(8, 1fr); /* Reduced to 8 time slots for weekly view */
-      gap: 0.5pt;
+      grid-template-columns: 15mm repeat(7, 1fr);
+      grid-template-rows: 6mm repeat(16, 1fr); /* 16 hourly slots to match daily */
       border: 1pt solid #000;
+      font-size: 5pt;
     }
     
     .time-slot, .day-header, .grid-cell {
@@ -285,17 +278,25 @@ function getOptimizedCSS() {
       width: calc(100% - 2px);
     }
     
-    .weekly-sidebar {
+    .weekly-footer {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3mm;
-      padding: 2mm;
-      font-size: var(--small-font);
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2mm;
+      margin-top: 2mm;
+      height: 15mm;
     }
     
-    .priority-tasks, .weekly-goals {
+    .footer-section {
       border: 1pt solid #000;
-      padding: 2mm;
+      padding: 1mm;
+      font-size: 5pt;
+    }
+    
+    .footer-title {
+      font-weight: bold;
+      font-size: 6pt;
+      border-bottom: 0.5pt solid #000;
+      margin-bottom: 1mm;
     }
     
     .footer-section {
@@ -329,25 +330,21 @@ function getOptimizedCSS() {
     }
     
     /* Daily Layout - Portrait for reMarkable Paper Pro Move (7.3" screen) */
-    .daily-container {
-      width: 87mm;
-      height: 159mm;
-      display: grid;
-      grid-template-rows: 12mm 80mm 25mm 25mm 15mm;
-      gap: 1mm;
-      font-size: var(--base-font);
-    }
-    
     .daily-page {
       width: 91mm;   /* Pro Move portrait width */
       height: 163mm;  /* Pro Move portrait height */
-      padding: 2mm;   /* Minimal padding for small screen */
+      padding: 3mm;   /* Minimal padding for small screen */
       page-break-before: always;
       page-break-after: always;
       display: flex;
       flex-direction: column;
-      margin: 0 auto;
       box-sizing: border-box;
+    }
+    
+    .daily-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
     
     .daily-main {
@@ -365,51 +362,49 @@ function getOptimizedCSS() {
       border-bottom: 1pt solid #000;
       padding-bottom: 1mm;
       margin-bottom: 2mm;
+      text-align: center;
     }
     
     .daily-title {
-      font-size: 8pt;  /* Smaller for Pro Move */
+      font-size: 8pt;
       font-weight: bold;
       letter-spacing: 0.3px;
     }
     
     .daily-subtitle {
-      font-size: 6pt;  /* Smaller for Pro Move */
+      font-size: 6pt;
       margin-top: 1mm;
       color: #333;
     }
     
-    /* Optimized time grid - CRITICAL FIX */
+    /* Time grid for daily pages */
     .time-grid {
+      flex: 1;
       display: grid;
-      grid-template-columns: 16mm 1fr;
-      grid-template-rows: repeat(16, 1fr); /* 16 slots instead of 30 */
+      grid-template-columns: 12mm 1fr;
+      grid-template-rows: repeat(16, 1fr); /* 16 hourly slots (7AM-10PM) */
       border: 1pt solid #000;
-      font-size: var(--small-font);
-    }
-    
-    .schedule-grid {
-      display: grid;
-      grid-template-columns: 16mm 1fr;  /* Narrower time column */
-      grid-template-rows: repeat(16, 1fr); /* 16 hour slots */
-      border: 1pt solid #000;
+      font-size: 5pt;
+      max-height: 100mm;
     }
     
     .time-label {
       border-right: 0.5pt solid #000;
-      border-bottom: 0.5pt solid #000;
+      border-bottom: 0.5pt solid #ccc;
       padding: 0.5mm;
-      font-size: 6pt;  /* Smaller for Pro Move */
+      font-size: 5pt;
       text-align: center;
       background: #f5f5f5;
       font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .time-content {
       border-bottom: 0.5pt solid #ccc;
       padding: 0.5mm;
-      min-height: 4.5mm;  /* Optimized for 16 slots */
-      font-size: var(--tiny-font);
+      font-size: 4pt;
       position: relative;
     }
     
@@ -443,8 +438,8 @@ function getOptimizedCSS() {
     
     .goal-line {
       border-bottom: 0.5pt solid #ccc;
-      margin: 0.5mm 0;
-      height: 2mm;
+      margin: 1mm 0;
+      height: 3mm;
     }
     
     .event-summary {
@@ -462,8 +457,8 @@ function getOptimizedCSS() {
     .priorities {
       border: 1pt solid #000;
       padding: 1mm;
-      display: grid;
-      grid-template-rows: 5mm repeat(3, 1fr);
+      margin-top: 2mm;
+      height: 20mm;
     }
     
     .priority-header {
@@ -488,10 +483,19 @@ function getOptimizedCSS() {
     }
     
     /* Goals and Notes */
-    .daily-goals, .notes {
+    .daily-goals {
       border: 1pt solid #000;
       padding: 1mm;
-      font-size: var(--small-font);
+      margin-top: 2mm;
+      height: 20mm;
+    }
+    
+    .notes {
+      border: 1pt solid #000;
+      padding: 1mm;
+      margin-top: 2mm;
+      flex: 1;
+      min-height: 15mm;
     }
     
     .goal-header, .notes-header {
@@ -534,7 +538,7 @@ function getOptimizedCSS() {
 }
 
 function generateWeeklyPage(weekData, weekDays, eventManager) {
-  const timeSlots = generateTimeSlots(9, 16, 60); // 9 AM to 5 PM for weekly view, hourly only
+  const timeSlots = generateTimeSlots(7, 22, 60); // 7 AM to 10 PM, hourly intervals
   
   return `
     <div class="weekly-page">
@@ -543,36 +547,39 @@ function generateWeeklyPage(weekData, weekDays, eventManager) {
             <div class="weekly-subtitle">WEEK OF ${weekDays[0].date}</div>
         </div>
         
-        <div class="weekly-grid">
-            <div class="time-slot">TIME</div>
-            ${weekDays.map(day => `<div class="day-header">${day.name.substring(0, 3)}</div>`).join('')}
-            
-            ${timeSlots.map(time => `
-                <div class="time-slot">${time}</div>
-                ${weekDays.map(day => `
-                    <div class="grid-cell">
-                        ${getWeeklyEventsForTimeSlot(weekData, day.key, time)}
-                    </div>
+        <div class="weekly-content">
+            <div class="weekly-grid">
+                <div class="time-slot"></div>
+                ${weekDays.map(day => `<div class="day-header">${day.name.substring(0, 3)}</div>`).join('')}
+                
+                ${timeSlots.map(time => `
+                    <div class="time-slot">${time}</div>
+                    ${weekDays.map(day => `
+                        <div class="grid-cell">
+                            ${getWeeklyEventsForTimeSlot(weekData, day.key, time)}
+                        </div>
+                    `).join('')}
                 `).join('')}
-            `).join('')}
+            </div>
         </div>
         
-        <div class="weekly-sidebar">
-            <div class="priority-tasks">
-                <h3>PRIORITY TASKS</h3>
-                ${(weekData.priorityTasks || []).slice(0, 5).map(task => 
-                    `<div class="checkbox-item"><div class="checkbox"></div>${task}</div>`
-                ).join('')}
-                ${Array(Math.max(0, 5 - (weekData.priorityTasks || []).length)).fill().map(() => 
-                    `<div class="checkbox-item"><div class="checkbox"></div><div class="goal-line" style="flex: 1;"></div></div>`
+        <div class="weekly-footer">
+            <div class="footer-section">
+                <div class="footer-title">PRIORITY TASKS</div>
+                ${(weekData.priorityTasks || []).slice(0, 3).map(task => 
+                    `<div class="checkbox-item"><div class="checkbox"></div>${task.substring(0, 20)}</div>`
                 ).join('')}
             </div>
-            <div class="weekly-goals">
-                <h3>WEEKLY GOALS</h3>
+            <div class="footer-section">
+                <div class="footer-title">WEEKLY GOALS</div>
                 ${(weekData.weeklyGoals || []).slice(0, 3).map(goal => 
-                    `<div style="margin: 0.5mm 0; font-size: 6pt;">${goal}</div>`
+                    `<div style="font-size: 5pt;">${goal.substring(0, 25)}</div>`
                 ).join('')}
-                ${Array(Math.max(0, 4 - (weekData.weeklyGoals || []).length)).fill().map(() => '<div class="goal-line"></div>').join('')}
+            </div>
+            <div class="footer-section">
+                <div class="footer-title">NOTES</div>
+                <div style="font-size: 5pt;">${getTotalEventCount(weekData)} events</div>
+            </div>
         </div>
     </div>`;
 }
@@ -582,15 +589,15 @@ function generateDailyPages(weekData, weekDays, eventManager) {
 }
 
 function generateDailyPage(weekData, day, eventManager) {
-  const timeSlots = generateTimeSlots(7, 22, 60); // 7 AM to 10 PM, HOURLY intervals (16 slots)
+  const timeSlots = generateTimeSlots(7, 22, 60); // 7 AM to 10 PM, hourly intervals (16 slots)
   const dayEvents = eventManager ? eventManager.getDailyEvents(day.key) : (weekData.events?.[day.key] || []);
   
   return `
-    <div class="daily-page" data-date="${day.dateObj.toISOString().split('T')[0]}">
+    <div class="daily-page">
         <div class="daily-container">
             <div class="daily-header">
-                <span class="daily-title">DAILY PLANNER - ${day.name}</span>
-                <span class="daily-subtitle">${day.date}</span>
+                <div class="daily-title">DAILY PLANNER</div>
+                <div class="daily-subtitle">${day.name.toUpperCase()} - ${day.date}</div>
             </div>
             
             <div class="time-grid">
@@ -604,14 +611,18 @@ function generateDailyPage(weekData, day, eventManager) {
             
             <div class="priorities">
                 <div class="priority-header">PRIORITIES</div>
-                <div class="priority-item">A) <span class="priority-content"></span></div>
-                <div class="priority-item">B) <span class="priority-content"></span></div>
-                <div class="priority-item">C) <span class="priority-content"></span></div>
+                <div class="priority-item">A) ________________________________</div>
+                <div class="priority-item">B) ________________________________</div>
+                <div class="priority-item">C) ________________________________</div>
             </div>
             
             <div class="daily-goals">
                 <div class="goal-header">DAILY GOALS</div>
-                <div class="goal-content"></div>
+                <div class="goal-content">
+                    <div class="goal-line"></div>
+                    <div class="goal-line"></div>
+                    <div class="goal-line"></div>
+                </div>
             </div>
             
             <div class="notes">
@@ -620,8 +631,8 @@ function generateDailyPage(weekData, day, eventManager) {
             </div>
             
             <div class="status">
-                <span class="event-count">${dayEvents.length} events scheduled</span>
-                <span class="sync-status">${getTotalEventCount(weekData)} total synced</span>
+                <span class="event-count">${dayEvents.length} events</span>
+                <span class="sync-status">Week: ${getTotalEventCount(weekData)} total</span>
             </div>
         </div>
     </div>`;
