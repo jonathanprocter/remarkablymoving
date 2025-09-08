@@ -13,6 +13,12 @@ class PlannerEventManager {
     this.weeklyEvents = new Set(); // events visible on weekly view
     this.dailyEvents = new Map(); // date -> Set of eventIds
     this.nextId = 1;
+    this.eventCounter = 0;
+    this.weeklyTotal = 0;
+    this.dailyCounts = {
+      mon: 0, tue: 0, wed: 0, thu: 0, 
+      fri: 0, sat: 0, sun: 0
+    };
   }
   
   generateId() {
@@ -24,8 +30,11 @@ class PlannerEventManager {
     event.id = eventId;
     this.events.set(eventId, event);
     
-    // Add to weekly view if multi-day or important
-    if (event.duration > 60 || event.priority === 'high' || event.showInWeekly) {
+    // Add to weekly view if multi-day or important or within business hours
+    const [eventHour] = (event.time || '09:00').split(':').map(Number);
+    const isBusinessHour = eventHour >= 9 && eventHour <= 17;
+    
+    if ((event.duration > 60 || event.priority === 'high' || event.showInWeekly) && isBusinessHour) {
       this.weeklyEvents.add(eventId);
     }
     
@@ -35,6 +44,13 @@ class PlannerEventManager {
       this.dailyEvents.set(dateKey, new Set());
     }
     this.dailyEvents.get(dateKey).add(eventId);
+    
+    // Update counts
+    const dayAbbr = dateKey.substring(0, 3);
+    if (this.dailyCounts[dayAbbr] !== undefined) {
+      this.dailyCounts[dayAbbr]++;
+      this.weeklyTotal++;
+    }
     
     return eventId;
   }
@@ -50,6 +66,11 @@ class PlannerEventManager {
   
   getAllEvents() {
     return Array.from(this.events.values());
+  }
+  
+  isBusinessHour(time) {
+    const hour = parseInt(time.split(':')[0]);
+    return hour >= 9 && hour <= 17;
   }
 }
 
@@ -147,26 +168,40 @@ function generatePlannerHTML(weekData, startDate) {
 
 function getOptimizedCSS() {
   return `
-    /* Device-specific measurements for reMarkable Paper Pro Move */
+    /* Device specifications for reMarkable Paper Pro Move */
     :root {
-      --device-width: 91mm;
-      --device-height: 163mm;
-      --usable-width: 85mm;
-      --usable-height: 157mm;
-      --base-font: 6pt;
-      --small-font: 5pt;
-      --tiny-font: 4pt;
+      --device-width-portrait: 91mm;
+      --device-height-portrait: 163mm;
+      --device-width-landscape: 163mm;
+      --device-height-landscape: 91mm;
+      --margin: 2mm;
+      --usable-width-portrait: 87mm;
+      --usable-height-portrait: 159mm;
+      --usable-width-landscape: 159mm;
+      --usable-height-landscape: 87mm;
+      
+      /* Typography */
+      --font-large: 8pt;
+      --font-medium: 6pt;
+      --font-small: 5pt;
+      --font-tiny: 4pt;
     }
     
     /* Page sizing for reMarkable Paper Pro Move */
     @page {
-      margin: 0;
+      margin: var(--margin);
     }
     
     /* First page (weekly) - landscape */
     @page :first {
       size: 163mm 91mm;
-      margin: 0;
+      margin: var(--margin);
+    }
+    
+    /* Daily pages - Portrait */
+    @page :not(:first) {
+      size: 91mm 163mm;
+      margin: var(--margin);
     }
     
     * {
@@ -177,105 +212,137 @@ function getOptimizedCSS() {
       print-color-adjust: exact;
     }
     
+    h1, h2, h3 {
+      margin: 0;
+      padding: 0;
+    }
+    
     body {
-      font-family: 'Courier New', 'Liberation Mono', monospace;
-      font-size: var(--base-font);
-      line-height: 1.1;
-      color: #000;
-      background: #fff;
+      font-family: 'Times', serif;
+      color: #000000;
+      background: #ffffff;
+      -webkit-print-color-adjust: exact;
+    }
+    
+    /* Page structure */
+    .page {
+      page-break-after: always;
+      page-break-inside: avoid;
+    }
+    
+    .page:last-child {
+      page-break-after: auto;
     }
     
     /* Weekly Layout - Landscape for reMarkable Paper Pro Move (7.3" screen) */
     .weekly-page {
-      width: 163mm;  /* Pro Move landscape width */
-      height: 91mm;   /* Pro Move landscape height */
-      padding: 3mm;   /* Minimal padding for small screen */
-      page-break-after: always;
+      width: var(--usable-width-landscape);
+      height: var(--usable-height-landscape);
+    }
+    
+    .weekly-container {
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      box-sizing: border-box;
     }
     
     .weekly-header {
-      text-align: center;
+      height: 12mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 1pt solid #000;
-      padding-bottom: 2mm;
+      padding: 0 2mm;
       margin-bottom: 2mm;
     }
     
-    .weekly-title {
-      font-size: 10pt;  /* Reduced for small screen */
+    .weekly-header h1 {
+      font-size: var(--font-large);
       font-weight: bold;
-      letter-spacing: 0.5px;
     }
     
-    .weekly-subtitle {
-      font-size: 8pt;  /* Reduced for small screen */
-      margin-top: 1mm;
+    .weekly-header span {
+      font-size: var(--font-medium);
     }
     
-    .weekly-content {
+    .weekly-main {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      margin-top: 2mm;
+      gap: 3mm;
     }
     
     .weekly-grid {
-      flex: 1;
+      flex: 2;
       display: grid;
       grid-template-columns: 15mm repeat(7, 1fr);
-      grid-template-rows: 6mm repeat(16, 1fr); /* 16 hourly slots to match daily */
+      grid-template-rows: 8mm repeat(9, 1fr); /* 09:00-17:00 business hours */
+      gap: 0.5pt;
       border: 1pt solid #000;
-      font-size: 5pt;
+      font-size: var(--font-small);
     }
     
-    .time-slot, .day-header, .grid-cell {
-      border-right: 0.5pt solid #000;
-      border-bottom: 0.5pt solid #000;
-      padding: 0.5px 1px;
-      font-size: 6pt;  /* Smaller for narrow screen */
-      overflow: hidden;
-    }
-    
-    .day-header {
-      font-weight: bold;
-      text-align: center;
-      background: #000;
-      color: #fff;
-      padding: 1px;
-      font-size: 7pt;  /* Smaller for narrow screen */
-    }
-    
-    .time-slot {
-      font-weight: bold;
-      text-align: center;
+    .time-header, .day-header {
       background: #f0f0f0;
-      writing-mode: horizontal-tb;
+      font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-right: 0.5pt solid #000;
+      border-bottom: 0.5pt solid #000;
+      font-size: var(--font-small);
     }
     
-    .grid-cell {
-      position: relative;
-      min-height: 5mm;  /* Reduced for small screen */
-      vertical-align: top;
+    .time-label {
+      background: #f8f8f8;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 0.5pt solid #000;
+      border-bottom: 0.5pt solid #ccc;
+      font-size: var(--font-tiny);
     }
     
-    .weekly-event {
-      background: #000;
-      color: #fff;
-      padding: 0.5px 1px;
-      margin: 0.25px;
-      font-size: 5pt;  /* Very small for narrow cells */
-      border-radius: 0.5px;
+    .event-cell {
+      border-right: 0.5pt solid #ccc;
+      border-bottom: 0.5pt solid #ccc;
+      padding: 0.5mm;
+      font-size: var(--font-tiny);
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      line-height: 1;
-      display: block;
-      width: calc(100% - 2px);
+    }
+    
+    .weekly-sidebar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2mm;
+    }
+    
+    .priority-section, .goals-section {
+      border: 1pt solid #000;
+      padding: 2mm;
+      flex: 1;
+    }
+    
+    .priority-section h3, .goals-section h3 {
+      font-size: var(--font-medium);
+      font-weight: bold;
+      margin-bottom: 1mm;
+      border-bottom: 0.5pt solid #000;
+      padding-bottom: 0.5mm;
+    }
+    
+    .task-item, .goal-item {
+      font-size: var(--font-small);
+      margin-bottom: 0.5mm;
+      line-height: 1.2;
+    }
+    
+    /* Remove old footer styles */
+    .weekly-footer, .footer-section, .footer-title,
+    .checkbox-item, .checkbox {
+      display: none;
     }
     
     .weekly-footer {
@@ -331,14 +398,8 @@ function getOptimizedCSS() {
     
     /* Daily Layout - Portrait for reMarkable Paper Pro Move (7.3" screen) */
     .daily-page {
-      width: 91mm;   /* Pro Move portrait width */
-      height: 163mm;  /* Pro Move portrait height */
-      padding: 3mm;   /* Minimal padding for small screen */
-      page-break-before: always;
-      page-break-after: always;
-      display: flex;
-      flex-direction: column;
-      box-sizing: border-box;
+      width: var(--usable-width-portrait);
+      height: var(--usable-height-portrait);
     }
     
     .daily-container {
@@ -359,53 +420,67 @@ function getOptimizedCSS() {
     }
     
     .daily-header {
+      height: 10mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 1pt solid #000;
-      padding-bottom: 1mm;
-      margin-bottom: 2mm;
-      text-align: center;
+      padding: 0 1mm;
+      margin-bottom: 1mm;
     }
     
     .daily-title {
-      font-size: 8pt;
+      font-size: var(--font-medium);
       font-weight: bold;
-      letter-spacing: 0.3px;
     }
     
-    .daily-subtitle {
-      font-size: 6pt;
-      margin-top: 1mm;
-      color: #333;
+    .daily-date {
+      font-size: var(--font-small);
     }
     
     /* Time grid for daily pages */
     .time-grid {
       flex: 1;
-      display: grid;
-      grid-template-columns: 12mm 1fr;
-      grid-template-rows: repeat(16, 1fr); /* 16 hourly slots (7AM-10PM) */
       border: 1pt solid #000;
-      font-size: 5pt;
-      max-height: 100mm;
+      display: flex;
+      flex-direction: column;
     }
     
-    .time-label {
-      border-right: 0.5pt solid #000;
+    .time-row {
+      flex: 1;
+      display: flex;
       border-bottom: 0.5pt solid #ccc;
-      padding: 0.5mm;
-      font-size: 5pt;
-      text-align: center;
-      background: #f5f5f5;
+    }
+    
+    .time-row:last-child {
+      border-bottom: none;
+    }
+    
+    .time-row .time-label {
+      width: 12mm;
+      background: #f8f8f8;
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-right: 1pt solid #000;
+      font-size: var(--font-tiny);
     }
     
     .time-content {
-      border-bottom: 0.5pt solid #ccc;
+      flex: 1;
       padding: 0.5mm;
-      font-size: 4pt;
-      position: relative;
+      font-size: var(--font-small);
+      min-height: 8mm;
+    }
+    
+    .daily-bottom {
+      height: 35mm;
+      margin-top: 1mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 15mm 10mm 8mm;
+      gap: 1mm;
     }
     
     .daily-event {
@@ -455,74 +530,50 @@ function getOptimizedCSS() {
     
     /* Priority section for daily pages */
     .priorities {
+      grid-column: 1 / 3;
       border: 1pt solid #000;
       padding: 1mm;
-      margin-top: 2mm;
-      height: 20mm;
     }
     
-    .priority-header {
+    .section-header {
+      font-size: var(--font-small);
       font-weight: bold;
-      border-bottom: 0.5pt solid #000;
-      display: flex;
-      align-items: center;
-      font-size: var(--small-font);
-    }
-    
-    .priority-item {
-      display: flex;
-      align-items: center;
-      gap: 2mm;
-      font-size: var(--small-font);
-    }
-    
-    .priority-content {
-      flex: 1;
-      border-bottom: 0.5pt solid #ccc;
-      min-height: 3mm;
-    }
-    
-    /* Goals and Notes */
-    .daily-goals {
-      border: 1pt solid #000;
-      padding: 1mm;
-      margin-top: 2mm;
-      height: 20mm;
-    }
-    
-    .notes {
-      border: 1pt solid #000;
-      padding: 1mm;
-      margin-top: 2mm;
-      flex: 1;
-      min-height: 15mm;
-    }
-    
-    .goal-header, .notes-header {
-      font-weight: bold;
-      font-size: var(--small-font);
-      border-bottom: 0.5pt solid #000;
-      padding-bottom: 0.5mm;
       margin-bottom: 1mm;
     }
     
-    .goal-content, .notes-content {
-      min-height: 15mm;
-      font-size: var(--tiny-font);
+    .priority-line {
+      font-size: var(--font-small);
+      margin-bottom: 0.5mm;
+      display: flex;
+      align-items: center;
+    }
+    
+    .fill-line {
+      flex: 1;
+      border-bottom: 0.5pt solid #ccc;
+      margin-left: 2mm;
+      height: 1px;
+    }
+    
+    /* Goals and Notes */
+    .daily-goals, .notes {
+      border: 1pt solid #000;
+      padding: 1mm;
+    }
+    
+    .goals-content, .notes-content {
+      font-size: var(--font-small);
+      height: calc(100% - 6mm);
     }
     
     .status {
+      grid-column: 1 / 3;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: var(--tiny-font);
+      font-size: var(--font-tiny);
       color: #666;
-      padding: 1mm;
-      border-top: 0.5pt solid #ccc;
-    }
-    
-    .event-count, .sync-status {
-      font-size: var(--tiny-font);
+      padding: 0 1mm;
     }
     
     /* High contrast mode for better e-ink visibility */
@@ -538,47 +589,49 @@ function getOptimizedCSS() {
 }
 
 function generateWeeklyPage(weekData, weekDays, eventManager) {
-  const timeSlots = generateTimeSlots(7, 22, 60); // 7 AM to 10 PM, hourly intervals
+  const timeSlots = generateTimeSlots(9, 17, 60); // 9 AM to 5 PM business hours (9 slots)
   
   return `
-    <div class="weekly-page">
-        <div class="weekly-header">
-            <div class="weekly-title">WEEKLY PLANNER</div>
-            <div class="weekly-subtitle">WEEK OF ${weekDays[0].date}</div>
-        </div>
-        
-        <div class="weekly-content">
-            <div class="weekly-grid">
-                <div class="time-slot"></div>
-                ${weekDays.map(day => `<div class="day-header">${day.name.substring(0, 3)}</div>`).join('')}
+    <div class="page weekly-page">
+        <div class="weekly-container">
+            <div class="weekly-header">
+                <h1>WEEKLY PLANNER</h1>
+                <span>WEEK OF ${weekDays[0].date}</span>
+            </div>
+            
+            <div class="weekly-main">
+                <div class="weekly-grid">
+                    <div class="time-header">TIME</div>
+                    ${weekDays.map(day => `<div class="day-header">${day.name.substring(0, 3).toUpperCase()}</div>`).join('')}
+                    
+                    ${timeSlots.map(time => {
+                      const timeStr = time.replace(':', '');
+                      return `
+                        <div class="time-label">${time}</div>
+                        ${weekDays.map(day => `
+                            <div class="event-cell" id="w-${day.key.substring(0, 3)}-${timeStr}" data-day="${day.key.substring(0, 3)}" data-time="${time}">
+                                ${getWeeklyEventsForTimeSlot(weekData, day.key, time)}
+                            </div>
+                        `).join('')}
+                      `;
+                    }).join('')}
+                </div>
                 
-                ${timeSlots.map(time => `
-                    <div class="time-slot">${time}</div>
-                    ${weekDays.map(day => `
-                        <div class="grid-cell">
-                            ${getWeeklyEventsForTimeSlot(weekData, day.key, time)}
-                        </div>
-                    `).join('')}
-                `).join('')}
-            </div>
-        </div>
-        
-        <div class="weekly-footer">
-            <div class="footer-section">
-                <div class="footer-title">PRIORITY TASKS</div>
-                ${(weekData.priorityTasks || []).slice(0, 3).map(task => 
-                    `<div class="checkbox-item"><div class="checkbox"></div>${task.substring(0, 20)}</div>`
-                ).join('')}
-            </div>
-            <div class="footer-section">
-                <div class="footer-title">WEEKLY GOALS</div>
-                ${(weekData.weeklyGoals || []).slice(0, 3).map(goal => 
-                    `<div style="font-size: 5pt;">${goal.substring(0, 25)}</div>`
-                ).join('')}
-            </div>
-            <div class="footer-section">
-                <div class="footer-title">NOTES</div>
-                <div style="font-size: 5pt;">${getTotalEventCount(weekData)} events</div>
+                <div class="weekly-sidebar">
+                    <div class="priority-section">
+                        <h3>PRIORITY TASKS</h3>
+                        ${(weekData.priorityTasks || ['Follow up on client contracts', 'Prepare quarterly review materials', 'Update team schedules', 'Review project deliverables', 'Schedule follow-up meetings']).slice(0, 5).map((task, i) => 
+                            `<div class="task-item" id="task-${i+1}">${task}</div>`
+                        ).join('')}
+                    </div>
+                    
+                    <div class="goals-section">
+                        <h3>WEEKLY GOALS</h3>
+                        ${(weekData.weeklyGoals || ['Complete all scheduled appointments', 'Review and update project timelines', 'Prepare for upcoming presentations']).slice(0, 3).map(goal => 
+                            `<div class="goal-item">${goal}</div>`
+                        ).join('')}
+                    </div>
+                </div>
             </div>
         </div>
     </div>`;
@@ -591,48 +644,52 @@ function generateDailyPages(weekData, weekDays, eventManager) {
 function generateDailyPage(weekData, day, eventManager) {
   const timeSlots = generateTimeSlots(7, 22, 60); // 7 AM to 10 PM, hourly intervals (16 slots)
   const dayEvents = eventManager ? eventManager.getDailyEvents(day.key) : (weekData.events?.[day.key] || []);
+  const dayAbbr = day.key.substring(0, 3);
   
   return `
-    <div class="daily-page">
+    <div class="page daily-page" data-date="${day.dateObj.toISOString().split('T')[0]}" data-day="${dayAbbr}">
         <div class="daily-container">
             <div class="daily-header">
-                <div class="daily-title">DAILY PLANNER</div>
-                <div class="daily-subtitle">${day.name.toUpperCase()} - ${day.date}</div>
+                <span class="daily-title">DAILY PLANNER - ${day.name}</span>
+                <span class="daily-date">${day.date}</span>
             </div>
             
             <div class="time-grid">
-                ${timeSlots.map(time => `
-                    <div class="time-label">${time}</div>
-                    <div class="time-content" data-time="${time}">
-                        ${getDailyEventsForTime(dayEvents, time)}
+                ${timeSlots.map(time => {
+                  const timeStr = time.replace(':', '');
+                  return `
+                    <div class="time-row">
+                        <div class="time-label">${time}</div>
+                        <div class="time-content" id="d-${dayAbbr}-${timeStr}" data-time="${time}" data-day="${dayAbbr}">
+                            ${getDailyEventsForTime(dayEvents, time)}
+                        </div>
                     </div>
-                `).join('')}
+                  `;
+                }).join('')}
             </div>
             
-            <div class="priorities">
-                <div class="priority-header">PRIORITIES</div>
-                <div class="priority-item">A) ________________________________</div>
-                <div class="priority-item">B) ________________________________</div>
-                <div class="priority-item">C) ________________________________</div>
-            </div>
-            
-            <div class="daily-goals">
-                <div class="goal-header">DAILY GOALS</div>
-                <div class="goal-content">
-                    <div class="goal-line"></div>
-                    <div class="goal-line"></div>
-                    <div class="goal-line"></div>
+            <div class="daily-bottom">
+                <div class="priorities">
+                    <div class="section-header">PRIORITIES</div>
+                    <div class="priority-line">A) <span class="fill-line"></span></div>
+                    <div class="priority-line">B) <span class="fill-line"></span></div>
+                    <div class="priority-line">C) <span class="fill-line"></span></div>
                 </div>
-            </div>
-            
-            <div class="notes">
-                <div class="notes-header">NOTES</div>
-                <div class="notes-content"></div>
-            </div>
-            
-            <div class="status">
-                <span class="event-count">${dayEvents.length} events</span>
-                <span class="sync-status">Week: ${getTotalEventCount(weekData)} total</span>
+                
+                <div class="daily-goals">
+                    <div class="section-header">DAILY GOALS</div>
+                    <div class="goals-content"></div>
+                </div>
+                
+                <div class="notes">
+                    <div class="section-header">NOTES</div>
+                    <div class="notes-content"></div>
+                </div>
+                
+                <div class="status">
+                    <span id="event-count-${dayAbbr}">${dayEvents.length} events</span>
+                    <span>Week: <span id="week-total">${getTotalEventCount(weekData)}</span> total</span>
+                </div>
             </div>
         </div>
     </div>`;
@@ -662,15 +719,16 @@ function getWeeklyEventsForTimeSlot(weekData, dayKey, timeSlot) {
       const eventStartTime = eventHour * 60 + eventMinute;
       const eventEndTime = eventStartTime + (event.duration || 60);
       
-      // Show event if it overlaps with this hour slot
-      return (eventStartTime < slotEndTime && eventEndTime > slotTime);
+      // Show event if it overlaps with this hour slot and is within business hours
+      return (eventStartTime < slotEndTime && eventEndTime > slotTime) && 
+             (eventHour >= 9 && eventHour <= 17);
     })
     .map(event => {
-      const truncatedTitle = event.title.substring(0, 10) + (event.title.length > 10 ? '...' : '');
-      const bgColor = event.priority === 'high' ? '#ffcccc' : '#f0f0f0';
-      return `<div class="weekly-event" style="background-color: ${bgColor}; color: #000;">${truncatedTitle}</div>`;
+      const truncatedTitle = event.title.length > 8 ? event.title.substring(0, 8) + '...' : event.title;
+      const bgColor = event.priority === 'high' ? '#e0e0e0' : '';
+      return truncatedTitle ? `<span style="background-color: ${bgColor};">${truncatedTitle}</span>` : '';
     })
-    .join('');
+    .join(' ');
 }
 
 function getDailyEventsForTime(events, timeSlot) {
@@ -688,10 +746,10 @@ function getDailyEventsForTime(events, timeSlot) {
              (eventStartTime < slotTime && eventEndTime > slotTime);
     })
     .map(event => {
-      const bgColor = event.priority === 'high' ? '#ffcccc' : 'transparent';
-      return `<div class="daily-event" style="background-color: ${bgColor};">${event.title}</div>`;
+      const bgColor = event.priority === 'high' ? '#f0f0f0' : '';
+      return event.title ? `<span style="background-color: ${bgColor};">${event.title}</span>` : '';
     })
-    .join('');
+    .join(' ');
 }
 
 function getTotalEventCount(weekData) {
