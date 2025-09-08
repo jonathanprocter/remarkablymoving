@@ -19,11 +19,14 @@ Preferred communication style: Simple, everyday language.
 ## PDF Generation
 - **Client-Side PDF Creation**: Uses jsPDF library for generating PDF documents directly in the browser
 - **reMarkable Format Optimization**: Custom aspect ratios (4:3) and styling to match reMarkable tablet dimensions
+- **Franklin Planner Layout**: Professional time-based grid layout following Franklin Covey methodology
 - **Print-Friendly Output**: Generates PDFs optimized for e-ink displays with appropriate contrast and brightness adjustments
 
 ## Calendar System
-- **Grid-Based Layout**: CSS Grid implementation for flexible calendar layouts
-- **Time Slot Management**: Configurable time slots with dotted borders for writing spaces
+- **Franklin Style Layout**: Professional time-based grid following Franklin Planner methodology
+- **Structured Time Management**: Organized time slots (6AM-8PM) with clean event placement
+- **Priority Management**: Integrated A/B/C priority sections and goal tracking areas
+- **Professional Typography**: Courier New monospace font for classic planner appearance
 - **Custom Date Handling**: JavaScript-based date manipulation for calendar generation
 
 ## Integration Layer
