@@ -662,41 +662,45 @@ function generateDailyPage(weekData, day, eventManager) {
                 <span class="daily-date">${day.date}</span>
             </div>
             
-            <div class="time-grid">
-                ${timeSlots.map(time => {
-                  const timeStr = time.replace(':', '');
-                  return `
-                    <div class="time-row">
-                        <div class="time-label">${time}</div>
-                        <div class="time-content" id="d-${dayAbbr}-${timeStr}" data-time="${time}" data-day="${dayAbbr}">
-                            ${getDailyEventsForTime(dayEvents, time)}
+            <div class="daily-main">
+                <div class="time-section">
+                    ${timeSlots.map(time => {
+                      const timeStr = time.replace(':', '');
+                      return `
+                        <div class="time-row">
+                            <div class="time-label">${time}</div>
+                            <div class="time-space" id="d-${dayAbbr}-${timeStr}" data-time="${time}" data-day="${dayAbbr}">
+                                ${getDailyEventsForTime(dayEvents, time)}
+                            </div>
                         </div>
-                    </div>
-                  `;
-                }).join('')}
+                      `;
+                    }).join('')}
+                </div>
             </div>
             
             <div class="daily-bottom">
-                <div class="priorities">
-                    <div class="section-header">PRIORITIES</div>
-                    <div class="priority-line">A) <span class="fill-line"></span></div>
-                    <div class="priority-line">B) <span class="fill-line"></span></div>
-                    <div class="priority-line">C) <span class="fill-line"></span></div>
+                <div class="priorities-section">
+                    <div class="section-title">PRIORITIES</div>
+                    <div class="priority-line">A) <div class="write-line"></div></div>
+                    <div class="priority-line">B) <div class="write-line"></div></div>
+                    <div class="priority-line">C) <div class="write-line"></div></div>
                 </div>
                 
-                <div class="daily-goals">
-                    <div class="section-header">DAILY GOALS</div>
-                    <div class="goals-content"></div>
+                <div class="bottom-sections">
+                    <div class="goals-box">
+                        <div class="section-title">DAILY GOALS</div>
+                        <div class="write-area"></div>
+                    </div>
+                    
+                    <div class="notes-box">
+                        <div class="section-title">NOTES</div>
+                        <div class="write-area"></div>
+                    </div>
                 </div>
                 
-                <div class="notes">
-                    <div class="section-header">NOTES</div>
-                    <div class="notes-content"></div>
-                </div>
-                
-                <div class="status">
-                    <span id="event-count-${dayAbbr}">${dayEvents.length} events</span>
-                    <span>Week: <span id="week-total">${getTotalEventCount(weekData)}</span> total</span>
+                <div class="status-line">
+                    <span class="event-count" id="count-${dayAbbr}">${dayEvents.length} events</span>
+                    <span class="week-total">Week: <span id="total-events">${getTotalEventCount(weekData)}</span> total</span>
                 </div>
             </div>
         </div>
