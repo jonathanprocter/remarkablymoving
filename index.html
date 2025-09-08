@@ -20,12 +20,14 @@
         }
         .franklin-weekly-grid {
             display: grid;
-            grid-template-columns: 60px repeat(7, 1fr);
-            grid-template-rows: auto repeat(6, 35px);
-            gap: 1px;
+            grid-template-columns: 50px repeat(7, 1fr);
+            grid-template-rows: auto repeat(16, 22px);
+            gap: 0;
             background: #333333;
             border: 2px solid #333333;
             font-family: 'Courier New', monospace;
+            overflow-y: auto;
+            max-height: 400px;
         }
         .franklin-daily-grid {
             display: grid;
@@ -52,30 +54,42 @@
         }
         .franklin-time-label {
             background: #f8f9fa;
-            padding: 4px;
-            font-size: 9px;
+            padding: 2px;
+            font-size: 8px;
             font-weight: bold;
             text-align: center;
             border-right: 1px solid #333333;
+            border-bottom: 1px solid #eeeeee;
+            height: 22px;
+            line-height: 18px;
         }
         .franklin-day-cell {
             background: #ffffff;
-            padding: 2px;
-            min-height: 33px;
+            padding: 1px 2px;
+            min-height: 20px;
             border-right: 1px solid #dddddd;
+            border-bottom: 1px solid #eeeeee;
             position: relative;
+            font-size: 8px;
         }
         .franklin-event {
             background: #e8e8e8;
-            border-left: 3px solid #333333;
-            padding: 1px 3px;
-            margin: 1px 0;
-            font-size: 8px;
+            border-left: 2px solid #333333;
+            padding: 0px 2px;
+            margin: 0;
+            font-size: 7px;
             font-weight: bold;
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
-            line-height: 1.2;
+            line-height: 1.1;
+            height: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .franklin-event:hover {
+            background: #d0d0d0;
+            border-left-color: #000000;
         }
         .franklin-priority-section {
             background: #f8f9fa;
@@ -316,6 +330,26 @@
                                     <div class="franklin-day-cell" id="weekly-sat-7"></div>
                                     <div class="franklin-day-cell" id="weekly-sun-7"></div>
                                     
+                                    <!-- 08:00 Row -->
+                                    <div class="franklin-time-label">08:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-8"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-8"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-8"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-8"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-8"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-8"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-8"></div>
+                                    
+                                    <!-- 09:00 Row -->
+                                    <div class="franklin-time-label">09:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-9"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-9"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-9"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-9"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-9"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-9"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-9"></div>
+                                    
                                     <!-- 10:00 Row -->
                                     <div class="franklin-time-label">10:00</div>
                                     <div class="franklin-day-cell" id="weekly-mon-10"></div>
@@ -325,6 +359,26 @@
                                     <div class="franklin-day-cell" id="weekly-fri-10"></div>
                                     <div class="franklin-day-cell" id="weekly-sat-10"></div>
                                     <div class="franklin-day-cell" id="weekly-sun-10"></div>
+                                    
+                                    <!-- 11:00 Row -->
+                                    <div class="franklin-time-label">11:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-11"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-11"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-11"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-11"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-11"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-11"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-11"></div>
+                                    
+                                    <!-- 12:00 Row -->
+                                    <div class="franklin-time-label">12:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-12"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-12"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-12"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-12"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-12"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-12"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-12"></div>
                                     
                                     <!-- 13:00 Row -->
                                     <div class="franklin-time-label">13:00</div>
@@ -336,6 +390,26 @@
                                     <div class="franklin-day-cell" id="weekly-sat-13"></div>
                                     <div class="franklin-day-cell" id="weekly-sun-13"></div>
                                     
+                                    <!-- 14:00 Row -->
+                                    <div class="franklin-time-label">14:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-14"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-14"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-14"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-14"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-14"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-14"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-14"></div>
+                                    
+                                    <!-- 15:00 Row -->
+                                    <div class="franklin-time-label">15:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-15"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-15"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-15"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-15"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-15"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-15"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-15"></div>
+                                    
                                     <!-- 16:00 Row -->
                                     <div class="franklin-time-label">16:00</div>
                                     <div class="franklin-day-cell" id="weekly-mon-16"></div>
@@ -346,6 +420,26 @@
                                     <div class="franklin-day-cell" id="weekly-sat-16"></div>
                                     <div class="franklin-day-cell" id="weekly-sun-16"></div>
                                     
+                                    <!-- 17:00 Row -->
+                                    <div class="franklin-time-label">17:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-17"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-17"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-17"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-17"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-17"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-17"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-17"></div>
+                                    
+                                    <!-- 18:00 Row -->
+                                    <div class="franklin-time-label">18:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-18"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-18"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-18"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-18"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-18"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-18"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-18"></div>
+                                    
                                     <!-- 19:00 Row -->
                                     <div class="franklin-time-label">19:00</div>
                                     <div class="franklin-day-cell" id="weekly-mon-19"></div>
@@ -355,6 +449,26 @@
                                     <div class="franklin-day-cell" id="weekly-fri-19"></div>
                                     <div class="franklin-day-cell" id="weekly-sat-19"></div>
                                     <div class="franklin-day-cell" id="weekly-sun-19"></div>
+                                    
+                                    <!-- 20:00 Row -->
+                                    <div class="franklin-time-label">20:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-20"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-20"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-20"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-20"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-20"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-20"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-20"></div>
+                                    
+                                    <!-- 21:00 Row -->
+                                    <div class="franklin-time-label">21:00</div>
+                                    <div class="franklin-day-cell" id="weekly-mon-21"></div>
+                                    <div class="franklin-day-cell" id="weekly-tue-21"></div>
+                                    <div class="franklin-day-cell" id="weekly-wed-21"></div>
+                                    <div class="franklin-day-cell" id="weekly-thu-21"></div>
+                                    <div class="franklin-day-cell" id="weekly-fri-21"></div>
+                                    <div class="franklin-day-cell" id="weekly-sat-21"></div>
+                                    <div class="franklin-day-cell" id="weekly-sun-21"></div>
                                     
                                     <!-- 22:00 Row -->
                                     <div class="franklin-time-label">22:00</div>
@@ -860,16 +974,14 @@
                 weekRangeEl.textContent = `Week of ${weekStart.toLocaleDateString('en-US', options)}`;
             }
             
-            // Clear all day cells first
-            const timeSlots = [7, 10, 13, 16, 19, 22];
+            // Clear all day cells first (all hours from 7 to 22)
             const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-            
-            timeSlots.forEach(hour => {
+            for (let hour = 7; hour <= 22; hour++) {
                 days.forEach(day => {
                     const cell = document.getElementById(`weekly-${day}-${hour}`);
                     if (cell) cell.innerHTML = '';
                 });
-            });
+            }
             
             // Filter events for current week
             const weekEvents = calendarEvents.filter(event => {
@@ -890,14 +1002,10 @@
                 const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
                 const dayName = dayNames[dayOfWeek];
                 
-                // Find the appropriate time slot (7, 10, 13, 16, 19, 22)
-                let timeSlot = 7;
-                if (hour >= 22 || hour < 7) timeSlot = 22;
-                else if (hour >= 19) timeSlot = 19;
-                else if (hour >= 16) timeSlot = 16;
-                else if (hour >= 13) timeSlot = 13;
-                else if (hour >= 10) timeSlot = 10;
-                else timeSlot = 7;
+                // Use exact hour for placement (within 7-22 range)
+                let timeSlot = hour;
+                if (hour < 7) timeSlot = 7;
+                if (hour > 22) timeSlot = 22;
                 
                 const cellId = `weekly-${dayName}-${timeSlot}`;
                 const cell = document.getElementById(cellId);
@@ -907,10 +1015,23 @@
                     eventEl.className = 'franklin-event';
                     const startTime = event.start.dateTime ? 
                         eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
-                        'All day';
-                    eventEl.textContent = `${startTime} ${event.summary || 'Event'}`;
+                        '';
+                    eventEl.textContent = event.summary || 'Event';
+                    eventEl.title = `${startTime} ${event.summary || 'Event'}\nClick to view day details`;
+                    
+                    // Add click handler for bidirectional navigation to daily view
+                    eventEl.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        console.log(`🔗 Navigating from weekly to daily view for: ${event.summary}`);
+                        navigateToDay(eventDate);
+                    });
+                    
+                    // Store event data for reference
+                    eventEl.dataset.eventDate = eventDate.toISOString();
+                    eventEl.dataset.eventSummary = event.summary || 'Event';
+                    
                     cell.appendChild(eventEl);
-                    console.log(`📍 Placed "${event.summary}" in ${cellId}`);
+                    console.log(`📍 Placed "${event.summary}" at ${hour}:00 on ${dayName}`);
                 } else {
                     console.log(`⚠️ Could not find cell ${cellId} for event "${event.summary}"`);
                 }
@@ -984,6 +1105,19 @@
                             eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
                             'All day';
                         eventEl.innerHTML = `<strong>${time}</strong><br><span style="font-size: 7px;">${event.summary || 'Untitled Event'}</span>`;
+                        eventEl.title = `${event.summary || 'Event'}\nClick to return to weekly view`;
+                        
+                        // Add click handler to go back to weekly view
+                        eventEl.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            console.log(`🔗 Returning to weekly view from daily event: ${event.summary}`);
+                            switchPage(0); // Return to weekly view
+                        });
+                        
+                        // Store event data
+                        eventEl.dataset.eventDate = eventDate.toISOString();
+                        eventEl.dataset.eventSummary = event.summary || 'Event';
+                        
                         slot.appendChild(eventEl);
                         console.log(`📌 Placed event "${event.summary}" at ${slotId}`);
                     } else {
@@ -1066,8 +1200,31 @@
             if (todaysEl) todaysEl.innerHTML = '<div>No events synced yet</div>';
         }
 
-        // Switch preview pages
-        function switchPage(pageIndex) {
+        // Switch preview pages with optional target date
+        function switchPage(pageIndex, targetDate = null) {
+            // If targetDate provided, calculate the appropriate page index
+            if (targetDate) {
+                const weekStartInput = document.getElementById('weekStart');
+                if (weekStartInput) {
+                    // Calculate the Monday of the week containing targetDate
+                    const date = new Date(targetDate);
+                    const day = date.getDay();
+                    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+                    const monday = new Date(date.setDate(diff));
+                    
+                    // Update week start if different
+                    const currentWeekStart = new Date(weekStartInput.value);
+                    if (monday.toDateString() !== currentWeekStart.toDateString()) {
+                        weekStartInput.value = monday.toISOString().split('T')[0];
+                        refreshPreview(); // Reload events for new week
+                    }
+                    
+                    // Calculate which day of the week this is (1-7 for Mon-Sun)
+                    const targetDay = new Date(targetDate).getDay();
+                    pageIndex = targetDay === 0 ? 7 : targetDay; // Sunday = 7, Mon = 1, etc.
+                }
+            }
+            
             currentPage = pageIndex;
 
             // Update navigation buttons
@@ -1086,9 +1243,11 @@
             if (pageIndex === 0) {
                 weeklyPreview.classList.remove('hidden');
                 dailyPreview.classList.add('hidden');
+                updateEventsSummary(); // Refresh weekly view
             } else {
                 weeklyPreview.classList.add('hidden');
                 dailyPreview.classList.remove('hidden');
+                updateDailyView(); // Refresh daily view
 
                 // Update daily preview for selected day
                 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -1107,6 +1266,13 @@
                     dailyPreview.querySelector('h3').textContent = `${dayName} - Select week start date`;
                 }
             }
+        }
+        
+        // Navigate to specific day from event click
+        function navigateToDay(eventDate) {
+            const date = new Date(eventDate);
+            console.log(`🔗 Navigating to daily view for ${date.toDateString()}`);
+            switchPage(0, date); // This will calculate the correct day and switch to it
         }
 
         // Generate PDF
