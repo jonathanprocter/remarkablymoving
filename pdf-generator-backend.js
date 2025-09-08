@@ -185,6 +185,7 @@ function getOptimizedCSS() {
       --font-medium: 6pt;
       --font-small: 5pt;
       --font-tiny: 4pt;
+      --font-micro: 3pt;
       
       /* Colors for e-ink display */
       --black: #000000;
@@ -255,49 +256,49 @@ function getOptimizedCSS() {
     }
     
     .weekly-header {
-      height: 10mm;
+      height: 6mm;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 2pt solid var(--black);
-      padding: 0 2mm;
-      margin-bottom: 2mm;
+      padding: 0 1mm;
+      margin-bottom: 1mm;
     }
     
     .weekly-header h1 {
-      font-size: var(--font-xlarge);
+      font-size: var(--font-large);
       font-weight: bold;
     }
     
     .weekly-header span {
-      font-size: var(--font-large);
+      font-size: var(--font-medium);
     }
     
     .weekly-content {
       flex: 1;
       display: flex;
-      gap: 3mm;
+      gap: 1mm;
     }
     
     .weekly-grid {
-      flex: 2.5;
+      flex: 3.2;
       display: grid;
-      grid-template-columns: 12mm repeat(7, 1fr);
-      grid-template-rows: 5mm repeat(17, 1fr);
+      grid-template-columns: 10mm repeat(7, 1fr);
+      grid-template-rows: 4mm repeat(31, 1fr);
       border: 2pt solid var(--black);
     }
     
     .grid-cell {
-      border-right: 0.5pt solid var(--black);
-      border-bottom: 0.5pt solid var(--black);
-      padding: 0.5mm;
+      border-right: 1pt solid var(--black);
+      border-bottom: 1pt solid var(--black);
+      padding: 0.2mm;
       overflow: hidden;
     }
     
     .header-cell {
       background: #f0f0f0;
       font-weight: bold;
-      font-size: var(--font-small);
+      font-size: var(--font-tiny);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -306,42 +307,42 @@ function getOptimizedCSS() {
     .time-cell {
       background: #f8f8f8;
       font-weight: bold;
-      font-size: var(--font-tiny);
+      font-size: var(--font-micro);
       display: flex;
       align-items: center;
       justify-content: center;
     }
     
     .event-cell {
-      font-size: 3pt;
-      min-height: 3mm;
+      font-size: var(--font-micro);
+      min-height: 2mm;
     }
     
     .weekly-sidebar {
-      flex: 1;
+      flex: 0.8;
       display: flex;
       flex-direction: column;
-      gap: 2mm;
+      gap: 1mm;
     }
     
     .tasks-section, .goals-section {
       flex: 1;
       border: 2pt solid var(--black);
-      padding: 2mm;
+      padding: 1mm;
     }
     
     .tasks-section h3, .goals-section h3 {
-      font-size: var(--font-medium);
+      font-size: var(--font-tiny);
       font-weight: bold;
-      margin-bottom: 2mm;
+      margin-bottom: 0.5mm;
       border-bottom: 1pt solid var(--black);
-      padding-bottom: 1mm;
+      padding-bottom: 0.3mm;
     }
     
     .task-item, .goal-item {
-      font-size: var(--font-small);
-      margin-bottom: 1mm;
-      line-height: 1.3;
+      font-size: var(--font-micro);
+      margin-bottom: 0.3mm;
+      line-height: 1.1;
     }
     
     /* Remove old footer styles */
@@ -453,8 +454,8 @@ function getOptimizedCSS() {
     .time-row {
       flex: 1;
       display: flex;
-      border-bottom: 0.5pt solid var(--light-gray);
-      min-height: 4mm;
+      border-bottom: 1pt solid var(--light-gray);
+      min-height: 3.3mm;
     }
     
     .time-row:last-child {
@@ -465,7 +466,7 @@ function getOptimizedCSS() {
       width: 12mm;
       background: #f8f8f8;
       border-right: 2pt solid var(--black);
-      font-size: var(--font-small);
+      font-size: var(--font-tiny);
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -474,12 +475,12 @@ function getOptimizedCSS() {
     
     .time-space {
       flex: 1;
-      padding: 0.5mm;
-      font-size: var(--font-small);
+      padding: 0.3mm;
+      font-size: var(--font-tiny);
     }
     
     .daily-bottom {
-      height: 44mm;
+      height: 45mm;
       display: flex;
       flex-direction: column;
       gap: 1mm;
@@ -531,33 +532,39 @@ function getOptimizedCSS() {
     }
     
     .priorities-section {
-      height: 18mm;
+      height: 16mm;
       border: 2pt solid var(--black);
-      padding: 2mm;
+      padding: 1.5mm;
     }
     
     .section-title {
-      font-size: var(--font-medium);
+      font-size: var(--font-small);
       font-weight: bold;
-      margin-bottom: 2mm;
+      margin-bottom: 1.5mm;
     }
     
     .priority-line {
       display: flex;
       align-items: center;
       margin-bottom: 1mm;
+      font-size: var(--font-tiny);
+    }
+    
+    .bullet-point {
+      width: 4mm;
       font-size: var(--font-small);
+      font-weight: bold;
     }
     
     .write-line {
       flex: 1;
       height: 1pt;
       background: var(--light-gray);
-      margin-left: 2mm;
+      margin-left: 1mm;
     }
     
     .bottom-sections {
-      height: 22mm;
+      height: 20mm;
       display: flex;
       gap: 2mm;
     }
@@ -565,12 +572,20 @@ function getOptimizedCSS() {
     .goals-box, .notes-box {
       flex: 1;
       border: 2pt solid var(--black);
-      padding: 2mm;
+      padding: 1.5mm;
     }
     
     .write-area {
-      height: calc(100% - 8mm);
-      border-bottom: 1pt solid var(--light-gray);
+      height: calc(100% - 6mm);
+      display: flex;
+      flex-direction: column;
+      gap: 1mm;
+    }
+    
+    .write-line-note {
+      height: 1pt;
+      background: var(--light-gray);
+      width: 100%;
     }
     
     .status-line {
