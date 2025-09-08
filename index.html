@@ -500,10 +500,16 @@
 
         // Handle authentication (Modern Google Identity Services)
         function handleAuth() {
-            console.log('Auth button clicked, gapi_loaded:', gapi_loaded, 'isSignedIn:', isSignedIn);
+            console.log('=== AUTH BUTTON CLICKED ===');
+            console.log('gapi_loaded:', gapi_loaded);
+            console.log('isSignedIn:', isSignedIn);
+            console.log('tokenClient:', tokenClient);
+            console.log('Current domain:', window.location.hostname);
+            console.log('Client ID being used:', window.GOOGLE_CONFIG?.clientId);
             
             if (!gapi_loaded || !tokenClient) {
                 console.error('Google API not ready yet');
+                console.log('gapi_loaded:', gapi_loaded, 'tokenClient:', tokenClient);
                 alert('Google API is still loading. Please try again in a moment.');
                 return;
             }
@@ -528,9 +534,19 @@
                 calendarListEl.innerHTML = '<div class="text-gray-500 text-center py-4">Connect Google Calendar to sync events</div>';
                 
             } else {
-                console.log('Requesting access token...');
-                // Request an access token (this will open the OAuth popup)
-                tokenClient.requestAccessToken({prompt: ''});
+                console.log('=== STARTING OAUTH FLOW ===');
+                console.log('About to request access token...');
+                try {
+                    // Request an access token (this will open the OAuth popup)
+                    tokenClient.requestAccessToken({
+                        prompt: 'consent',
+                        hint: 'user@example.com'
+                    });
+                    console.log('requestAccessToken called successfully');
+                } catch (error) {
+                    console.error('Error requesting access token:', error);
+                    alert('Error starting authentication: ' + error.message);
+                }
             }
         }
 
