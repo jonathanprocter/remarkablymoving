@@ -72,7 +72,7 @@
     <!-- Main Content -->
     <div class="container mx-auto px-6 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+
             <!-- Configuration Panel -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
@@ -80,13 +80,13 @@
                         <i class="fas fa-cog mr-2 text-purple-600"></i>
                         Template Configuration
                     </h2>
-                    
+
                     <!-- Week Selection -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Week Starting</label>
                         <input type="date" id="weekStart" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     </div>
-                    
+
                     <!-- Color Theme -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">E-ink Optimization</label>
@@ -101,7 +101,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Layout Options -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Layout Settings</label>
@@ -120,7 +120,7 @@
                             </label>
                         </div>
                     </div>
-                    
+
                     <!-- Time Format -->
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Time Format</label>
@@ -130,20 +130,20 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <!-- Google Calendar Integration -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <h2 class="text-xl font-bold mb-4 flex items-center">
                         <i class="fab fa-google mr-2 text-blue-600"></i>
                         Calendar Integration
                     </h2>
-                    
+
                     <div id="calendarList" class="space-y-2">
                         <div class="text-gray-500 text-center py-4">
                             Connect Google Calendar to sync events
                         </div>
                     </div>
-                    
+
                     <div class="mt-4">
                         <button id="syncNow" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50" disabled>
                             <i class="fas fa-sync-alt mr-2"></i>
@@ -152,7 +152,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Preview Panel -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-xl shadow-lg p-6">
@@ -168,7 +168,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Page Navigation -->
                     <div class="flex items-center justify-center mb-4 space-x-2">
                         <button class="page-nav-btn bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition-colors" data-page="0">Week</button>
@@ -180,7 +180,7 @@
                         <button class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors" data-page="6">Sat</button>
                         <button class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors" data-page="7">Sun</button>
                     </div>
-                    
+
                     <!-- Preview Container -->
                     <div class="remarkable-preview eink-optimized p-4">
                         <div id="previewContent">
@@ -193,7 +193,7 @@
                                         <div class="sync-indicator bg-green-400"></div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Mini Calendar -->
                                 <div class="calendar-grid mb-4 text-xs">
                                     <div class="bg-gray-200 p-1 text-center font-bold">Mon</div>
@@ -203,7 +203,7 @@
                                     <div class="bg-gray-200 p-1 text-center font-bold">Fri</div>
                                     <div class="bg-gray-200 p-1 text-center font-bold">Sat</div>
                                     <div class="bg-gray-200 p-1 text-center font-bold">Sun</div>
-                                    
+
                                     <div class="bg-white p-2 text-center">
                                         <div class="font-medium">18</div>
                                         <div class="w-2 h-1 bg-blue-400 mx-auto mt-1 rounded"></div>
@@ -215,7 +215,7 @@
                                     <div class="bg-white p-2 text-center">23</div>
                                     <div class="bg-white p-2 text-center">24</div>
                                 </div>
-                                
+
                                 <!-- Weekly Goals -->
                                 <div class="grid grid-cols-2 gap-4 mb-4">
                                     <div>
@@ -245,7 +245,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Habit Tracker -->
                                 <div>
                                     <h4 class="text-sm font-bold mb-2">Habit Tracker</h4>
@@ -257,7 +257,7 @@
                                         <div class="text-center">F</div>
                                         <div class="text-center">S</div>
                                         <div class="text-center">S</div>
-                                        
+
                                         <div class="w-4 h-4 bg-green-300 rounded-full mx-auto"></div>
                                         <div class="w-4 h-4 bg-green-300 rounded-full mx-auto"></div>
                                         <div class="w-4 h-4 border border-gray-400 rounded-full mx-auto"></div>
@@ -268,7 +268,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Daily View Template (Hidden by default) -->
                             <div id="dailyPreview" class="hidden">
                                 <div class="flex items-center justify-between mb-4">
@@ -278,7 +278,7 @@
                                         <div class="sync-indicator bg-green-400"></div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="grid grid-cols-12 gap-2 text-xs">
                                     <!-- Time Column -->
                                     <div class="col-span-2 space-y-2">
@@ -291,7 +291,7 @@
                                         <div class="time-slot text-right pr-2 text-gray-600">12:00</div>
                                         <div class="time-slot text-right pr-2 text-gray-600">13:00</div>
                                     </div>
-                                    
+
                                     <!-- Schedule Column -->
                                     <div class="col-span-7 space-y-2">
                                         <div class="time-slot"></div>
@@ -309,14 +309,14 @@
                                         </div>
                                         <div class="time-slot"></div>
                                     </div>
-                                    
+
                                     <!-- Sidebar -->
                                     <div class="col-span-3">
                                         <div class="bg-gray-50 p-2 rounded mb-2">
                                             <h5 class="font-bold mb-1">Daily Focus</h5>
                                             <div class="text-xs text-gray-600">Complete design review</div>
                                         </div>
-                                        
+
                                         <div class="bg-gray-50 p-2 rounded mb-2">
                                             <h5 class="font-bold mb-1">Priority Tasks</h5>
                                             <div class="space-y-1">
@@ -330,7 +330,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="bg-gray-50 p-2 rounded">
                                             <h5 class="font-bold mb-1">Energy</h5>
                                             <div class="flex space-x-1">
@@ -346,7 +346,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Export Actions -->
                     <div class="mt-6 flex items-center justify-between">
                         <div class="flex items-center space-x-4">
@@ -369,7 +369,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Status Bar -->
         <div class="mt-8 bg-white rounded-xl shadow-lg p-4">
             <div class="flex items-center justify-between">
@@ -400,29 +400,29 @@
         let isSignedIn = false;
         let currentPage = 0;
         let calendarEvents = [];
-        
+
         // Initialize Google API
         function initializeGapi() {
             console.log('Starting Google API initialization...');
-            
+
             // Check if gapi is available
             if (typeof gapi === 'undefined') {
                 console.error('Google API script not loaded');
                 setTimeout(initializeGapi, 500); // Retry in 500ms
                 return;
             }
-            
+
             // Check if config is available
             if (!window.GOOGLE_CONFIG) {
                 console.error('Google config not loaded');
                 setTimeout(initializeGapi, 500); // Retry in 500ms
                 return;
             }
-            
+
             gapi.load('auth2:client', {
                 callback: () => {
                     console.log('Google API modules loaded, initializing client...');
-                    
+
                     gapi.client.init({
                         apiKey: window.GOOGLE_CONFIG.apiKey,
                         clientId: window.GOOGLE_CONFIG.clientId,
@@ -434,9 +434,9 @@
                         const authInstance = gapi.auth2.getAuthInstance();
                         isSignedIn = authInstance.isSignedIn.get();
                         updateAuthUI();
-                        
+
                         authInstance.isSignedIn.listen(updateAuthUI);
-                        
+
                         // Update button text to show ready state
                         const authButton = document.getElementById('authButton');
                         if (!isSignedIn && authButton.textContent.includes('loading')) {
@@ -445,12 +445,12 @@
                     }).catch(error => {
                         console.error('Failed to initialize Google API:', error);
                         gapi_loaded = false;
-                        
+
                         // Show user-friendly error message
                         const authButton = document.getElementById('authButton');
                         authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Setup Required';
                         authButton.disabled = true;
-                        
+
                         // More specific error handling
                         if (error.error && error.error === 'idpiframe_initialization_failed') {
                             alert('Google OAuth setup issue: Please ensure your domain is properly configured in Google Cloud Console.');
@@ -467,7 +467,7 @@
                 }
             });
         }
-        
+
         // Update authentication UI
         function updateAuthUI() {
             const authButton = document.getElementById('authButton');
@@ -475,7 +475,7 @@
             const syncIndicator = document.getElementById('syncIndicator');
             const syncButton = document.getElementById('syncNow');
             const calendarStatus = document.getElementById('calendarStatus');
-            
+
             if (isSignedIn) {
                 authButton.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>Disconnect';
                 authStatus.querySelector('span').textContent = 'Connected';
@@ -491,24 +491,24 @@
                 calendarStatus.textContent = 'Disconnected';
             }
         }
-        
+
         // Handle authentication
         function handleAuth() {
             console.log('Auth button clicked, gapi_loaded:', gapi_loaded);
-            
+
             if (!gapi_loaded) {
                 console.error('Google API not loaded yet');
                 alert('Google API is still loading. Please try again in a moment.');
                 return;
             }
-            
+
             const authInstance = gapi.auth2.getAuthInstance();
             if (!authInstance) {
                 console.error('Auth instance not available');
                 alert('Authentication not available. Please refresh the page.');
                 return;
             }
-            
+
             if (isSignedIn) {
                 console.log('Signing out...');
                 authInstance.signOut().then(() => {
@@ -527,45 +527,69 @@
                 });
             }
         }
-        
+
         // Load user calendars
         async function loadCalendars() {
             try {
-                const response = await gapi.client.calendar.calendarList.list();
+                const response = await gapi.client.calendar.calendarList.list({
+                    showHidden: true,
+                    showDeleted: false
+                });
                 const calendars = response.result.items;
-                
+
+                console.log('Found calendars:', calendars.length);
+                calendars.forEach(cal => console.log(`Calendar: ${cal.summary} (${cal.id}) - Primary: ${cal.primary}`));
+
                 const calendarListEl = document.getElementById('calendarList');
-                calendarListEl.innerHTML = calendars.map(calendar => `
-                    <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
-                        <input type="checkbox" class="calendar-checkbox" data-calendar-id="${calendar.id}" ${calendar.primary ? 'checked' : ''}>
-                        <div class="w-4 h-4 rounded" style="background-color: ${calendar.backgroundColor}"></div>
-                        <span class="text-sm">${calendar.summary}</span>
-                    </label>
-                `).join('');
+                calendarListEl.innerHTML = calendars.map(calendar => {
+                    const isMainCalendar = calendar.primary || calendar.id === calendar.id.split('@')[0] + '@gmail.com';
+                    return `
+                        <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded border ${isMainCalendar ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}">
+                            <input type="checkbox" class="calendar-checkbox" data-calendar-id="${calendar.id}" ${calendar.primary ? 'checked' : ''}>
+                            <div class="w-4 h-4 rounded" style="background-color: ${calendar.backgroundColor || '#3b82f6'}"></div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium">${calendar.summary}</span>
+                                <span class="text-xs text-gray-500">${calendar.accessRole} ${isMainCalendar ? '(Main)' : ''}</span>
+                            </div>
+                        </label>
+                    `;
+                }).join('');
+
+                // Update status
+                const calendarStatus = document.getElementById('calendarStatus');
+                calendarStatus.textContent = `${calendars.length} calendars found`;
+
             } catch (error) {
                 console.error('Error loading calendars:', error);
+                const calendarListEl = document.getElementById('calendarList');
+                calendarListEl.innerHTML = `
+                    <div class="text-red-500 text-center py-4">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Error loading calendars: ${error.result?.error?.message || error.message}
+                    </div>
+                `;
             }
         }
-        
+
         // Sync calendar events
         async function syncCalendarEvents() {
             if (!isSignedIn) return;
-            
+
             const selectedCalendars = Array.from(document.querySelectorAll('.calendar-checkbox:checked'))
                 .map(cb => cb.dataset.calendarId);
-            
+
             const weekStart = document.getElementById('weekStart').value;
             if (!weekStart) {
                 alert('Please select a week start date');
                 return;
             }
-            
+
             const startDate = new Date(weekStart);
             const endDate = new Date(startDate);
             endDate.setDate(endDate.getDate() + 7);
-            
+
             calendarEvents = [];
-            
+
             for (const calendarId of selectedCalendars) {
                 try {
                     const response = await gapi.client.calendar.events.list({
@@ -575,28 +599,28 @@
                         singleEvents: true,
                         orderBy: 'startTime'
                     });
-                    
+
                     calendarEvents.push(...response.result.items);
                 } catch (error) {
                     console.error('Error fetching events:', error);
                 }
             }
-            
+
             updateLastUpdateTime();
             refreshPreview();
         }
-        
+
         // Update preview based on current page
         function refreshPreview() {
             // This would update the preview based on current settings and events
             // For now, just update the last update time
             updateLastUpdateTime();
         }
-        
+
         // Switch preview pages
         function switchPage(pageIndex) {
             currentPage = pageIndex;
-            
+
             // Update navigation buttons
             document.querySelectorAll('.page-nav-btn').forEach((btn, index) => {
                 if (index === pageIndex) {
@@ -605,25 +629,25 @@
                     btn.className = 'page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors';
                 }
             });
-            
+
             // Show/hide preview content
             const weeklyPreview = document.getElementById('weeklyPreview');
             const dailyPreview = document.getElementById('dailyPreview');
-            
+
             if (pageIndex === 0) {
                 weeklyPreview.classList.remove('hidden');
                 dailyPreview.classList.add('hidden');
             } else {
                 weeklyPreview.classList.add('hidden');
                 dailyPreview.classList.remove('hidden');
-                
+
                 // Update daily preview for selected day
                 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                 const dayName = days[pageIndex - 1];
                 dailyPreview.querySelector('h3').textContent = `${dayName}, Nov ${17 + pageIndex}, 2024`;
             }
         }
-        
+
         // Generate PDF
         function generatePDF() {
             const { jsPDF } = window.jspdf;
@@ -632,12 +656,12 @@
                 unit: 'px',
                 format: [2880, 2160]
             });
-            
+
             // This is a simplified PDF generation
             // In a real implementation, you would render each page with proper layout
             for (let page = 0; page < 8; page++) {
                 if (page > 0) doc.addPage();
-                
+
                 doc.setFontSize(24);
                 if (page === 0) {
                     doc.text('reMarkable Pro Move - Weekly Overview', 100, 100);
@@ -645,43 +669,43 @@
                     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                     doc.text(`reMarkable Pro Move - ${days[page - 1]}`, 100, 100);
                 }
-                
+
                 // Add grid lines and template structure
                 doc.setDrawColor(128, 128, 128);
                 doc.setLineWidth(1);
-                
+
                 // Draw basic grid structure
                 for (let i = 0; i < 24; i++) {
                     const y = 200 + (i * 60);
                     doc.line(50, y, 2800, y);
                     doc.text(`${i.toString().padStart(2, '0')}:00`, 20, y + 15);
                 }
-                
+
                 // Add vertical lines for time blocks
                 for (let i = 0; i < 7; i++) {
                     const x = 300 + (i * 350);
                     doc.line(x, 150, x, 2000);
                 }
             }
-            
+
             const weekStart = document.getElementById('weekStart').value || new Date().toISOString().split('T')[0];
             doc.save(`remarkable_calendar_${weekStart}.pdf`);
-            
+
             updateLastUpdateTime();
         }
-        
+
         // Deploy to Replit (placeholder)
         function deployToReplit() {
             // This would integrate with Replit API to deploy the application
             // For now, show a placeholder message
             alert('Deploy to Replit functionality would integrate with Replit API to push this application to the specified Git repository.');
         }
-        
+
         // Update last update time
         function updateLastUpdateTime() {
             document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
         }
-        
+
         // Initialize date input with current week
         function initializeDateInput() {
             const today = new Date();
@@ -689,36 +713,36 @@
             monday.setDate(today.getDate() - today.getDay() + 1);
             document.getElementById('weekStart').value = monday.toISOString().split('T')[0];
         }
-        
+
         // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
             initializeDateInput();
             updateLastUpdateTime();
-            
+
             // Auth button
             document.getElementById('authButton').addEventListener('click', handleAuth);
-            
+
             // Sync button
             document.getElementById('syncNow').addEventListener('click', syncCalendarEvents);
-            
+
             // Page navigation
             document.querySelectorAll('.page-nav-btn').forEach((btn, index) => {
                 btn.addEventListener('click', () => switchPage(index));
             });
-            
+
             // Generate PDF button
             document.getElementById('generatePDF').addEventListener('click', generatePDF);
-            
+
             // Deploy button
             document.getElementById('deployToReplit').addEventListener('click', deployToReplit);
-            
+
             // Configuration changes
             document.getElementById('weekStart').addEventListener('change', refreshPreview);
             document.getElementById('timeFormat').addEventListener('change', refreshPreview);
             document.getElementById('showHabits').addEventListener('change', refreshPreview);
             document.getElementById('showDecisions').addEventListener('change', refreshPreview);
             document.getElementById('showEnergy').addEventListener('change', refreshPreview);
-            
+
             // Theme selection
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -728,19 +752,18 @@
                     refreshPreview();
                 });
             });
-            
+
             // Set default theme
             document.querySelector('.theme-btn[data-theme="sage"]').classList.add('border-purple-500');
-            
+
             // Show loading state initially
             const authButton = document.getElementById('authButton');
             authButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
             authButton.disabled = true;
-            
+
             // Initialize Google API when page loads (after a delay to ensure all resources are loaded)
             setTimeout(initializeGapi, 1000);
         });
     </script>
 </body>
 </html>
-    
