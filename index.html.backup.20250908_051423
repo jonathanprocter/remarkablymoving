@@ -337,25 +337,25 @@
                             class="page-nav-btn bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition-colors"
                             data-page="0">Week</button>
                         <button
-                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-400 transition-all hover:scale-105"
+                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors"
                             data-page="1">Mon</button>
                         <button
-                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-400 transition-all hover:scale-105"
+                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors"
                             data-page="2">Tue</button>
                         <button
-                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-400 transition-all hover:scale-105"
+                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors"
                             data-page="3">Wed</button>
                         <button
-                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-400 transition-all hover:scale-105"
+                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors"
                             data-page="4">Thu</button>
                         <button
-                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-400 transition-all hover:scale-105"
+                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors"
                             data-page="5">Fri</button>
                         <button
-                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-400 transition-all hover:scale-105"
+                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors"
                             data-page="6">Sat</button>
                         <button
-                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-400 transition-all hover:scale-105"
+                            class="page-nav-btn bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition-colors"
                             data-page="7">Sun</button>
                     </div>
 
@@ -850,12 +850,12 @@
                         </div>
                         <div class="flex items-center space-x-2">
                             <button id="generatePDF"
-                                class="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-all hover:scale-105 shadow-md">
+                                class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
                                 <i class="fas fa-download mr-2"></i>
                                 Generate PDF
                             </button>
-                            <button id="shareProject"
-                                class="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition-all hover:scale-105 shadow-md">
+                            <button id="deployToReplit"
+                                class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
                                 <i class="fas fa-rocket mr-2"></i>
                                 Deploy to Replit
                             </button>
@@ -893,12 +893,9 @@
     <script>
         // Global variables
         let gapi_loaded = false;
-        let configRetries = 0;
-        const MAX_CONFIG_RETRIES = 3;
         let isSignedIn = false;
         let currentPage = 0;
         let calendarEvents = [];
-        let weeklyEvents = {}; // Add this to fix PDF generation errors
         let tokenClient = null;
         let accessToken = null;
         let weeklyEvents = {}; // Add this to fix PDF generation errors
