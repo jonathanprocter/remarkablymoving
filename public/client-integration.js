@@ -378,26 +378,27 @@ function initializeRemarkablePDF() {
   // Create global instance
   window.remarkablePDFIntegration = new CalendarPDFIntegration();
   
-  // Try to get calendar data from various sources
-  if (window.calendarEvents) {
-    // If calendar events are already loaded
-    window.remarkablePDFIntegration.initialize(window.calendarEvents);
-  } else if (window.events) {
-    // Alternative naming
-    window.remarkablePDFIntegration.initialize(window.events);
-  } else {
-    // Wait for calendar data to be loaded
-    console.log('Waiting for calendar data to initialize reMarkable PDF generator...');
-    
-    // Set up observer for when calendar data becomes available
-    const checkInterval = setInterval(() => {
-      if (window.calendarEvents || window.events) {
-        clearInterval(checkInterval);
-        window.remarkablePDFIntegration.initialize(window.calendarEvents || window.events);
-        console.log('reMarkable PDF generator initialized!');
-      }
-    }, 1000);
-  }
+  // Initialize immediately with empty array - will be updated when events are synced
+  window.remarkablePDFIntegration.initialize([]);
+  
+  // Also set up observer for when calendar data becomes available
+  const checkInterval = setInterval(() => {
+    // Try to access calendarEvents from the global scope
+    const calendarEventsElement = document.querySelector('script');
+    if (window.calendarEvents) {
+      clearInterval(checkInterval);
+      window.remarkablePDFIntegration.pdfGenerator = new RemarkablePDFGenerator(window.calendarEvents);
+      console.log('reMarkable PDF generator updated with calendar events!');
+    }
+  }, 1000);
+  
+  // Add a global function that can be called when events are synced
+  window.updateRemarkablePDFEvents = function(events) {
+    if (window.remarkablePDFIntegration && events) {
+      window.remarkablePDFIntegration.pdfGenerator = new RemarkablePDFGenerator(events);
+      console.log(`reMarkable PDF generator updated with ${events.length} events`);
+    }
+  };
 }
 
 // Export for use in other modules

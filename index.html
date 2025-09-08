@@ -1135,6 +1135,14 @@
                 calendarEvents = data.events || [];
                 const range = data.date_range || 'selected period';
                 console.log(`📋 Synced ${calendarEvents.length} events from ${selectedCalendars.length} calendars (${range})`);
+                
+                // Make events globally accessible for PDF generator
+                window.calendarEvents = calendarEvents;
+                
+                // Update the reMarkable PDF generator with the events
+                if (window.updateRemarkablePDFEvents) {
+                    window.updateRemarkablePDFEvents(calendarEvents);
+                }
 
                 // Update UI with success message
                 console.log(`✅ Successfully synced ${calendarEvents.length} events from ${range}!`);
