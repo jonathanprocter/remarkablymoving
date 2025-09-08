@@ -20,14 +20,15 @@
         }
         .franklin-weekly-grid {
             display: grid;
-            grid-template-columns: 50px repeat(7, 1fr);
-            grid-template-rows: auto repeat(16, 22px);
+            grid-template-columns: 45px repeat(7, minmax(60px, 1fr));
+            grid-template-rows: auto repeat(16, 20px);
             gap: 0;
             background: #333333;
-            border: 2px solid #333333;
+            border: 1px solid #333333;
             font-family: 'Courier New', monospace;
-            overflow-y: auto;
-            max-height: 400px;
+            overflow: auto;
+            max-height: 380px;
+            width: 100%;
         }
         .franklin-daily-grid {
             display: grid;
@@ -49,43 +50,45 @@
             color: white;
             text-align: center;
             font-weight: bold;
-            font-size: 11px;
-            padding: 6px 2px;
+            font-size: 9px;
+            padding: 4px 1px;
         }
         .franklin-time-label {
             background: #f8f9fa;
-            padding: 2px;
-            font-size: 8px;
+            padding: 1px;
+            font-size: 7px;
             font-weight: bold;
             text-align: center;
             border-right: 1px solid #333333;
             border-bottom: 1px solid #eeeeee;
-            height: 22px;
+            height: 20px;
             line-height: 18px;
         }
         .franklin-day-cell {
             background: #ffffff;
-            padding: 1px 2px;
-            min-height: 20px;
+            padding: 1px;
+            min-height: 18px;
             border-right: 1px solid #dddddd;
             border-bottom: 1px solid #eeeeee;
             position: relative;
-            font-size: 8px;
+            font-size: 6px;
+            overflow: hidden;
         }
         .franklin-event {
             background: #e8e8e8;
             border-left: 2px solid #333333;
-            padding: 0px 2px;
+            padding: 0px 1px;
             margin: 0;
-            font-size: 7px;
+            font-size: 6px;
             font-weight: bold;
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
-            line-height: 1.1;
-            height: 100%;
+            line-height: 1.0;
             cursor: pointer;
             transition: background-color 0.2s;
+            display: block;
+            width: 100%;
         }
         .franklin-event:hover {
             background: #d0d0d0;
@@ -996,9 +999,9 @@
             weekEvents.forEach(event => {
                 const eventDate = new Date(event.start.dateTime || event.start.date);
                 const dayOfWeek = eventDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
-                const hour = eventDate.getHours();
+                const hour = event.start.dateTime ? eventDate.getHours() : 9; // Default to 9am for all-day events
                 
-                // Map day of week to our day names
+                // Map day of week to our day names (corrected for grid layout)
                 const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
                 const dayName = dayNames[dayOfWeek];
                 
@@ -1009,6 +1012,8 @@
                 
                 const cellId = `weekly-${dayName}-${timeSlot}`;
                 const cell = document.getElementById(cellId);
+                
+                console.log(`📍 Event "${event.summary}" on ${eventDate.toDateString()} (${dayName}) at ${hour}:00 -> ${cellId}`);
                 
                 if (cell) {
                     const eventEl = document.createElement('div');
@@ -1031,7 +1036,6 @@
                     eventEl.dataset.eventSummary = event.summary || 'Event';
                     
                     cell.appendChild(eventEl);
-                    console.log(`📍 Placed "${event.summary}" at ${hour}:00 on ${dayName}`);
                 } else {
                     console.log(`⚠️ Could not find cell ${cellId} for event "${event.summary}"`);
                 }
