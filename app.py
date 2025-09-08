@@ -87,7 +87,7 @@ def google_auth():
         session['state'] = state
         session['flow_data'] = {
             'client_config': flow.client_config,
-            'scopes': flow.scopes
+            'scopes': SCOPES
         }
         
         print(f"🔐 Starting OAuth flow...")
@@ -158,7 +158,7 @@ def auth_status():
     else:
         return jsonify({"authenticated": False, "message": "User not authenticated"})
 
-@app.route('/auth/logout')
+@app.route('/auth/logout', methods=['POST'])
 def logout():
     """Log out user"""
     session.clear()
