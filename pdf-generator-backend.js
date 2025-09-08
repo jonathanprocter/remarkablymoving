@@ -282,22 +282,22 @@ function getOptimizedCSS() {
     .weekly-grid {
       flex: 2.5;
       display: grid;
-      grid-template-columns: 18mm repeat(7, 1fr);
-      grid-template-rows: 8mm repeat(9, 1fr);
+      grid-template-columns: 12mm repeat(7, 1fr);
+      grid-template-rows: 5mm repeat(17, 1fr);
       border: 2pt solid var(--black);
     }
     
     .grid-cell {
-      border-right: 1pt solid var(--black);
-      border-bottom: 1pt solid var(--black);
-      padding: 1mm;
+      border-right: 0.5pt solid var(--black);
+      border-bottom: 0.5pt solid var(--black);
+      padding: 0.5mm;
       overflow: hidden;
     }
     
     .header-cell {
       background: #f0f0f0;
       font-weight: bold;
-      font-size: var(--font-medium);
+      font-size: var(--font-small);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -306,15 +306,15 @@ function getOptimizedCSS() {
     .time-cell {
       background: #f8f8f8;
       font-weight: bold;
-      font-size: var(--font-small);
+      font-size: var(--font-tiny);
       display: flex;
       align-items: center;
       justify-content: center;
     }
     
     .event-cell {
-      font-size: var(--font-tiny);
-      min-height: 8mm;
+      font-size: 3pt;
+      min-height: 3mm;
     }
     
     .weekly-sidebar {
@@ -420,9 +420,9 @@ function getOptimizedCSS() {
     }
     
     .daily-main {
-      height: 100mm;
+      height: 105mm;
       border: 2pt solid var(--black);
-      margin-bottom: 2mm;
+      margin-bottom: 1mm;
     }
     
     .daily-header {
@@ -453,8 +453,8 @@ function getOptimizedCSS() {
     .time-row {
       flex: 1;
       display: flex;
-      border-bottom: 1pt solid var(--light-gray);
-      min-height: 6mm;
+      border-bottom: 0.5pt solid var(--light-gray);
+      min-height: 4mm;
     }
     
     .time-row:last-child {
@@ -479,7 +479,7 @@ function getOptimizedCSS() {
     }
     
     .daily-bottom {
-      height: 48mm;
+      height: 44mm;
       display: flex;
       flex-direction: column;
       gap: 1mm;
