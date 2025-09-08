@@ -1250,7 +1250,7 @@
                 // Solution: Create explicit mapping to our grid column names
 
                 // Define day mapping arrays (avoiding duplicate declarations)
-                const jsGetDayToColumnName = {
+                const dayColumnMapping = {
                     0: 'sun',    // Sunday -> 'sun' column
                     1: 'mon',    // Monday -> 'mon' column  
                     2: 'tue',    // Tuesday -> 'tue' column
@@ -1266,7 +1266,7 @@
                 };
 
                 // Get the correct column name for this day
-                const dayName = jsGetDayToColumnName[dayOfWeek];
+                const dayName = dayColumnMapping[dayOfWeek];
                 const fullDayName = jsGetDayToFullName[dayOfWeek];
 
                 console.log(`   📅 Event "${event.summary}"`);
@@ -1299,35 +1299,19 @@
                 // The issue is in our date parsing and day calculation
                 // Let's use a more explicit approach
 
-                // Define day mapping arrays (avoiding duplicate declarations)
-                const jsGetDayToColumnName = {
-                    0: 'sun',    // Sunday -> 'sun' column
-                    1: 'mon',    // Monday -> 'mon' column  
-                    2: 'tue',    // Tuesday -> 'tue' column
-                    3: 'wed',    // Wednesday -> 'wed' column
-                    4: 'thu',    // Thursday -> 'thu' column
-                    5: 'fri',    // Friday -> 'fri' column
-                    6: 'sat'     // Saturday -> 'sat' column
-                };
-
-                const jsGetDayToFullName = {
-                    0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 
-                    4: 'Thursday', 5: 'Friday', 6: 'Saturday'
-                };
-
-                // Get the correct column name for this day
-                const dayName = jsGetDayToColumnName[dayOfWeek];
+                // Get the correct column name for this day (using existing dayColumnMapping)
+                const dayName2 = dayColumnMapping[dayOfWeek];
                 const fullDayName = jsGetDayToFullName[dayOfWeek];
 
                 console.log(`   📅 Event "${event.summary}"`);
                 console.log(`   📍 Date: ${startDate.toDateString()}`);  
                 console.log(`   🔢 getDay() = ${dayOfWeek} (JS: 0=Sun, 1=Mon, 2=Tue, etc.)`);
                 console.log(`   📋 Full day name: ${fullDayName}`);
-                console.log(`   🎯 Target column: '${dayName}'`);
-                console.log(`   🏷️ Cell ID prefix: weekly-${dayName}-`);
+                console.log(`   🎯 Target column: '${dayName2}'`);
+                console.log(`   🏷️ Cell ID prefix: weekly-${dayName2}-`);
 
                 // Validate mapping
-                if (!dayName) {
+                if (!dayName2) {
                     console.error(`❌ Invalid dayOfWeek: ${dayOfWeek}`);
                     return;
                 }
@@ -1353,10 +1337,10 @@
                     startMinute = 0;
                 }
 
-                const cellId = `weekly-${dayName}-${startHour}-${startMinute}`;
+                const cellId = `weekly-${dayName2}-${startHour}-${startMinute}`;
                 const cell = document.getElementById(cellId);
 
-                console.log(`📍 Event "${event.summary}" on ${startDate.toDateString()} (${dayName}) at ${startHour}:${startMinute.toString().padStart(2, '0')} -> ${cellId}, spanning ${actualNumSlots} slots`);
+                console.log(`📍 Event "${event.summary}" on ${startDate.toDateString()} (${dayName2}) at ${startHour}:${startMinute.toString().padStart(2, '0')} -> ${cellId}, spanning ${actualNumSlots} slots`);
 
                 if (cell) {
                     const eventEl = document.createElement('div');
@@ -1402,7 +1386,7 @@
                                 clearHour++;
                             }
                             if (clearHour <= 22) {
-                                const clearCellId = `weekly-${dayName}-${clearHour}-${clearMinute}`;
+                                const clearCellId = `weekly-${dayName2}-${clearHour}-${clearMinute}`;
                                 const clearCell = document.getElementById(clearCellId);
                                 if (clearCell) {
                                     // Clear the cell completely to prevent duplicate events

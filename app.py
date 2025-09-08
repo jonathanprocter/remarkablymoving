@@ -21,16 +21,14 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-remarkable-cal
 # Settings optimized for Replit environment
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,  # Security best practice
-    SESSION_COOKIE_SAMESITE='Lax',  # Allow OAuth redirects
+    SESSION_COOKIE_SAMESITE='None',  # Required for cross-site OAuth in Replit
+    SESSION_COOKIE_SECURE=True,  # Required when SameSite=None
     SESSION_COOKIE_NAME='calendar_session',  # Custom session name
     SESSION_COOKIE_PATH='/',  # Ensure cookie works on all paths
-    PERMANENT_SESSION_LIFETIME=timedelta(hours=2)  # Session timeout
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=2),  # Session timeout
+    SESSION_TYPE='filesystem',  # Store sessions server-side
+    SESSION_PERMANENT=False
 )
-
-# For Replit environment, we need secure cookies with proper SameSite
-if os.environ.get('REPLIT_DEV_DOMAIN'):
-    app.config['SESSION_COOKIE_SECURE'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-site OAuth
 
 # Google OAuth configuration
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
