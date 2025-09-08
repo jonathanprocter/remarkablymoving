@@ -217,31 +217,24 @@
                                     <div class="bg-white p-2 text-center">24</div>
                                 </div>
 
-                                <!-- Weekly Goals -->
+                                <!-- Real Calendar Events Summary -->
                                 <div class="grid grid-cols-2 gap-4 mb-4">
                                     <div>
-                                        <h4 class="text-sm font-bold mb-2">Weekly Goals</h4>
-                                        <div class="space-y-1">
-                                            <div class="flex items-center text-xs">
-                                                <div class="w-3 h-3 border border-gray-400 rounded mr-2"></div>
-                                                <span>Complete project proposal</span>
-                                            </div>
-                                            <div class="flex items-center text-xs">
-                                                <div class="w-3 h-3 border border-gray-400 rounded mr-2"></div>
-                                                <span>Review quarterly metrics</span>
-                                            </div>
+                                        <h4 class="text-sm font-bold mb-2">This Week's Events</h4>
+                                        <div id="weeklyEventsSummary" class="space-y-1 text-xs text-gray-600">
+                                            <div>Select calendars and sync to see your events</div>
                                         </div>
                                     </div>
                                     <div>
-                                        <h4 class="text-sm font-bold mb-2">Decisions Pending</h4>
+                                        <h4 class="text-sm font-bold mb-2">Calendar Status</h4>
                                         <div class="space-y-1">
                                             <div class="flex items-center text-xs">
-                                                <div class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
-                                                <span>Budget allocation</span>
+                                                <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                                                <span id="syncStatus">Ready to sync</span>
                                             </div>
                                             <div class="flex items-center text-xs">
-                                                <div class="w-2 h-2 bg-orange-400 rounded-full mr-2"></div>
-                                                <span>Team structure</span>
+                                                <div class="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+                                                <span id="eventCount">0 events loaded</span>
                                             </div>
                                         </div>
                                     </div>
@@ -293,42 +286,29 @@
                                         <div class="time-slot text-right pr-2 text-gray-600">13:00</div>
                                     </div>
 
-                                    <!-- Schedule Column -->
-                                    <div class="col-span-7 space-y-2">
-                                        <div class="time-slot"></div>
-                                        <div class="time-slot bg-blue-100 p-1 rounded border-l-2 border-blue-400">
-                                            <div class="font-medium">Morning Standup</div>
-                                        </div>
-                                        <div class="time-slot"></div>
-                                        <div class="time-slot bg-green-100 p-1 rounded border-l-2 border-green-400">
-                                            <div class="font-medium">Project Review</div>
-                                        </div>
+                                    <!-- Schedule Column - Real Events -->
+                                    <div id="dailySchedule" class="col-span-7 space-y-2">
                                         <div class="time-slot"></div>
                                         <div class="time-slot"></div>
-                                        <div class="time-slot bg-orange-100 p-1 rounded border-l-2 border-orange-400">
-                                            <div class="font-medium">Lunch Meeting</div>
-                                        </div>
+                                        <div class="time-slot"></div>
+                                        <div class="time-slot"></div>
+                                        <div class="time-slot"></div>
+                                        <div class="time-slot"></div>
+                                        <div class="time-slot"></div>
                                         <div class="time-slot"></div>
                                     </div>
 
                                     <!-- Sidebar -->
                                     <div class="col-span-3">
                                         <div class="bg-gray-50 p-2 rounded mb-2">
-                                            <h5 class="font-bold mb-1">Daily Focus</h5>
-                                            <div class="text-xs text-gray-600">Complete design review</div>
+                                            <h5 class="font-bold mb-1">Day Overview</h5>
+                                            <div id="dayOverview" class="text-xs text-gray-600">Sync calendars to see today's focus</div>
                                         </div>
 
                                         <div class="bg-gray-50 p-2 rounded mb-2">
-                                            <h5 class="font-bold mb-1">Priority Tasks</h5>
-                                            <div class="space-y-1">
-                                                <div class="flex items-center">
-                                                    <div class="w-2 h-2 border border-gray-400 rounded mr-1"></div>
-                                                    <span class="text-xs">Update documentation</span>
-                                                </div>
-                                                <div class="flex items-center">
-                                                    <div class="w-2 h-2 border border-gray-400 rounded mr-1"></div>
-                                                    <span class="text-xs">Code review</span>
-                                                </div>
+                                            <h5 class="font-bold mb-1">Today's Events</h5>
+                                            <div id="todaysEvents" class="space-y-1 text-xs text-gray-600">
+                                                <div>No events synced yet</div>
                                             </div>
                                         </div>
 
@@ -597,13 +577,77 @@
 
         // Update preview based on current page
         function refreshPreview() {
-            // Update the preview based on actual calendar events and settings
+            // Update the preview with real calendar events
             if (calendarEvents && calendarEvents.length > 0) {
-                // In a full implementation, this would render the actual calendar events
-                // onto the preview canvas with proper time slots and formatting
                 console.log(`Refreshing preview with ${calendarEvents.length} calendar events`);
+                updateEventsSummary();
+                updateDailyView();
+                updateEventCount();
+            } else {
+                clearPreviewData();
             }
             updateLastUpdateTime();
+        }
+        
+        // Update events summary in weekly view
+        function updateEventsSummary() {
+            const summaryEl = document.getElementById('weeklyEventsSummary');
+            if (!summaryEl || !calendarEvents || calendarEvents.length === 0) return;
+            
+            const upcomingEvents = calendarEvents.slice(0, 3); // Show first 3 events
+            summaryEl.innerHTML = upcomingEvents.map(event => 
+                `<div class="flex items-center">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+                    <span>${event.summary || 'Untitled Event'}</span>
+                </div>`
+            ).join('') || '<div>No events to display</div>';
+        }
+        
+        // Update daily view with real events
+        function updateDailyView() {
+            // Update day overview
+            const overviewEl = document.getElementById('dayOverview');
+            if (overviewEl && calendarEvents && calendarEvents.length > 0) {
+                overviewEl.textContent = `${calendarEvents.length} events synced from your calendars`;
+            }
+            
+            // Update today's events list
+            const todaysEl = document.getElementById('todaysEvents');
+            if (todaysEl && calendarEvents && calendarEvents.length > 0) {
+                const eventsList = calendarEvents.slice(0, 5).map(event => 
+                    `<div class="flex items-center">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
+                        <span>${event.summary || 'Untitled Event'}</span>
+                    </div>`
+                ).join('');
+                todaysEl.innerHTML = eventsList || '<div>No events for today</div>';
+            }
+        }
+        
+        // Update event count display
+        function updateEventCount() {
+            const countEl = document.getElementById('eventCount');
+            if (countEl) {
+                const count = calendarEvents ? calendarEvents.length : 0;
+                countEl.textContent = `${count} events loaded`;
+            }
+            
+            const statusEl = document.getElementById('syncStatus');
+            if (statusEl) {
+                statusEl.textContent = calendarEvents && calendarEvents.length > 0 ? 'Synced successfully' : 'Ready to sync';
+            }
+        }
+        
+        // Clear preview data when no events
+        function clearPreviewData() {
+            const summaryEl = document.getElementById('weeklyEventsSummary');
+            if (summaryEl) summaryEl.innerHTML = '<div>Select calendars and sync to see your events</div>';
+            
+            const overviewEl = document.getElementById('dayOverview');
+            if (overviewEl) overviewEl.textContent = 'Sync calendars to see today\'s focus';
+            
+            const todaysEl = document.getElementById('todaysEvents');
+            if (todaysEl) todaysEl.innerHTML = '<div>No events synced yet</div>';
         }
 
         // Switch preview pages
