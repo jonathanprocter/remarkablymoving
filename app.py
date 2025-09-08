@@ -3,6 +3,9 @@
 import os
 import json
 import requests
+from datetime import datetime, timedelta
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from flask import Flask, request, redirect, session, jsonify, render_template_string
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -36,6 +39,125 @@ print(f"🔧 OAuth Configuration:")
 print(f"   Client ID: {GOOGLE_CLIENT_ID}")
 print(f"   Redirect URI: {REDIRECT_URI}")
 print(f"   Scopes: {SCOPES}")
+
+# Database connection
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+def get_db_connection():
+    """Get database connection"""
+    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+
+def get_or_create_user(google_user_id, email, name):
+    """Get or create user in database"""
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        
+        # Try to get existing user
+        cur.execute(
+            "SELECT id FROM users WHERE google_user_id = %s",
+            (google_user_id,)
+        )
+        user = cur.fetchone()
+        
+        if user:
+            # Update user info
+            cur.execute(
+                "UPDATE users SET email = %s, name = %s, updated_at = CURRENT_TIMESTAMP WHERE google_user_id = %s",
+                (email, name, google_user_id)
+            )
+            user_id = user['id']
+        else:
+            # Create new user
+            cur.execute(
+                "INSERT INTO users (google_user_id, email, name) VALUES (%s, %s, %s) RETURNING id",
+                (google_user_id, email, name)
+            )
+            user_id = cur.fetchone()['id']
+        
+        conn.commit()
+        return user_id
+        
+    finally:
+        conn.close()
+
+def store_user_calendars(user_id, calendars):
+    """Store user's calendars in database"""
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        
+        # Clear existing calendars for this user
+        cur.execute("DELETE FROM user_calendars WHERE user_id = %s", (user_id,))
+        
+        # Insert new calendars
+        for calendar in calendars:
+            cur.execute(
+                """INSERT INTO user_calendars 
+                   (user_id, calendar_id, calendar_name, calendar_color, access_role, is_primary)
+                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                (user_id, calendar['id'], calendar.get('summary', ''), 
+                 calendar.get('backgroundColor', ''), calendar.get('accessRole', ''),
+                 calendar.get('primary', False))
+            )
+        
+        conn.commit()
+        print(f"📅 Stored {len(calendars)} calendars for user {user_id}")
+        
+    finally:
+        conn.close()
+
+def store_calendar_events(user_id, calendar_id, events):
+    """Store calendar events in database"""
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        
+        for event in events:
+            # Parse start and end times
+            start_dt = None
+            end_dt = None
+            is_all_day = False
+            
+            if 'start' in event:
+                if 'dateTime' in event['start']:
+                    start_dt = datetime.fromisoformat(event['start']['dateTime'].replace('Z', '+00:00'))
+                elif 'date' in event['start']:
+                    start_dt = datetime.fromisoformat(event['start']['date'])
+                    is_all_day = True
+                    
+            if 'end' in event:
+                if 'dateTime' in event['end']:
+                    end_dt = datetime.fromisoformat(event['end']['dateTime'].replace('Z', '+00:00'))
+                elif 'date' in event['end']:
+                    end_dt = datetime.fromisoformat(event['end']['date'])
+            
+            # Insert or update event
+            cur.execute(
+                """INSERT INTO calendar_events 
+                   (user_id, calendar_id, event_id, event_summary, event_description, 
+                    start_datetime, end_datetime, is_all_day, location, status, updated_at)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                   ON CONFLICT (user_id, calendar_id, event_id) 
+                   DO UPDATE SET 
+                       event_summary = EXCLUDED.event_summary,
+                       event_description = EXCLUDED.event_description,
+                       start_datetime = EXCLUDED.start_datetime,
+                       end_datetime = EXCLUDED.end_datetime,
+                       is_all_day = EXCLUDED.is_all_day,
+                       location = EXCLUDED.location,
+                       status = EXCLUDED.status,
+                       updated_at = CURRENT_TIMESTAMP""",
+                (user_id, calendar_id, event['id'], event.get('summary', ''),
+                 event.get('description', ''), start_dt, end_dt, is_all_day,
+                 event.get('location', ''), event.get('status', ''))
+            )
+        
+        conn.commit()
+        print(f"📋 Stored {len(events)} events for calendar {calendar_id}")
+        
+    finally:
+        conn.close()
 
 @app.route('/')
 def index():
@@ -143,6 +265,26 @@ def oauth2callback():
             'scopes': granted_scopes
         }
         
+        # Get user info and store in database
+        try:
+            # Build the OAuth2 service to get user info
+            oauth_service = build('oauth2', 'v2', credentials=credentials)
+            user_info = oauth_service.userinfo().get().execute()
+            
+            google_user_id = user_info['id']
+            email = user_info.get('email', '')
+            name = user_info.get('name', '')
+            
+            # Store user in database
+            user_id = get_or_create_user(google_user_id, email, name)
+            session['user_id'] = user_id
+            session['google_user_id'] = google_user_id
+            
+            print(f"👤 User stored: {name} ({email}) - DB ID: {user_id}")
+            
+        except Exception as e:
+            print(f"⚠️ Warning: Could not store user info: {e}")
+        
         print(f"📋 Granted scopes: {granted_scopes}")
         
         print(f"✅ OAuth successful!")
@@ -175,21 +317,26 @@ def logout():
 
 @app.route('/api/calendars')
 def get_calendars():
-    """Get user's calendars"""
-    if 'credentials' not in session:
+    """Get user's calendars from database (fetch from Google if needed)"""
+    if 'credentials' not in session or 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
     
     try:
-        # Create credentials object from session using granted scopes
+        user_id = session['user_id']
+        
+        # Create credentials object from session
         granted_scopes = session['credentials'].get('scopes', SCOPES)
         creds = Credentials.from_authorized_user_info(session['credentials'], granted_scopes)
         
         # Build the Calendar API service
         service = build('calendar', 'v3', credentials=creds)
         
-        # Get calendar list
+        # Get calendar list from Google
         calendars_result = service.calendarList().list().execute()
         calendars = calendars_result.get('items', [])
+        
+        # Store calendars in database
+        store_user_calendars(user_id, calendars)
         
         print(f"📅 Found {len(calendars)} calendars")
         for cal in calendars[:3]:  # Log first few
@@ -203,11 +350,13 @@ def get_calendars():
 
 @app.route('/api/events')
 def get_events():
-    """Get events from selected calendars"""
-    if 'credentials' not in session:
+    """Get events from selected calendars with expanded date range (2015-2030)"""
+    if 'credentials' not in session or 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
     
     try:
+        user_id = session['user_id']
+        
         # Get parameters
         calendar_ids = request.args.getlist('calendar_ids')
         time_min = request.args.get('time_min')
@@ -216,7 +365,13 @@ def get_events():
         if not calendar_ids:
             return jsonify({"error": "No calendar IDs provided"}), 400
         
-        # Create credentials object from session using granted scopes
+        # Expand date range to cover more years if not specified
+        if not time_min:
+            time_min = "2015-01-01T00:00:00Z"
+        if not time_max:
+            time_max = "2030-12-31T23:59:59Z"
+        
+        # Create credentials object from session
         granted_scopes = session['credentials'].get('scopes', SCOPES)
         creds = Credentials.from_authorized_user_info(session['credentials'], granted_scopes)
         
@@ -228,26 +383,49 @@ def get_events():
         # Fetch events from each selected calendar
         for calendar_id in calendar_ids:
             try:
-                events_result = service.events().list(
-                    calendarId=calendar_id,
-                    timeMin=time_min,
-                    timeMax=time_max,
-                    singleEvents=True,
-                    orderBy='startTime'
-                ).execute()
+                # Fetch in chunks to handle large date ranges
+                current_time_min = time_min
+                calendar_events = []
                 
-                events = events_result.get('items', [])
+                while current_time_min < time_max:
+                    # Calculate chunk end (1 year at a time to avoid API limits)
+                    chunk_start = datetime.fromisoformat(current_time_min.replace('Z', '+00:00'))
+                    chunk_end = min(
+                        chunk_start + timedelta(days=365),
+                        datetime.fromisoformat(time_max.replace('Z', '+00:00'))
+                    )
+                    
+                    events_result = service.events().list(
+                        calendarId=calendar_id,
+                        timeMin=chunk_start.isoformat(),
+                        timeMax=chunk_end.isoformat(),
+                        singleEvents=True,
+                        orderBy='startTime',
+                        maxResults=2500  # Max per request
+                    ).execute()
+                    
+                    events = events_result.get('items', [])
+                    calendar_events.extend(events)
+                    
+                    # Move to next chunk
+                    current_time_min = chunk_end.isoformat()
+                    
+                    if len(events) == 0:
+                        break  # No more events in this range
                 
                 # Add calendar info to each event
-                for event in events:
+                for event in calendar_events:
                     event['calendar_id'] = calendar_id
                 
-                all_events.extend(events)
+                # Store events in database
+                store_calendar_events(user_id, calendar_id, calendar_events)
+                
+                all_events.extend(calendar_events)
                 
             except Exception as e:
                 print(f"❌ Error fetching events from calendar {calendar_id}: {e}")
         
-        print(f"📋 Found {len(all_events)} events across {len(calendar_ids)} calendars")
+        print(f"📋 Found {len(all_events)} events across {len(calendar_ids)} calendars (2015-2030)")
         
         return jsonify({"events": all_events})
         
