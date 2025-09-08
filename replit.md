@@ -13,6 +13,12 @@ This is a web-based calendar generator specifically designed for reMarkable e-in
   - Optimized CSS with custom properties for consistent font sizing (4pt-6pt range)
   - Improved space allocation: time grid now uses ~50% of vertical space, priorities/goals/notes properly sized
   - Added event priority highlighting with visual indicators (high priority events show in red background)
+- **Critical Fixes (Sep 8, 2025 - Evening)**:
+  - Fixed page overflow issue: Weekly planner now fits on single landscape page (163mm × 91mm)
+  - Resolved text truncation: Proper text sizing and ellipsis for long event titles
+  - Enhanced bidirectional linking: Events sync between weekly overview (business hours 9-5) and daily views
+  - Corrected layout dimensions: All pages properly sized for reMarkable Paper Pro Move specifications
+  - Improved grid structure: Proper IDs for event cells enabling JavaScript event management
 
 # User Preferences
 
