@@ -404,21 +404,39 @@
         let accessToken = null;
 
         // Initialize Backend API (Server-side OAuth)
-        function initializeGapi() {
+        async function initializeGapi() {
             console.log('Starting backend API initialization...');
             
-            // Check if backend config is available
-            if (!window.BACKEND_CONFIG) {
-                console.error('Backend config not loaded');
-                setTimeout(initializeGapi, 500);
-                return;
+            try {
+                // Load the backend config first
+                const response = await fetch('/config.js');
+                if (!response.ok) {
+                    throw new Error('Failed to load config');
+                }
+                const configText = await response.text();
+                eval(configText); // Load backend config
+                
+                console.log('Backend config loaded:', window.BACKEND_CONFIG);
+                gapi_loaded = true;
+                
+                // Check authentication status
+                await checkAuthStatus();
+                
+                // Enable auth button after successful initialization
+                const authButton = document.getElementById('authButton');
+                authButton.disabled = false;
+                if (!isSignedIn) {
+                    authButton.innerHTML = '<i class="fab fa-google mr-2"></i>Connect Google';
+                }
+                
+            } catch (error) {
+                console.error('Failed to initialize backend API:', error);
+                const authButton = document.getElementById('authButton');
+                authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Connection Error';
+                authButton.disabled = false;
+                // Try again in a few seconds
+                setTimeout(initializeGapi, 3000);
             }
-            
-            console.log('Backend config loaded:', window.BACKEND_CONFIG);
-            gapi_loaded = true;
-            
-            // Check authentication status
-            checkAuthStatus();
         }
         
         // Check authentication status with backend
@@ -879,9 +897,13 @@
             // Check for OAuth success parameter in URL
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('auth') === 'success') {
-                console.log('OAuth success detected, will refresh auth status');
+                console.log('🎉 OAuth success detected! Refreshing auth status...');
                 // Remove the parameter from URL
                 window.history.replaceState({}, document.title, window.location.pathname);
+                // Force refresh auth status after OAuth success
+                setTimeout(() => {
+                    checkAuthStatus();
+                }, 500);
             }
         });
     </script>
