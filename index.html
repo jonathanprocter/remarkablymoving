@@ -95,7 +95,7 @@
             cursor: pointer;
             transition: background-color 0.2s;
             display: block;
-            width: 100%;
+            box-sizing: border-box;
         }
         .franklin-event:hover {
             background: #d0d0d0;
@@ -1207,13 +1207,33 @@
                     
                     // Make event span multiple rows based on duration
                     if (numSlots > 1) {
+                        // Position the event absolutely to span multiple cells
                         eventEl.style.position = 'absolute';
-                        eventEl.style.height = `${numSlots * 12 - 1}px`; // 12px per row minus border
-                        eventEl.style.width = 'calc(100% - 2px)';
-                        eventEl.style.zIndex = '1';
+                        eventEl.style.height = `${(numSlots * 12) - 1}px`; // 12px per 30-min slot
+                        eventEl.style.width = 'calc(100% - 1px)';
+                        eventEl.style.zIndex = '10';
                         eventEl.style.top = '0';
                         eventEl.style.left = '0';
+                        eventEl.style.boxSizing = 'border-box';
                         cell.style.position = 'relative';
+                        
+                        // Clear cells below to prevent overlap
+                        let clearHour = startHour;
+                        let clearMinute = startMinute;
+                        for (let i = 1; i < numSlots; i++) {
+                            clearMinute += 30;
+                            if (clearMinute >= 60) {
+                                clearMinute = 0;
+                                clearHour++;
+                            }
+                            if (clearHour <= 22) {
+                                const clearCellId = `weekly-${dayName}-${clearHour}-${clearMinute}`;
+                                const clearCell = document.getElementById(clearCellId);
+                                if (clearCell) {
+                                    clearCell.style.borderTop = 'none';
+                                }
+                            }
+                        }
                     }
                     
                     // Add click handler for bidirectional navigation to daily view
@@ -1314,18 +1334,37 @@
                         // Make event span multiple rows based on duration
                         if (numSlots > 1) {
                             eventEl.style.position = 'absolute';
-                            eventEl.style.height = `${numSlots * 30 - 2}px`; // Exactly 30px per row minus border
+                            // Daily slots are 30px high, so span exactly that many pixels
+                            const totalHeight = (numSlots * 30) - 2; // Account for borders
+                            eventEl.style.height = `${totalHeight}px`;
+                            eventEl.style.maxHeight = `${totalHeight}px`; // Prevent overflow
                             eventEl.style.width = 'calc(100% - 4px)';
                             eventEl.style.zIndex = '1';
                             eventEl.style.top = '0';
                             eventEl.style.left = '0';
                             eventEl.style.padding = '2px';
                             eventEl.style.boxSizing = 'border-box';
+                            eventEl.style.overflow = 'hidden'; // Clip any overflow
+                            eventEl.style.display = 'block';
                             slot.style.position = 'relative';
                             
-                            // Ensure it doesn't overflow beyond its slots
-                            eventEl.style.maxHeight = `${numSlots * 30 - 2}px`;
-                            eventEl.style.overflow = 'hidden';
+                            // Clear cells below this event to prevent visual conflicts
+                            let clearHour = hour;
+                            let clearMinute = slotMinute;
+                            for (let i = 1; i < numSlots; i++) {
+                                clearMinute += 30;
+                                if (clearMinute >= 60) {
+                                    clearMinute = 0;
+                                    clearHour++;
+                                }
+                                if (clearHour <= 22) {
+                                    const clearSlotId = `daily-${clearHour}-${clearMinute}`;
+                                    const clearSlot = document.getElementById(clearSlotId);
+                                    if (clearSlot) {
+                                        clearSlot.style.borderTop = 'none';
+                                    }
+                                }
+                            }
                         }
                         
                         // Add click handler to go back to weekly view
