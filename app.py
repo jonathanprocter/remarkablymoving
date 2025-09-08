@@ -73,7 +73,8 @@ def get_or_create_user(google_user_id, email, name):
                 "INSERT INTO users (google_user_id, email, name) VALUES (%s, %s, %s) RETURNING id",
                 (google_user_id, email, name)
             )
-            user_id = cur.fetchone()['id']
+            result = cur.fetchone()
+            user_id = result['id'] if result else None
         
         conn.commit()
         return user_id
@@ -288,7 +289,10 @@ def oauth2callback():
         print(f"📋 Granted scopes: {granted_scopes}")
         
         print(f"✅ OAuth successful!")
-        print(f"   Token received: {credentials.token[:20]}...")
+        if credentials and credentials.token:
+            print(f"   Token received: {credentials.token[:20]}...")
+        else:
+            print("   Token received but could not display")
         
         # Clean up session
         session.pop('state', None)
