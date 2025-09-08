@@ -26,10 +26,9 @@ router.post('/generate-planner-pdf', async (req, res) => {
     // Set content
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     
-    // Generate PDF with reMarkable Pro Move dimensions (11.6" × 8.8")
+    // Generate PDF with reMarkable Pro Move dimensions
+    // Let CSS @page rules control individual page sizes
     const pdf = await page.pdf({
-      width: '11.6in',   // 294.64mm
-      height: '8.8in',   // 223.52mm
       printBackground: true,
       preferCSSPageSize: true,
       margin: {
@@ -91,11 +90,11 @@ function getOptimizedCSS() {
     /* reMarkable Pro Move E-ink Optimized Styles */
     @page {
       margin: 0;
-      size: 11.6in 8.8in;  /* Remarkable Pro Move dimensions */
     }
     
-    @page :first-child {
-      size: 11.6in 8.8in;
+    /* Weekly page - landscape orientation */
+    @page :first {
+      size: 11.6in 8.8in;  /* Landscape for weekly overview */
     }
     
     * {
@@ -238,8 +237,13 @@ function getOptimizedCSS() {
       width: 8.8in;
       height: 11.6in;
       padding: 8mm;
-      page-break-after: always;
+      page-break-before: always;
       display: flex;
+    }
+    
+    /* Set portrait orientation for daily pages */
+    @page daily {
+      size: 8.8in 11.6in;  /* Portrait for daily pages */
     }
     
     .daily-main {
@@ -413,7 +417,7 @@ function generateDailyPage(weekData, day) {
   const dayEvents = weekData.events?.[day.key] || [];
   
   return `
-    <div class="daily-page">
+    <div class="daily-page" style="page: daily;">
         <div class="daily-main">
             <div class="daily-header">
                 <div class="daily-title">DAILY PLANNER - ${day.name}</div>
