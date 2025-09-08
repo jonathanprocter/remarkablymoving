@@ -1271,13 +1271,13 @@
                 // Grid IDs use: weekly-mon-, weekly-tue-, weekly-wed-, etc.
                 // Fix the mapping to align correctly
                 const dayMapping = {
-                    0: 'sun', // Sunday (getDay=0) -> 'sun' column
                     1: 'mon', // Monday (getDay=1) -> 'mon' column  
                     2: 'tue', // Tuesday (getDay=2) -> 'tue' column
                     3: 'wed', // Wednesday (getDay=3) -> 'wed' column
                     4: 'thu', // Thursday (getDay=4) -> 'thu' column
                     5: 'fri', // Friday (getDay=5) -> 'fri' column
-                    6: 'sat'  // Saturday (getDay=6) -> 'sat' column
+                    6: 'sat', // Saturday (getDay=6) -> 'sat' column
+                    0: 'sun'  // Sunday (getDay=0) -> 'sun' column
                 };
                 const dayName = dayMapping[dayOfWeek];
                 
@@ -1708,8 +1708,10 @@
                 weekStartInput.value = monday.toISOString().split('T')[0];
             }
 
-            // Calculate which day of the week to show (1=Mon, 7=Sun)
-            const dayIndex = day === 0 ? 7 : day;
+            // Calculate which day of the week to show (1=Mon, 2=Tue, ..., 7=Sun)
+            // JavaScript getDay(): 0=Sunday, 1=Monday, 2=Tuesday, etc.
+            // Our page indices: 0=Week, 1=Monday, 2=Tuesday, ..., 7=Sunday
+            const dayIndex = day === 0 ? 7 : day; // Sunday maps to page 7, others map directly
 
             // Switch to the correct daily page
             currentPage = dayIndex;
