@@ -8,8 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
     <script src="config.js"></script>
     <style>
         .remarkable-preview {
@@ -898,13 +897,10 @@
         let isSignedIn = false;
         let currentPage = 0;
         let calendarEvents = [];
-        let weeklyEvents = {}; // Add this to fix PDF generation errors
-        let tokenClient = null;
-        let accessToken = null;
-        let weeklyEvents = {}; // Add this to fix PDF generation errors
+        let weeklyEvents = {}; // For PDF generation
 
         // Initialize Backend API (Server-side OAuth)
-        async function initializeGapi() {
+        async function initializeBackend() {
             console.log('Starting backend API initialization...');
 
             try {
@@ -924,18 +920,22 @@
 
                 // Enable auth button after successful initialization
                 const authButton = document.getElementById('authButton');
-                authButton.disabled = false;
-                if (!isSignedIn) {
-                    authButton.innerHTML = '<i class="fab fa-google mr-2"></i>Connect Google';
+                if (authButton) {
+                    authButton.disabled = false;
+                    if (!isSignedIn) {
+                        authButton.innerHTML = '<i class="fab fa-google mr-2"></i>Connect Google';
+                    }
                 }
 
             } catch (error) {
                 console.error('Failed to initialize backend API:', error);
                 const authButton = document.getElementById('authButton');
-                authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Connection Error';
-                authButton.disabled = false;
+                if (authButton) {
+                    authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Connection Error';
+                    authButton.disabled = false;
+                }
                 // Try again in a few seconds
-                setTimeout(initializeGapi, 3000);
+                setTimeout(initializeBackend, 3000);
             }
         }
 
@@ -1345,7 +1345,12 @@
 
             // Get current week range
             const weekStartInput = document.getElementById('weekStart');
-            const weekStart = weekStartInput ? new Date(weekStartInput.value) : new Date();
+            if (!weekStartInput || !weekStartInput.value) {
+                console.log('⚠️ Week start not set');
+                return;
+            }
+            
+            const weekStart = new Date(weekStartInput.value);
 
             // Calculate the specific day
             const targetDay = new Date(weekStart);
@@ -1635,11 +1640,14 @@
 
             // Switch to the correct daily page
             currentPage = dayIndex;
-            switchPage(dayIndex); // Use switchPage instead of showPage
+            switchPage(dayIndex);
 
-            // Update the date picker
-            const dateStr = date.toISOString().split('T')[0];
-            document.getElementById('datePicker').value = dateStr;
+            // Update the date picker if it exists
+            const datePicker = document.getElementById('datePicker');
+            if (datePicker) {
+                const dateStr = date.toISOString().split('T')[0];
+                datePicker.value = dateStr;
+            }
         }
 
         // Generate PDF
@@ -1978,8 +1986,8 @@
                 authButtonInit.disabled = true;
             }
 
-            // Initialize Google API when page loads (after a delay to ensure all resources are loaded)
-            setTimeout(initializeGapi, 1000);
+            // Initialize Backend API when page loads (after a delay to ensure all resources are loaded)
+            setTimeout(initializeBackend, 1000);
 
             // Check for OAuth success parameter in URL
             const urlParams = new URLSearchParams(window.location.search);
