@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["nano"]
+packages = ["nano", "chromium", "glib", "nss", "nspr", "atk", "cups", "libdrm", "dbus", "pango", "cairo", "alsa-lib"]
 
 [workflows]
 runButton = "Project"
@@ -49,6 +49,10 @@ outputType = "console"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
 
 [deployment]
 deploymentTarget = "autoscale"
