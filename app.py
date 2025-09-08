@@ -208,6 +208,11 @@ window.GOOGLE_CONFIG = {{
 """
     return config_js, 200, {'Content-Type': 'application/javascript'}
 
+@app.route('/auth')
+def auth_redirect():
+    """Redirect /auth to /auth/google"""
+    return redirect('/auth/google')
+
 @app.route('/auth/google')
 def google_auth():
     """Initialize Google OAuth flow"""
