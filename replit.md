@@ -2,7 +2,9 @@
 
 This is a web-based calendar generator specifically designed for reMarkable e-ink tablets. The application creates PDF calendars optimized for the reMarkable's display characteristics, with features like time slot management, Google Calendar integration, and e-ink display optimization. The tool allows users to generate custom calendar layouts that work well on reMarkable devices for productivity and planning purposes.
 
-**Latest Update (Sep 2025)**: Extended sync capability to load complete calendar history from 2015-2030, with optimized chunked API requests and PostgreSQL storage for comprehensive calendar template generation.
+**Latest Update (Sep 2025)**: 
+- Extended sync capability to load complete calendar history from 2015-2030, with optimized chunked API requests and PostgreSQL storage for comprehensive calendar template generation.
+- Added server-side PDF generation using Puppeteer for reMarkable Pro optimized planners with 8-page format (1 weekly overview + 7 daily pages)
 
 # User Preferences
 
