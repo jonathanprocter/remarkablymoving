@@ -1559,255 +1559,217 @@
 
         // Generate PDF
         function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            
-            // Create PDF with reMarkable Pro dimensions (4:3 aspect ratio)
-            const doc = new jsPDF({
-                orientation: 'landscape',
-                unit: 'px',
-                format: [2880, 2160] // reMarkable Pro resolution
-            });
-
-            const weekStart = document.getElementById('weekStart').value || new Date().toISOString().split('T')[0];
-            const startDate = new Date(weekStart);
-            
-            // Page 1: Weekly Overview
-            generateWeeklyPDFPage(doc, startDate);
-            
-            // Pages 2-8: Daily views for each day of the week
-            for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-                doc.addPage();
-                const currentDate = new Date(startDate);
-                currentDate.setDate(startDate.getDate() + dayOffset);
-                generateDailyPDFPage(doc, currentDate, dayOffset);
+            try {
+                console.log('Starting PDF generation...');
+                
+                // Check if jsPDF is loaded
+                if (!window.jspdf) {
+                    alert('PDF library not loaded. Please refresh the page and try again.');
+                    console.error('jsPDF not found');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                
+                // Create PDF with standard A4 landscape for better compatibility
+                const doc = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                const weekStart = document.getElementById('weekStart').value || new Date().toISOString().split('T')[0];
+                const startDate = new Date(weekStart);
+                
+                console.log('Generating PDF for week starting:', weekStart);
+                
+                // Generate a simpler PDF that works reliably
+                generateSimpleWeeklyPDF(doc, startDate);
+                
+                // Add daily pages
+                for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+                    doc.addPage();
+                    const currentDate = new Date(startDate);
+                    currentDate.setDate(startDate.getDate() + dayOffset);
+                    generateSimpleDailyPDF(doc, currentDate, dayOffset);
+                }
+                
+                // Save the PDF
+                const filename = `remarkable_calendar_${weekStart}.pdf`;
+                console.log('Saving PDF as:', filename);
+                doc.save(filename);
+                
+                updateLastUpdateTime();
+                console.log('PDF generation complete!');
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please check the console for details.');
             }
-            
-            // Save the PDF
-            doc.save(`remarkable_calendar_${weekStart}.pdf`);
-            updateLastUpdateTime();
         }
         
-        // Generate weekly overview page for PDF
-        function generateWeeklyPDFPage(doc, startDate) {
-            // Title
-            doc.setFont('courier', 'bold');
-            doc.setFontSize(32);
-            doc.text('Weekly Overview', 1440, 100, { align: 'center' });
-            
-            // Week dates
-            doc.setFontSize(20);
-            const endDate = new Date(startDate);
-            endDate.setDate(startDate.getDate() + 6);
-            doc.text(`${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, 1440, 140, { align: 'center' });
-            
-            // Time slots (30-minute intervals from 07:00 to 22:00)
-            const timeSlots = [];
-            for (let hour = 7; hour <= 22; hour++) {
-                timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
-                if (hour < 22) {
-                    timeSlots.push(`${hour.toString().padStart(2, '0')}:30`);
+        // Generate simple weekly overview for PDF
+        function generateSimpleWeeklyPDF(doc, startDate) {
+            try {
+                // Set font
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(20);
+                doc.text('Weekly Calendar', 148, 15, { align: 'center' });
+                
+                // Week dates
+                doc.setFontSize(12);
+                const endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);
+                doc.text(`${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, 148, 25, { align: 'center' });
+                
+                // Draw weekly grid
+                const startX = 10;
+                const startY = 35;
+                const cellWidth = 38;
+                const cellHeight = 5;
+                const days = ['Time', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                
+                // Draw headers
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                days.forEach((day, index) => {
+                    doc.rect(startX + (index * cellWidth), startY, cellWidth, cellHeight);
+                    doc.text(day, startX + (index * cellWidth) + cellWidth/2, startY + 3, { align: 'center' });
+                });
+                
+                // Draw time slots (07:00 to 22:00 in 30-minute intervals)
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                let rowY = startY + cellHeight;
+                
+                for (let hour = 7; hour <= 22; hour++) {
+                    for (let minute = 0; minute < 60; minute += 30) {
+                        if (hour === 22 && minute === 30) break;
+                        
+                        // Time column
+                        const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                        doc.rect(startX, rowY, cellWidth, cellHeight);
+                        doc.text(timeStr, startX + 2, rowY + 3);
+                        
+                        // Day columns
+                        for (let day = 1; day <= 7; day++) {
+                            doc.rect(startX + (day * cellWidth), rowY, cellWidth, cellHeight);
+                            
+                            // Add events if available
+                            if (weeklyEvents && weeklyEvents[day - 1]) {
+                                const dayEvents = weeklyEvents[day - 1].filter(event => {
+                                    const eventStart = new Date(event.start);
+                                    const eventHour = eventStart.getHours();
+                                    const eventMinute = eventStart.getMinutes();
+                                    return eventHour === hour && eventMinute === minute;
+                                });
+                                
+                                if (dayEvents.length > 0) {
+                                    doc.setFontSize(6);
+                                    const eventText = dayEvents[0].title.substring(0, 12);
+                                    doc.text(eventText, startX + (day * cellWidth) + 2, rowY + 3);
+                                    doc.setFontSize(8);
+                                }
+                            }
+                        }
+                        
+                        rowY += cellHeight;
+                    }
                 }
+            } catch (error) {
+                console.error('Error in generateSimpleWeeklyPDF:', error);
+                throw error;
             }
-            
-            // Grid setup
-            const gridStartX = 150;
-            const gridStartY = 200;
-            const timeColWidth = 100;
-            const dayColWidth = 360;
-            const rowHeight = 50; // Height for each 30-minute slot
-            
-            // Draw time column
-            doc.setFontSize(12);
-            doc.setFont('courier', 'normal');
-            timeSlots.forEach((time, index) => {
-                const y = gridStartY + (index * rowHeight) + 30;
-                doc.text(time, gridStartX - 10, y, { align: 'right' });
+        }
+        
+        // Generate simple daily page for PDF
+        function generateSimpleDailyPDF(doc, date, dayIndex) {
+            try {
+                const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                 
-                // Draw horizontal grid lines
-                doc.setDrawColor(200, 200, 200);
-                doc.setLineWidth(0.5);
-                doc.line(gridStartX, gridStartY + (index * rowHeight), gridStartX + timeColWidth + (7 * dayColWidth), gridStartY + (index * rowHeight));
-            });
-            
-            // Draw day columns
-            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            days.forEach((day, dayIndex) => {
-                const x = gridStartX + timeColWidth + (dayIndex * dayColWidth);
-                
-                // Day headers
-                doc.setFont('courier', 'bold');
-                doc.setFontSize(16);
-                doc.text(day, x + (dayColWidth / 2), gridStartY - 20, { align: 'center' });
+                // Title
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(20);
+                doc.text(dayNames[dayIndex], 148, 15, { align: 'center' });
                 
                 // Date
-                const currentDate = new Date(startDate);
-                currentDate.setDate(startDate.getDate() + dayIndex);
                 doc.setFontSize(12);
-                doc.text(currentDate.toLocaleDateString(), x + (dayColWidth / 2), gridStartY - 5, { align: 'center' });
+                doc.text(date.toLocaleDateString(), 148, 25, { align: 'center' });
                 
-                // Vertical lines
-                doc.setDrawColor(150, 150, 150);
-                doc.setLineWidth(1);
-                doc.line(x, gridStartY - 40, x, gridStartY + (timeSlots.length * rowHeight));
+                // Create schedule grid
+                const startX = 10;
+                const startY = 35;
+                const timeWidth = 20;
+                const scheduleWidth = 120;
+                const notesWidth = 120;
+                const rowHeight = 6;
                 
-                // Add events for this day
-                if (weeklyEvents[dayIndex]) {
-                    doc.setFont('courier', 'normal');
-                    doc.setFontSize(10);
-                    
-                    weeklyEvents[dayIndex].forEach(event => {
-                        const eventStart = new Date(event.start);
-                        const eventHour = eventStart.getHours();
-                        const eventMinute = eventStart.getMinutes();
+                // Headers
+                doc.setFontSize(10);
+                doc.rect(startX, startY, timeWidth, rowHeight);
+                doc.text('Time', startX + timeWidth/2, startY + 4, { align: 'center' });
+                
+                doc.rect(startX + timeWidth, startY, scheduleWidth, rowHeight);
+                doc.text('Schedule', startX + timeWidth + scheduleWidth/2, startY + 4, { align: 'center' });
+                
+                doc.rect(startX + timeWidth + scheduleWidth, startY, notesWidth, rowHeight);
+                doc.text('Notes', startX + timeWidth + scheduleWidth + notesWidth/2, startY + 4, { align: 'center' });
+                
+                // Time slots
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                let rowY = startY + rowHeight;
+                
+                for (let hour = 7; hour <= 22; hour++) {
+                    for (let minute = 0; minute < 60; minute += 30) {
+                        if (hour === 22 && minute === 30) break;
                         
-                        if (eventHour >= 7 && eventHour <= 22) {
-                            const slotIndex = (eventHour - 7) * 2 + (eventMinute >= 30 ? 1 : 0);
-                            const y = gridStartY + (slotIndex * rowHeight) + 20;
+                        // Time
+                        const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                        doc.rect(startX, rowY, timeWidth, rowHeight);
+                        doc.text(timeStr, startX + 2, rowY + 4);
+                        
+                        // Schedule column
+                        doc.rect(startX + timeWidth, rowY, scheduleWidth, rowHeight);
+                        
+                        // Notes column
+                        doc.rect(startX + timeWidth + scheduleWidth, rowY, notesWidth, rowHeight);
+                        
+                        // Add events for this time slot
+                        if (weeklyEvents && weeklyEvents[dayIndex]) {
+                            const slotEvents = weeklyEvents[dayIndex].filter(event => {
+                                const eventStart = new Date(event.start);
+                                return eventStart.getHours() === hour && eventStart.getMinutes() === minute;
+                            });
                             
-                            // Draw event box
-                            doc.setFillColor(230, 230, 230);
-                            doc.rect(x + 5, y - 15, dayColWidth - 10, rowHeight - 5, 'F');
-                            
-                            // Draw event text
-                            doc.setTextColor(0, 0, 0);
-                            const eventTime = eventStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                            const eventText = `${eventTime} ${event.title}`;
-                            doc.text(eventText, x + 10, y, { maxWidth: dayColWidth - 20 });
+                            if (slotEvents.length > 0) {
+                                doc.setFontSize(7);
+                                const eventText = slotEvents[0].title;
+                                doc.text(eventText, startX + timeWidth + 2, rowY + 4, { maxWidth: scheduleWidth - 4 });
+                                doc.setFontSize(8);
+                            }
                         }
-                    });
-                }
-            });
-            
-            // Bottom border
-            doc.setDrawColor(100, 100, 100);
-            doc.setLineWidth(2);
-            doc.line(gridStartX, gridStartY + (timeSlots.length * rowHeight), gridStartX + timeColWidth + (7 * dayColWidth), gridStartY + (timeSlots.length * rowHeight));
-        }
-        
-        // Generate daily page for PDF
-        function generateDailyPDFPage(doc, date, dayIndex) {
-            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-            
-            // Title
-            doc.setFont('courier', 'bold');
-            doc.setFontSize(32);
-            doc.text(dayNames[dayIndex], 1440, 100, { align: 'center' });
-            
-            // Date
-            doc.setFontSize(20);
-            doc.text(date.toLocaleDateString(), 1440, 140, { align: 'center' });
-            
-            // Time slots (30-minute intervals)
-            const gridStartX = 200;
-            const gridStartY = 200;
-            const timeColWidth = 150;
-            const scheduleWidth = 1000;
-            const notesWidth = 800;
-            const rowHeight = 55;
-            
-            // Schedule section
-            doc.setFontSize(18);
-            doc.text('Schedule', gridStartX + timeColWidth + (scheduleWidth / 2), gridStartY - 30, { align: 'center' });
-            
-            // Notes section
-            doc.text('Notes & Actions', gridStartX + timeColWidth + scheduleWidth + (notesWidth / 2), gridStartY - 30, { align: 'center' });
-            
-            // Draw time slots and grid
-            for (let hour = 7; hour <= 22; hour++) {
-                for (let minute = 0; minute < 60; minute += 30) {
-                    if (hour === 22 && minute === 30) break; // Stop at 22:00
-                    
-                    const slotIndex = (hour - 7) * 2 + (minute / 30);
-                    const y = gridStartY + (slotIndex * rowHeight);
-                    
-                    // Time label
-                    doc.setFont('courier', 'normal');
-                    doc.setFontSize(14);
-                    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                    doc.text(timeStr, gridStartX - 10, y + 35, { align: 'right' });
-                    
-                    // Horizontal lines
-                    doc.setDrawColor(200, 200, 200);
-                    doc.setLineWidth(0.5);
-                    doc.line(gridStartX, y, gridStartX + timeColWidth + scheduleWidth + notesWidth, y);
-                    
-                    // Hour markers (thicker line)
-                    if (minute === 0) {
-                        doc.setLineWidth(1);
-                        doc.setDrawColor(150, 150, 150);
-                        doc.line(gridStartX, y, gridStartX + timeColWidth + scheduleWidth + notesWidth, y);
+                        
+                        rowY += rowHeight;
                     }
                 }
-            }
-            
-            // Vertical dividers
-            doc.setLineWidth(2);
-            doc.setDrawColor(100, 100, 100);
-            // Time column divider
-            doc.line(gridStartX + timeColWidth, gridStartY - 50, gridStartX + timeColWidth, gridStartY + (31 * rowHeight));
-            // Schedule/Notes divider
-            doc.line(gridStartX + timeColWidth + scheduleWidth, gridStartY - 50, gridStartX + timeColWidth + scheduleWidth, gridStartY + (31 * rowHeight));
-            
-            // Add events for this day
-            if (weeklyEvents[dayIndex]) {
-                doc.setFont('courier', 'normal');
-                doc.setFontSize(12);
                 
-                weeklyEvents[dayIndex].forEach(event => {
-                    const eventStart = new Date(event.start);
-                    const eventHour = eventStart.getHours();
-                    const eventMinute = eventStart.getMinutes();
-                    
-                    if (eventHour >= 7 && eventHour <= 22) {
-                        const slotIndex = (eventHour - 7) * 2 + (eventMinute >= 30 ? 1 : 0);
-                        const y = gridStartY + (slotIndex * rowHeight) + 25;
-                        
-                        // Draw event in schedule column
-                        doc.setFillColor(230, 230, 230);
-                        doc.rect(gridStartX + timeColWidth + 10, y - 20, scheduleWidth - 20, rowHeight - 10, 'F');
-                        
-                        // Event text
-                        doc.setTextColor(0, 0, 0);
-                        const eventTime = eventStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        const eventText = `${eventTime} - ${event.title}`;
-                        doc.text(eventText, gridStartX + timeColWidth + 20, y, { maxWidth: scheduleWidth - 40 });
-                        
-                        // Location if available
-                        if (event.location) {
-                            doc.setFontSize(10);
-                            doc.text(event.location, gridStartX + timeColWidth + 20, y + 15, { maxWidth: scheduleWidth - 40 });
-                        }
-                    }
-                });
-            }
-            
-            // Add sections at bottom
-            const bottomY = gridStartY + (31 * rowHeight) + 50;
-            
-            // Habit tracker section
-            doc.setFont('courier', 'bold');
-            doc.setFontSize(16);
-            doc.text('Daily Habits', 300, bottomY);
-            doc.setLineWidth(0.5);
-            for (let i = 0; i < 5; i++) {
-                doc.rect(300, bottomY + 10 + (i * 30), 20, 20);
-                doc.line(330, bottomY + 20 + (i * 30), 600, bottomY + 20 + (i * 30));
-            }
-            
-            // Energy levels section
-            doc.text('Energy Levels', 900, bottomY);
-            const energyTimes = ['Morning', 'Afternoon', 'Evening'];
-            energyTimes.forEach((time, index) => {
-                doc.text(time, 900, bottomY + 30 + (index * 30));
-                for (let level = 1; level <= 5; level++) {
-                    doc.circle(1050 + (level * 30), bottomY + 25 + (index * 30), 10);
+                // Add habit tracker at bottom
+                rowY += 10;
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(10);
+                doc.text('Daily Habits', startX, rowY);
+                
+                doc.setFont('helvetica', 'normal');
+                rowY += 5;
+                for (let i = 0; i < 5; i++) {
+                    doc.rect(startX, rowY + (i * 7), 5, 5);
+                    doc.line(startX + 7, rowY + (i * 7) + 2.5, startX + 100, rowY + (i * 7) + 2.5);
                 }
-            });
-            
-            // Decision log section
-            doc.text('Key Decisions', 1500, bottomY);
-            for (let i = 0; i < 3; i++) {
-                doc.line(1500, bottomY + 20 + (i * 40), 2200, bottomY + 20 + (i * 40));
+                
+            } catch (error) {
+                console.error('Error in generateSimpleDailyPDF:', error);
+                throw error;
             }
         }
 
