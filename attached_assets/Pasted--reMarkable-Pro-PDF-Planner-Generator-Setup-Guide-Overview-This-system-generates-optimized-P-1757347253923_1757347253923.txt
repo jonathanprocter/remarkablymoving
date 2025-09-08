@@ -1,0 +1,297 @@
+# reMarkable Pro PDF Planner Generator - Setup Guide
+
+## Overview
+
+This system generates optimized PDF planners for the reMarkable Pro eink device, featuring:
+
+- **Page 1**: Weekly overview (landscape, 297×210mm)
+- **Pages 2-8**: Daily planners (portrait, 210×297mm)
+- **E-ink optimizations**: High contrast, clear fonts, minimal graphics
+- **Dynamic data**: Integrates with your existing calendar system
+
+## Installation
+
+### 1. Install Dependencies
+
+Add these dependencies to your `package.json`:
+
+```json
+{
+  "dependencies": {
+    "express": "^4.18.2",
+    "puppeteer": "^21.0.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
+```
+
+Run in your Replit terminal:
+
+```bash
+npm install express puppeteer cors
+```
+
+### 2. Server Setup
+
+Create or update your main server file (usually `server.js` or `index.js`):
+
+```javascript
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+// Import the PDF generator backend code
+const pdfRoutes = require('./pdf-generator-backend');
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.static('public'));
+
+// Use PDF generation routes
+app.use('/api', pdfRoutes);
+
+// Your existing routes...
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+```
+
+### 3. Client Integration
+
+Add the client-side integration to your existing calendar application:
+
+```html
+<!-- Add to your HTML head -->
+<script src="/client-integration.js"></script>
+
+<!-- Add to your calendar interface -->
+<div class="pdf-controls">
+  <input type="date" id="week-selector" title="Select week start date">
+  <button id="generate-pdf-btn">Generate reMarkable PDF</button>
+</div>
+```
+
+## Configuration
+
+### reMarkable Pro Specifications
+
+- **Screen**: 10.3” (1404 × 1872 pixels at 227 DPI)
+- **Optimal PDF size**: A4 (210×297mm)
+- **Landscape weekly view**: 297×210mm
+- **Portrait daily views**: 210×297mm
+
+### Data Structure
+
+Your calendar data should follow this format:
+
+```javascript
+const calendarData = [
+  {
+    date: '2025-09-08',        // ISO date string
+    time: '09:00',             // HH:MM format
+    duration: 60,              // Minutes
+    title: 'Client Meeting',   // Event title
+    type: 'appointment'        // Event type (optional)
+  },
+  // ... more events
+];
+```
+
+### Weekly Data Structure
+
+The system expects this format for weekly data:
+
+```javascript
+const weekData = {
+  weekOf: '2025-09-08',
+  weeklyGoals: [
+    'Complete quarterly review',
+    'Finalize project timeline'
+  ],
+  priorityTasks: [
+    'Review client contracts',
+    'Prepare presentation materials'
+  ],
+  events: {
+    monday: [
+      { time: '09:00', duration: 60, title: 'Meeting with client' }
+    ],
+    tuesday: [
+      { time: '14:30', duration: 90, title: 'Project review' }
+    ],
+    // ... other days
+  }
+};
+```
+
+## Usage
+
+### Basic Integration
+
+1. Initialize the PDF generator with your calendar data:
+
+```javascript
+const pdfIntegration = new CalendarPDFIntegration();
+pdfIntegration.initialize(yourCalendarData);
+```
+
+1. Generate PDF for current week:
+
+```javascript
+const weekStart = new Date(); // or specific date
+const weekStartString = weekStart.toISOString().split('T')[0];
+await pdfIntegration.handleGeneratePDF(weekStartString);
+```
+
+### Advanced Options
+
+```javascript
+const options = {
+  optimizeForRemarkable: true,    // E-ink optimizations
+  includeWeeklyOverview: true,    // Include landscape weekly page
+  includeDailyPages: true,        // Include portrait daily pages
+  highContrast: true,             // Enhanced contrast for e-ink
+  fontSize: 'normal'              // 'small', 'normal', 'large'
+};
+
+await pdfGenerator.generatePDF(weekStartDate, options);
+```
+
+## Customization
+
+### Modify Time Slots
+
+```javascript
+// In pdf-generator-backend.js, adjust these functions:
+function generateTimeSlots(startHour, endHour, intervalMinutes) {
+  // Default: 7 AM to 10 PM, 30-minute intervals for daily
+  // Default: 7 AM to 10 PM, 60-minute intervals for weekly
+}
+```
+
+### Custom Styling
+
+Update the CSS in `getOptimizedCSS()` function:
+
+```javascript
+// Adjust fonts for better e-ink rendering
+font-family: 'Courier New', 'Liberation Mono', monospace;
+
+// Modify grid spacing
+grid-template-columns: 50px repeat(7, 1fr);
+
+// Change event appearance
+.weekly-event {
+  background: #000;  // High contrast for e-ink
+  color: #fff;
+}
+```
+
+### Data Source Integration
+
+Modify the data transformation functions to match your database schema:
+
+```javascript
+// In client-integration.js
+getWeekEvents(weekStartDate) {
+  // Replace with your database query logic
+  // Example for SQL databases:
+  /*
+  const query = `
+    SELECT date, time, duration, title, type 
+    FROM calendar_events 
+    WHERE date BETWEEN ? AND ?
+  `;
+  */
+  
+  // Example for MongoDB:
+  /*
+  const events = await db.collection('events').find({
+    date: { 
+      $gte: new Date(weekStartDate),
+      $lte: new Date(weekEndDate)
+    }
+  }).toArray();
+  */
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Puppeteer not working in Replit**:
+   
+   ```bash
+   # Add to replit.nix or install manually
+   npm install puppeteer --no-sandbox
+   ```
+1. **PDF generation timeout**:
+   
+   ```javascript
+   // Increase timeout in puppeteer options
+   const browser = await puppeteer.launch({
+     headless: true,
+     timeout: 60000,
+     args: ['--no-sandbox', '--disable-setuid-sandbox']
+   });
+   ```
+1. **Memory issues**:
+   
+   ```javascript
+   // Close browser instances properly
+   await browser.close();
+   ```
+
+### reMarkable Pro Optimization Tips
+
+1. **Use high contrast**: Black text on white background works best
+1. **Avoid gradients**: Use solid colors only
+1. **Optimize font sizes**: 8-12px for body text, 14-18px for headers
+1. **Minimize graphics**: Focus on text and simple lines
+1. **Test on device**: Always verify output on actual reMarkable Pro
+
+## File Structure
+
+```
+your-replit-project/
+├── server.js                 # Main server file
+├── pdf-generator-backend.js  # PDF generation logic
+├── public/
+│   ├── client-integration.js # Client-side integration
+│   └── styles.css           # Additional styles
+├── package.json             # Dependencies
+└── README.md               # This file
+```
+
+## Support
+
+For issues specific to:
+
+- **Puppeteer**: Check [Puppeteer documentation](https://pptr.dev/)
+- **reMarkable Pro**: Refer to device specifications
+- **PDF optimization**: Test with different contrast and font settings
+
+## Example API Usage
+
+```bash
+# Generate PDF via API
+curl -X POST http://localhost:3000/api/generate-planner-pdf \
+  -H "Content-Type: application/json" \
+  -d '{
+    "weekData": {
+      "weekOf": "2025-09-08",
+      "events": {...}
+    },
+    "startDate": "2025-09-08"
+  }' \
+  --output planner.pdf
+```

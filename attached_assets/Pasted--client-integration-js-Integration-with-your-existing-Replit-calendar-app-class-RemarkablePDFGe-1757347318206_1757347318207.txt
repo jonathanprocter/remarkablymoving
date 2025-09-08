@@ -1,0 +1,360 @@
+// client-integration.js - Integration with your existing Replit calendar app
+
+class RemarkablePDFGenerator {
+constructor(calendarData) {
+this.calendarData = calendarData;
+this.apiBaseURL = ‘/api’; // Adjust to your server setup
+}
+
+// Convert your existing calendar data to the PDF generator format
+transformCalendarData(weekStartDate) {
+const weekData = {
+weekOf: weekStartDate,
+weeklyGoals: this.getWeeklyGoals(),
+priorityTasks: this.getPriorityTasks(),
+events: this.getWeekEvents(weekStartDate)
+};
+
+```
+return weekData;
+```
+
+}
+
+// Extract weekly goals from your calendar system
+getWeeklyGoals() {
+// Replace with your actual implementation
+// This might come from a goals database table or user preferences
+return [
+‘Complete all scheduled appointments’,
+‘Review and update project timelines’,
+‘Prepare for upcoming presentations’
+];
+}
+
+// Extract priority tasks
+getPriorityTasks() {
+// Replace with your actual implementation
+// This might come from a tasks database or todo list
+return [
+‘Follow up on client contracts’,
+‘Prepare quarterly review materials’,
+‘Update team schedules’
+];
+}
+
+// Convert your calendar events to the required format
+getWeekEvents(weekStartDate) {
+const startDate = new Date(weekStartDate);
+const events = {
+monday: [],
+tuesday: [],
+wednesday: [],
+thursday: [],
+friday: [],
+saturday: [],
+sunday: []
+};
+
+```
+// Assuming your calendar data structure looks something like this:
+// this.calendarData = [
+//   { date: '2025-09-08', time: '09:00', duration: 60, title: 'Client Meeting', type: 'appointment' },
+//   { date: '2025-09-08', time: '14:30', duration: 90, title: 'Project Review', type: 'meeting' },
+//   ...
+// ]
+
+const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+this.calendarData.forEach(event => {
+  const eventDate = new Date(event.date);
+  const dayOfWeek = eventDate.getDay();
+  const dayKey = dayNames[dayOfWeek];
+  
+  // Check if event falls within the week
+  const weekEnd = new Date(startDate);
+  weekEnd.setDate(startDate.getDate() + 6);
+  
+  if (eventDate >= startDate && eventDate <= weekEnd) {
+    events[dayKey].push({
+      time: event.time,
+      duration: event.duration || 60,
+      title: event.title,
+      type: event.type || 'appointment'
+    });
+  }
+});
+
+// Sort events by time for each day
+Object.keys(events).forEach(day => {
+  events[day].sort((a, b) => {
+    const timeA = a.time.split(':').reduce((h, m) => h * 60 + parseInt(m), 0);
+    const timeB = b.time.split(':').reduce((h, m) => h * 60 + parseInt(m), 0);
+    return timeA - timeB;
+  });
+});
+
+return events;
+```
+
+}
+
+// Generate and download the PDF
+async generatePDF(weekStartDate, options = {}) {
+try {
+// Show loading state
+this.showLoadingState();
+
+```
+  // Transform your calendar data
+  const weekData = this.transformCalendarData(weekStartDate);
+
+  // Prepare request data
+  const requestData = {
+    weekData: weekData,
+    startDate: weekStartDate,
+    options: {
+      includeWeeklyOverview: options.includeWeeklyOverview !== false,
+      includeDailyPages: options.includeDailyPages !== false,
+      optimizeForRemarkable: options.optimizeForRemarkable !== false,
+      ...options
+    }
+  };
+
+  // Make API request
+  const response = await fetch(`${this.apiBaseURL}/generate-planner-pdf`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestData)
+  });
+
+  if (!response.ok) {
+    throw new Error(`PDF generation failed: ${response.statusText}`);
+  }
+
+  // Get the PDF blob
+  const pdfBlob = await response.blob();
+  
+  // Download the PDF
+  this.downloadPDF(pdfBlob, weekStartDate);
+  
+  // Hide loading state
+  this.hideLoadingState();
+  
+  return true;
+} catch (error) {
+  console.error('Error generating PDF:', error);
+  this.hideLoadingState();
+  this.showError('Failed to generate PDF. Please try again.');
+  return false;
+}
+```
+
+}
+
+// Download the generated PDF
+downloadPDF(pdfBlob, weekStartDate) {
+const url = window.URL.createObjectURL(pdfBlob);
+const link = document.createElement(‘a’);
+link.href = url;
+link.download = `remarkable-planner-${weekStartDate}.pdf`;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+window.URL.revokeObjectURL(url);
+}
+
+// UI helper methods
+showLoadingState() {
+const button = document.getElementById(‘generate-pdf-btn’);
+if (button) {
+button.disabled = true;
+button.innerHTML = ‘<span class="spinner"></span> Generating PDF…’;
+}
+}
+
+hideLoadingState() {
+const button = document.getElementById(‘generate-pdf-btn’);
+if (button) {
+button.disabled = false;
+button.innerHTML = ‘Generate reMarkable PDF’;
+}
+}
+
+showError(message) {
+// Replace with your preferred error handling
+alert(message);
+}
+}
+
+// Integration with your existing calendar application
+class CalendarPDFIntegration {
+constructor() {
+this.pdfGenerator = null;
+this.currentWeekStart = this.getMonday(new Date());
+}
+
+// Initialize with your calendar data
+initialize(calendarData) {
+this.pdfGenerator = new RemarkablePDFGenerator(calendarData);
+this.setupUI();
+}
+
+// Get Monday of the current week
+getMonday(date) {
+const d = new Date(date);
+const day = d.getDay();
+const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+return new Date(d.setDate(diff));
+}
+
+// Setup the PDF generation UI
+setupUI() {
+// Add PDF generation button to your existing UI
+const pdfButton = document.createElement(‘button’);
+pdfButton.id = ‘generate-pdf-btn’;
+pdfButton.className = ‘pdf-generate-btn’;
+pdfButton.innerHTML = ‘Generate reMarkable PDF’;
+pdfButton.onclick = () => this.handleGeneratePDF();
+
+```
+// Add week selector
+const weekSelector = document.createElement('input');
+weekSelector.type = 'date';
+weekSelector.id = 'week-selector';
+weekSelector.value = this.currentWeekStart.toISOString().split('T')[0];
+weekSelector.onchange = (e) => {
+  this.currentWeekStart = this.getMonday(new Date(e.target.value));
+};
+
+// Insert into your existing UI (adjust selector to match your layout)
+const controlPanel = document.querySelector('.calendar-controls') || document.body;
+controlPanel.appendChild(weekSelector);
+controlPanel.appendChild(pdfButton);
+```
+
+}
+
+// Handle PDF generation
+async handleGeneratePDF() {
+if (!this.pdfGenerator) {
+console.error(‘PDF generator not initialized’);
+return;
+}
+
+```
+const weekStartDate = this.currentWeekStart.toISOString().split('T')[0];
+
+// Generate PDF with reMarkable optimizations
+const success = await this.pdfGenerator.generatePDF(weekStartDate, {
+  optimizeForRemarkable: true,
+  includeWeeklyOverview: true,
+  includeDailyPages: true
+});
+
+if (success) {
+  this.showSuccessMessage('PDF generated successfully! Check your downloads.');
+}
+```
+
+}
+
+showSuccessMessage(message) {
+// Replace with your preferred success notification
+const notification = document.createElement(‘div’);
+notification.className = ‘success-notification’;
+notification.textContent = message;
+notification.style.cssText = `position: fixed; top: 20px; right: 20px; background: #4CAF50; color: white; padding: 15px; border-radius: 5px; z-index: 1000;`;
+document.body.appendChild(notification);
+
+```
+setTimeout(() => {
+  document.body.removeChild(notification);
+}, 3000);
+```
+
+}
+}
+
+// Example usage with your existing calendar application
+document.addEventListener(‘DOMContentLoaded’, function() {
+// Initialize the PDF integration
+const pdfIntegration = new CalendarPDFIntegration();
+
+// Your existing calendar data loading logic
+loadCalendarData().then(calendarData => {
+// Initialize PDF generator with your calendar data
+pdfIntegration.initialize(calendarData);
+});
+});
+
+// Example function to load your calendar data
+async function loadCalendarData() {
+try {
+// Replace this with your actual data loading logic
+// This might come from your database, localStorage, or API
+const response = await fetch(’/api/calendar-events’);
+const data = await response.json();
+return data;
+} catch (error) {
+console.error(‘Error loading calendar data:’, error);
+return [];
+}
+}
+
+// CSS for the PDF generation UI (add to your stylesheet)
+const pdfUIStyles = `
+.pdf-generate-btn {
+background: #2196F3;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 5px;
+cursor: pointer;
+font-size: 14px;
+margin: 10px;
+transition: background-color 0.3s;
+}
+
+.pdf-generate-btn:hover {
+background: #1976D2;
+}
+
+.pdf-generate-btn:disabled {
+background: #ccc;
+cursor: not-allowed;
+}
+
+.spinner {
+display: inline-block;
+width: 12px;
+height: 12px;
+border: 2px solid #ffffff;
+border-radius: 50%;
+border-top-color: transparent;
+animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+to { transform: rotate(360deg); }
+}
+
+#week-selector {
+padding: 8px;
+border: 1px solid #ddd;
+border-radius: 4px;
+margin: 10px;
+}
+`;
+
+// Inject CSS
+const styleSheet = document.createElement(‘style’);
+styleSheet.textContent = pdfUIStyles;
+document.head.appendChild(styleSheet);
+
+// Export for use in other modules
+if (typeof module !== ‘undefined’ && module.exports) {
+module.exports = { RemarkablePDFGenerator, CalendarPDFIntegration };
+}
