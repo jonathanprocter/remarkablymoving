@@ -158,6 +158,9 @@ function generatePlannerHTML(weekData, startDate) {
     <style>
         ${getOptimizedCSS()}
     </style>
+    <script>
+        ${getBidirectionalLinkingScript()}
+    </script>
 </head>
 <body>
     ${generateWeeklyPage(weekData, weekDays, eventManager)}
@@ -767,6 +770,126 @@ function getDailyEventsForTime(events, timeSlot) {
 function getTotalEventCount(weekData) {
   if (!weekData.events) return 0;
   return Object.values(weekData.events).reduce((total, dayEvents) => total + dayEvents.length, 0);
+}
+
+function getBidirectionalLinkingScript() {
+  return `
+    class RemarkablePlanner {
+      constructor() {
+        this.events = new Map();
+        this.dailyCounts = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
+        this.totalEvents = 0;
+        this.init();
+      }
+      
+      init() {
+        // Initialize event listeners and setup
+        document.addEventListener('DOMContentLoaded', () => {
+          this.updateAllCounts();
+        });
+      }
+      
+      addEvent(day, hour, title, priority = 'normal') {
+        const eventId = \`\${day}-\${hour}-\${Date.now()}\`;
+        const event = {
+          id: eventId,
+          day,
+          hour,
+          title,
+          priority,
+          showInWeekly: this.shouldShowInWeekly(hour, priority)
+        };
+        
+        this.events.set(eventId, event);
+        
+        // Update daily view
+        this.updateDailyView(event);
+        
+        // Update weekly view if applicable
+        if (event.showInWeekly) {
+          this.updateWeeklyView(event);
+        }
+        
+        // Update counters
+        this.updateCounts(day);
+        
+        return eventId;
+      }
+      
+      shouldShowInWeekly(hour, priority) {
+        // Show in weekly if business hours (9-17) or high priority
+        const h = parseInt(hour);
+        return (h >= 9 && h <= 17) || priority === 'high';
+      }
+      
+      updateDailyView(event) {
+        const dailyCell = document.getElementById(\`d-\${event.day}-\${event.hour.padStart(2, '0')}\`);
+        if (dailyCell) {
+          dailyCell.textContent = event.title;
+          dailyCell.style.backgroundColor = event.priority === 'high' ? '#ffeeee' : '#f0f0f0';
+        }
+      }
+      
+      updateWeeklyView(event) {
+        const weeklyCell = document.getElementById(\`w-\${event.day}-\${event.hour.padStart(2, '0')}\`);
+        if (weeklyCell) {
+          // Truncate title for weekly view
+          const shortTitle = event.title.length > 6 ? 
+            event.title.substring(0, 6) + '...' : event.title;
+          weeklyCell.textContent = shortTitle;
+          weeklyCell.style.backgroundColor = event.priority === 'high' ? '#ffeeee' : '#e8e8e8';
+        }
+      }
+      
+      updateCounts(day) {
+        this.dailyCounts[day]++;
+        this.totalEvents++;
+        
+        // Update daily count display
+        const countElement = document.getElementById(\`count-\${day}\`);
+        if (countElement) {
+          countElement.textContent = \`\${this.dailyCounts[day]} events\`;
+        }
+        
+        // Update total count across all pages
+        document.querySelectorAll('#total-events').forEach(el => {
+          el.textContent = this.totalEvents;
+        });
+      }
+      
+      updateAllCounts() {
+        // Initialize all counts to zero
+        Object.keys(this.dailyCounts).forEach(day => {
+          const countElement = document.getElementById(\`count-\${day}\`);
+          if (countElement) {
+            countElement.textContent = \`\${this.dailyCounts[day]} events\`;
+          }
+        });
+        
+        document.querySelectorAll('#total-events').forEach(el => {
+          el.textContent = this.totalEvents;
+        });
+      }
+      
+      // Demo function to add sample events
+      addSampleEvents() {
+        this.addEvent('mon', '09', 'Team Meeting', 'high');
+        this.addEvent('mon', '14', 'Client Call', 'normal');
+        this.addEvent('tue', '10', 'Project Review', 'high');
+        this.addEvent('wed', '15', 'Design Session', 'normal');
+        this.addEvent('fri', '11', 'Sprint Planning', 'high');
+      }
+    }
+    
+    // Initialize planner when document loads
+    if (typeof document !== 'undefined') {
+      document.addEventListener('DOMContentLoaded', () => {
+        const planner = new RemarkablePlanner();
+        // For testing - uncomment to add sample events
+        // planner.addSampleEvents();
+      });
+    }
+  `;
 }
 
 module.exports = router;
