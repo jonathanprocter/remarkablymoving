@@ -17,8 +17,15 @@ GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 
-# OAuth 2.0 scopes for Google Calendar
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+# OAuth 2.0 scopes for Google Calendar and additional permissions Google is granting
+SCOPES = [
+    'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/calendar.events',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'openid'
+]
 
 # Get the current domain from Replit environment
 REDIRECT_URI = f"https://{os.environ.get('REPLIT_DEV_DOMAIN', 'localhost:5000')}/oauth2callback"
