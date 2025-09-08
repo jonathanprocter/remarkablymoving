@@ -403,19 +403,33 @@
         
         // Initialize Google API
         function initializeGapi() {
+            console.log('Starting Google API initialization...');
+            
+            // Check if config is available
+            if (!window.GOOGLE_CONFIG) {
+                console.error('Google config not loaded');
+                return;
+            }
+            
             gapi.load('auth2:client', () => {
+                console.log('Google API loaded, initializing client...');
+                
                 gapi.client.init({
                     apiKey: window.GOOGLE_CONFIG.apiKey,
                     clientId: window.GOOGLE_CONFIG.clientId,
                     discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
                     scope: 'https://www.googleapis.com/auth/calendar.readonly'
                 }).then(() => {
+                    console.log('Google API initialized successfully');
                     gapi_loaded = true;
                     const authInstance = gapi.auth2.getAuthInstance();
                     isSignedIn = authInstance.isSignedIn.get();
                     updateAuthUI();
                     
                     authInstance.isSignedIn.listen(updateAuthUI);
+                }).catch(error => {
+                    console.error('Failed to initialize Google API:', error);
+                    alert('Failed to initialize Google API. Check browser console for details.');
                 });
             });
         }
@@ -446,15 +460,36 @@
         
         // Handle authentication
         function handleAuth() {
-            if (!gapi_loaded) return;
+            console.log('Auth button clicked, gapi_loaded:', gapi_loaded);
+            
+            if (!gapi_loaded) {
+                console.error('Google API not loaded yet');
+                alert('Google API is still loading. Please try again in a moment.');
+                return;
+            }
             
             const authInstance = gapi.auth2.getAuthInstance();
+            if (!authInstance) {
+                console.error('Auth instance not available');
+                alert('Authentication not available. Please refresh the page.');
+                return;
+            }
+            
             if (isSignedIn) {
-                authInstance.signOut();
-                isSignedIn = false;
+                console.log('Signing out...');
+                authInstance.signOut().then(() => {
+                    isSignedIn = false;
+                    updateAuthUI();
+                });
             } else {
+                console.log('Signing in...');
                 authInstance.signIn().then(() => {
+                    console.log('Sign in successful');
                     isSignedIn = true;
+                    updateAuthUI();
+                }).catch(error => {
+                    console.error('Sign in failed:', error);
+                    alert('Sign in failed: ' + error.error + '. Make sure you have configured the correct domain in Google Cloud Console.');
                 });
             }
         }
@@ -624,7 +659,6 @@
         // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
             initializeDateInput();
-            initializeGapi();
             updateLastUpdateTime();
             
             // Auth button
@@ -664,8 +698,8 @@
             // Set default theme
             document.querySelector('.theme-btn[data-theme="sage"]').classList.add('border-purple-500');
             
-            // Initialize Google API when page loads
-            initializeGapi();
+            // Initialize Google API when page loads (after a short delay to ensure config is loaded)
+            setTimeout(initializeGapi, 100);
         });
     </script>
 </body>
