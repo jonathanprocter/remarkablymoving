@@ -1187,7 +1187,14 @@
 
             // Get current week range
             const weekStartInput = document.getElementById('weekStart');
-            const weekStart = weekStartInput ? new Date(weekStartInput.value) : new Date();
+            let weekStart;
+            if (weekStartInput && weekStartInput.value) {
+                // Parse as local date to avoid timezone issues
+                const [year, month, day] = weekStartInput.value.split('-').map(Number);
+                weekStart = new Date(year, month - 1, day, 12, 0, 0); // Use noon to avoid DST issues
+            } else {
+                weekStart = new Date();
+            }
             const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekStart.getDate() + 7);
 
@@ -1433,7 +1440,9 @@
                 return;
             }
 
-            const weekStart = new Date(weekStartInput.value);
+            // Parse as local date to avoid timezone issues
+            const [year, month, day] = weekStartInput.value.split('-').map(Number);
+            const weekStart = new Date(year, month - 1, day, 12, 0, 0); // Use noon to avoid DST issues
 
             // Calculate the specific day
             const targetDay = new Date(weekStart);
@@ -1610,7 +1619,14 @@
 
             // Get current week range
             const weekStartInput = document.getElementById('weekStart');
-            const weekStart = weekStartInput ? new Date(weekStartInput.value) : new Date();
+            let weekStart;
+            if (weekStartInput && weekStartInput.value) {
+                // Parse as local date to avoid timezone issues
+                const [year, month, day] = weekStartInput.value.split('-').map(Number);
+                weekStart = new Date(year, month - 1, day, 12, 0, 0); // Use noon to avoid DST issues
+            } else {
+                weekStart = new Date();
+            }
             const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekStart.getDate() + 7);
 
@@ -1734,9 +1750,10 @@
 
             // Calculate the Monday of the week containing the target date
             const day = date.getDay();
-            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            // Correct calculation: for Sunday (0), we go back 6 days; for other days, go back (day-1) days
+            const daysToMonday = day === 0 ? 6 : day - 1;
             const monday = new Date(date);
-            monday.setDate(diff);
+            monday.setDate(date.getDate() - daysToMonday);
 
             // Update the week start to the Monday of that week
             const weekStartInput = document.getElementById('weekStart');
@@ -1747,7 +1764,8 @@
             // Calculate which day of the week to show (1=Mon, 2=Tue, ..., 7=Sun)
             // JavaScript getDay(): 0=Sunday, 1=Monday, 2=Tuesday, etc.
             // Our page indices: 0=Week, 1=Monday, 2=Tuesday, ..., 7=Sunday
-            const dayIndex = day === 0 ? 7 : day; // Sunday maps to page 7, others map directly
+            // Correct mapping: Monday(1)→1, Tuesday(2)→2, ..., Saturday(6)→6, Sunday(0)→7
+            const dayIndex = day === 0 ? 7 : day; // Sunday maps to page 7, Monday(1) maps to page 1, etc.
 
             // Switch to the correct daily page
             currentPage = dayIndex;
