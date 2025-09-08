@@ -4,7 +4,9 @@ This is a web-based calendar generator specifically designed for reMarkable e-in
 
 **Latest Update (Sep 2025)**: 
 - Extended sync capability to load complete calendar history from 2015-2030, with optimized chunked API requests and PostgreSQL storage for comprehensive calendar template generation.
-- Added server-side PDF generation using Puppeteer for reMarkable Pro optimized planners with 8-page format (1 weekly overview + 7 daily pages)
+- Added server-side PDF generation using Puppeteer for reMarkable Paper Pro Move (7.3" screen) optimized planners with 8-page format (1 weekly overview + 7 daily pages)
+- Optimized PDF dimensions for reMarkable Paper Pro Move: 91mm × 163mm portrait for daily pages, 163mm × 91mm landscape for weekly overview
+- Reduced font sizes and adjusted layouts for the smaller 7.3" screen with 1696 × 954 pixel resolution
 
 # User Preferences
 
