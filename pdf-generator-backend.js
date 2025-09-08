@@ -168,23 +168,26 @@ function generatePlannerHTML(weekData, startDate) {
 
 function getOptimizedCSS() {
   return `
-    /* Device specifications for reMarkable Paper Pro Move */
+    /* reMarkable Paper Pro Move Specifications */
     :root {
-      --device-width-portrait: 91mm;
-      --device-height-portrait: 163mm;
-      --device-width-landscape: 163mm;
-      --device-height-landscape: 91mm;
+      --portrait-width: 91mm;
+      --portrait-height: 163mm;
+      --landscape-width: 163mm;
+      --landscape-height: 91mm;
       --margin: 2mm;
-      --usable-width-portrait: 87mm;
-      --usable-height-portrait: 159mm;
-      --usable-width-landscape: 159mm;
-      --usable-height-landscape: 87mm;
       
-      /* Typography */
-      --font-large: 8pt;
+      /* Typography optimized for e-ink */
+      --font-xlarge: 9pt;
+      --font-large: 7pt;
       --font-medium: 6pt;
       --font-small: 5pt;
       --font-tiny: 4pt;
+      
+      /* Colors for e-ink display */
+      --black: #000000;
+      --gray: #666666;
+      --light-gray: #cccccc;
+      --white: #ffffff;
     }
     
     /* Page sizing for reMarkable Paper Pro Move */
@@ -224,20 +227,21 @@ function getOptimizedCSS() {
       -webkit-print-color-adjust: exact;
     }
     
-    /* Page structure */
+    /* Page management */
     .page {
       page-break-after: always;
       page-break-inside: avoid;
+      overflow: hidden;
     }
     
     .page:last-child {
       page-break-after: auto;
     }
     
-    /* Weekly Layout - Landscape for reMarkable Paper Pro Move (7.3" screen) */
+    /* Weekly Page - Landscape */
     .weekly-page {
-      width: var(--usable-width-landscape);
-      height: var(--usable-height-landscape);
+      width: calc(var(--landscape-width) - 2 * var(--margin));
+      height: calc(var(--landscape-height) - 2 * var(--margin));
     }
     
     .weekly-container {
@@ -248,68 +252,66 @@ function getOptimizedCSS() {
     }
     
     .weekly-header {
-      height: 12mm;
+      height: 10mm;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1pt solid #000;
+      border-bottom: 2pt solid var(--black);
       padding: 0 2mm;
       margin-bottom: 2mm;
     }
     
     .weekly-header h1 {
-      font-size: var(--font-large);
+      font-size: var(--font-xlarge);
       font-weight: bold;
     }
     
     .weekly-header span {
-      font-size: var(--font-medium);
+      font-size: var(--font-large);
     }
     
-    .weekly-main {
+    .weekly-content {
       flex: 1;
       display: flex;
       gap: 3mm;
     }
     
     .weekly-grid {
-      flex: 2;
+      flex: 2.5;
       display: grid;
-      grid-template-columns: 15mm repeat(7, 1fr);
-      grid-template-rows: 8mm repeat(9, 1fr); /* 09:00-17:00 business hours */
-      gap: 0.5pt;
-      border: 1pt solid #000;
-      font-size: var(--font-small);
+      grid-template-columns: 18mm repeat(7, 1fr);
+      grid-template-rows: 8mm repeat(9, 1fr);
+      border: 2pt solid var(--black);
     }
     
-    .time-header, .day-header {
+    .grid-cell {
+      border-right: 1pt solid var(--black);
+      border-bottom: 1pt solid var(--black);
+      padding: 1mm;
+      overflow: hidden;
+    }
+    
+    .header-cell {
       background: #f0f0f0;
       font-weight: bold;
+      font-size: var(--font-medium);
       display: flex;
       align-items: center;
       justify-content: center;
-      border-right: 0.5pt solid #000;
-      border-bottom: 0.5pt solid #000;
-      font-size: var(--font-small);
     }
     
-    .time-label {
+    .time-cell {
       background: #f8f8f8;
       font-weight: bold;
+      font-size: var(--font-small);
       display: flex;
       align-items: center;
       justify-content: center;
-      border-right: 0.5pt solid #000;
-      border-bottom: 0.5pt solid #ccc;
-      font-size: var(--font-tiny);
     }
     
     .event-cell {
-      border-right: 0.5pt solid #ccc;
-      border-bottom: 0.5pt solid #ccc;
-      padding: 0.5mm;
       font-size: var(--font-tiny);
-      overflow: hidden;
+      min-height: 8mm;
     }
     
     .weekly-sidebar {
@@ -319,24 +321,24 @@ function getOptimizedCSS() {
       gap: 2mm;
     }
     
-    .priority-section, .goals-section {
-      border: 1pt solid #000;
-      padding: 2mm;
+    .tasks-section, .goals-section {
       flex: 1;
+      border: 2pt solid var(--black);
+      padding: 2mm;
     }
     
-    .priority-section h3, .goals-section h3 {
+    .tasks-section h3, .goals-section h3 {
       font-size: var(--font-medium);
       font-weight: bold;
-      margin-bottom: 1mm;
-      border-bottom: 0.5pt solid #000;
-      padding-bottom: 0.5mm;
+      margin-bottom: 2mm;
+      border-bottom: 1pt solid var(--black);
+      padding-bottom: 1mm;
     }
     
     .task-item, .goal-item {
       font-size: var(--font-small);
-      margin-bottom: 0.5mm;
-      line-height: 1.2;
+      margin-bottom: 1mm;
+      line-height: 1.3;
     }
     
     /* Remove old footer styles */
@@ -396,52 +398,51 @@ function getOptimizedCSS() {
       background: #fff;
     }
     
-    /* Daily Layout - Portrait for reMarkable Paper Pro Move (7.3" screen) */
+    /* Daily Pages - Portrait */
+    @page :not(:first) {
+      size: 91mm 163mm;
+      margin: var(--margin);
+    }
+    
     .daily-page {
-      width: var(--usable-width-portrait);
-      height: var(--usable-height-portrait);
+      width: calc(var(--portrait-width) - 2 * var(--margin));
+      height: calc(var(--portrait-height) - 2 * var(--margin));
     }
     
     .daily-container {
-      flex: 1;
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
     }
     
     .daily-main {
-      flex: 1;
-      margin-right: 2mm;
-    }
-    
-    .daily-sidebar {
-      width: 25mm;  /* Narrower sidebar for small screen */
-      border-left: 0.5pt solid #000;
-      padding-left: 1mm;
+      height: 100mm;
+      border: 2pt solid var(--black);
+      margin-bottom: 2mm;
     }
     
     .daily-header {
-      height: 10mm;
+      height: 8mm;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1pt solid #000;
+      border-bottom: 2pt solid var(--black);
       padding: 0 1mm;
       margin-bottom: 1mm;
     }
     
     .daily-title {
-      font-size: var(--font-medium);
+      font-size: var(--font-large);
       font-weight: bold;
     }
     
     .daily-date {
-      font-size: var(--font-small);
+      font-size: var(--font-medium);
     }
     
-    /* Time grid for daily pages */
-    .time-grid {
-      flex: 1;
-      border: 1pt solid #000;
+    .time-section {
+      height: 100%;
       display: flex;
       flex-direction: column;
     }
@@ -449,37 +450,35 @@ function getOptimizedCSS() {
     .time-row {
       flex: 1;
       display: flex;
-      border-bottom: 0.5pt solid #ccc;
+      border-bottom: 1pt solid var(--light-gray);
+      min-height: 6mm;
     }
     
     .time-row:last-child {
       border-bottom: none;
     }
     
-    .time-row .time-label {
+    .time-label {
       width: 12mm;
       background: #f8f8f8;
+      border-right: 2pt solid var(--black);
+      font-size: var(--font-small);
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-right: 1pt solid #000;
-      font-size: var(--font-tiny);
     }
     
-    .time-content {
+    .time-space {
       flex: 1;
       padding: 0.5mm;
       font-size: var(--font-small);
-      min-height: 8mm;
     }
     
     .daily-bottom {
-      height: 35mm;
-      margin-top: 1mm;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 15mm 10mm 8mm;
+      height: 48mm;
+      display: flex;
+      flex-direction: column;
       gap: 1mm;
     }
     
@@ -528,51 +527,56 @@ function getOptimizedCSS() {
       margin: 0.5mm 0;
     }
     
-    /* Priority section for daily pages */
-    .priorities {
-      grid-column: 1 / 3;
-      border: 1pt solid #000;
-      padding: 1mm;
+    .priorities-section {
+      height: 18mm;
+      border: 2pt solid var(--black);
+      padding: 2mm;
     }
     
-    .section-header {
-      font-size: var(--font-small);
+    .section-title {
+      font-size: var(--font-medium);
       font-weight: bold;
-      margin-bottom: 1mm;
+      margin-bottom: 2mm;
     }
     
     .priority-line {
-      font-size: var(--font-small);
-      margin-bottom: 0.5mm;
       display: flex;
       align-items: center;
-    }
-    
-    .fill-line {
-      flex: 1;
-      border-bottom: 0.5pt solid #ccc;
-      margin-left: 2mm;
-      height: 1px;
-    }
-    
-    /* Goals and Notes */
-    .daily-goals, .notes {
-      border: 1pt solid #000;
-      padding: 1mm;
-    }
-    
-    .goals-content, .notes-content {
+      margin-bottom: 1mm;
       font-size: var(--font-small);
-      height: calc(100% - 6mm);
     }
     
-    .status {
-      grid-column: 1 / 3;
+    .write-line {
+      flex: 1;
+      height: 1pt;
+      background: var(--light-gray);
+      margin-left: 2mm;
+    }
+    
+    .bottom-sections {
+      height: 22mm;
+      display: flex;
+      gap: 2mm;
+    }
+    
+    .goals-box, .notes-box {
+      flex: 1;
+      border: 2pt solid var(--black);
+      padding: 2mm;
+    }
+    
+    .write-area {
+      height: calc(100% - 8mm);
+      border-bottom: 1pt solid var(--light-gray);
+    }
+    
+    .status-line {
+      height: 6mm;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: var(--font-tiny);
-      color: #666;
+      color: var(--gray);
       padding: 0 1mm;
     }
     
