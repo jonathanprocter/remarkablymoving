@@ -60,20 +60,20 @@ window.GOOGLE_CONFIG = {{
 def google_auth():
     """Initialize Google OAuth flow"""
     try:
-        # Create flow instance
-        flow = Flow.from_client_config(
-            {
-                "web": {
-                    "client_id": GOOGLE_CLIENT_ID,
-                    "client_secret": GOOGLE_CLIENT_SECRET,
-                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                    "token_uri": "https://oauth2.googleapis.com/token",
-                    "redirect_uris": [REDIRECT_URI]
-                }
-            },
-            scopes=SCOPES
-        )
+        # Create proper client configuration
+        client_config = {
+            "web": {
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "redirect_uris": [REDIRECT_URI]
+            }
+        }
         
+        # Create flow instance
+        flow = Flow.from_client_config(client_config, scopes=SCOPES)
         flow.redirect_uri = REDIRECT_URI
         
         # Generate authorization URL
@@ -83,12 +83,9 @@ def google_auth():
             prompt='consent'
         )
         
-        # Store state in session for security
+        # Store state and client config in session for security
         session['state'] = state
-        session['flow_data'] = {
-            'client_config': flow.client_config,
-            'scopes': SCOPES
-        }
+        session['client_config'] = client_config
         
         print(f"🔐 Starting OAuth flow...")
         print(f"   Authorization URL: {authorization_url}")
@@ -116,10 +113,7 @@ def oauth2callback():
             return jsonify({"error": f"Authorization failed: {error}"}), 400
         
         # Recreate flow from session
-        flow = Flow.from_client_config(
-            session['flow_data']['client_config'],
-            scopes=session['flow_data']['scopes']
-        )
+        flow = Flow.from_client_config(session['client_config'], scopes=SCOPES)
         flow.redirect_uri = REDIRECT_URI
         
         # Exchange authorization code for tokens
@@ -141,7 +135,7 @@ def oauth2callback():
         
         # Clean up session
         session.pop('state', None)
-        session.pop('flow_data', None)
+        session.pop('client_config', None)
         
         # Redirect back to main app with success
         return redirect('/?auth=success')
