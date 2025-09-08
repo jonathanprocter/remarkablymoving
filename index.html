@@ -1251,7 +1251,6 @@
                 console.log(`   Raw start: ${event.start.dateTime || event.start.date}`);
                 console.log(`   Parsed date: ${startDate.toString()}`);
                 console.log(`   Actual day: ${dayNames[dayOfWeek]} (getDay=${dayOfWeek})`);
-                console.log(`   Expected column: ${dayNames[dayOfWeek].substring(0, 3).toUpperCase()}`);
 
                 // Calculate event duration in minutes
                 const durationMs = endDate - startDate;
@@ -1265,12 +1264,22 @@
                 const hour = event.start.dateTime ? startDate.getHours() : 9;
                 const minute = event.start.dateTime ? startDate.getMinutes() : 0;
 
-                // Map day of week to our day names
+                // FIXED: Map day of week to our day names correctly
                 // JavaScript getDay(): 0=Sunday, 1=Monday, 2=Tuesday, etc.
                 // Our grid columns are arranged: Mon, Tue, Wed, Thu, Fri, Sat, Sun
                 // Grid IDs use: weekly-mon-, weekly-tue-, weekly-wed-, etc.
-                const dayMapping = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-                const dayName = dayMapping[dayOfWeek];
+                
+                let dayName;
+                if (dayOfWeek === 0) dayName = 'sun';      // Sunday
+                else if (dayOfWeek === 1) dayName = 'mon'; // Monday  
+                else if (dayOfWeek === 2) dayName = 'tue'; // Tuesday
+                else if (dayOfWeek === 3) dayName = 'wed'; // Wednesday
+                else if (dayOfWeek === 4) dayName = 'thu'; // Thursday
+                else if (dayOfWeek === 5) dayName = 'fri'; // Friday
+                else if (dayOfWeek === 6) dayName = 'sat'; // Saturday
+                else dayName = 'mon'; // fallback
+                
+                console.log(`   Mapping getDay(${dayOfWeek}) -> '${dayName}' column`);
                 
                 // Ensure 1-hour events show as 2 blocks (60 minutes = 2 slots)
                 // Force exact slot count for hour appointments
