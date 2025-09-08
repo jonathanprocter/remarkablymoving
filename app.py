@@ -12,7 +12,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='public', static_url_path='/static')
 # Use a persistent secret key for session management
 # This ensures sessions persist across server restarts
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-remarkable-calendar-2025")
@@ -180,6 +180,11 @@ def index():
     """Serve the main calendar application"""
     with open('index.html', 'r') as f:
         html_content = f.read()
+    
+    # Inject the client integration script before closing body tag
+    integration_script = '<script src="/static/client-integration.js"></script>'
+    html_content = html_content.replace('</body>', f'{integration_script}\n</body>')
+    
     return html_content
 
 @app.route('/config.js')
@@ -537,6 +542,37 @@ def get_events():
     except Exception as e:
         print(f"❌ Error fetching events: {e}")
         return jsonify({"error": f"Failed to fetch events: {str(e)}"}), 500
+
+@app.route('/api/generate-planner-pdf', methods=['POST'])
+def generate_planner_pdf():
+    """Proxy to Node.js PDF generation service"""
+    try:
+        # Forward request to Node.js server
+        pdf_server_url = 'http://localhost:3001/api/generate-planner-pdf'
+        
+        # Get request data
+        request_data = request.get_json()
+        
+        # Make request to PDF server
+        response = requests.post(
+            pdf_server_url,
+            json=request_data,
+            headers={'Content-Type': 'application/json'},
+            stream=True
+        )
+        
+        if response.status_code == 200:
+            # Return PDF response
+            return response.content, 200, {
+                'Content-Type': 'application/pdf',
+                'Content-Disposition': f'attachment; filename="planner-{request_data.get("startDate", "")}.pdf"'
+            }
+        else:
+            return jsonify({"error": "PDF generation failed"}), response.status_code
+            
+    except Exception as e:
+        print(f"❌ Error generating PDF: {e}")
+        return jsonify({"error": f"Failed to generate PDF: {str(e)}"}), 500
 
 @app.route('/api/calendars/selections', methods=['POST'])
 def update_calendar_selections():
