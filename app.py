@@ -66,7 +66,7 @@ def get_or_create_user(google_user_id, email, name):
                 "UPDATE users SET email = %s, name = %s, updated_at = CURRENT_TIMESTAMP WHERE google_user_id = %s",
                 (email, name, google_user_id)
             )
-            user_id = user['id']
+            user_id = dict(user)['id']
         else:
             # Create new user
             cur.execute(
@@ -74,7 +74,7 @@ def get_or_create_user(google_user_id, email, name):
                 (google_user_id, email, name)
             )
             result = cur.fetchone()
-            user_id = result['id'] if result else None
+            user_id = dict(result)['id'] if result else None
         
         conn.commit()
         return user_id
@@ -318,7 +318,7 @@ def auth_status():
                     cur.execute("SELECT id FROM users WHERE google_user_id = %s", (session['google_user_id'],))
                     user = cur.fetchone()
                     if user:
-                        session['user_id'] = user['id']
+                        session['user_id'] = dict(user)['id']
                 finally:
                     conn.close()
             except Exception as e:
@@ -458,7 +458,8 @@ def update_calendar_selections():
     
     try:
         user_id = session['user_id']
-        selected_calendar_ids = request.json.get('selected_calendar_ids', [])
+        request_data = request.get_json() or {}
+        selected_calendar_ids = request_data.get('selected_calendar_ids', [])
         
         conn = get_db_connection()
         try:
