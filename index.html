@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="config.js"></script>
     <style>
         .remarkable-preview {
@@ -400,70 +401,76 @@
         let isSignedIn = false;
         let currentPage = 0;
         let calendarEvents = [];
+        let tokenClient = null;
+        let accessToken = null;
 
-        // Initialize Google API
+        // Initialize Google API (Modern Google Identity Services)
         function initializeGapi() {
             console.log('Starting Google API initialization...');
 
             // Check if gapi is available
             if (typeof gapi === 'undefined') {
                 console.error('Google API script not loaded');
-                setTimeout(initializeGapi, 500); // Retry in 500ms
+                setTimeout(initializeGapi, 500);
+                return;
+            }
+
+            // Check if Google Identity Services is available
+            if (typeof google === 'undefined' || !google.accounts) {
+                console.error('Google Identity Services not loaded');
+                setTimeout(initializeGapi, 500);
                 return;
             }
 
             // Check if config is available
             if (!window.GOOGLE_CONFIG) {
                 console.error('Google config not loaded');
-                setTimeout(initializeGapi, 500); // Retry in 500ms
+                setTimeout(initializeGapi, 500);
                 return;
             }
 
-            gapi.load('auth2:client', {
-                callback: () => {
-                    console.log('Google API modules loaded, initializing client...');
-
-                    gapi.client.init({
-                        clientId: window.INJECTED_GOOGLE_CLIENT_ID || window.GOOGLE_CONFIG.clientId,
-                        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
-                        scope: 'https://www.googleapis.com/auth/calendar.readonly'
-                    }).then(() => {
-                        console.log('Google API initialized successfully');
-                        gapi_loaded = true;
-                        const authInstance = gapi.auth2.getAuthInstance();
-                        isSignedIn = authInstance.isSignedIn.get();
-                        updateAuthUI();
-
-                        authInstance.isSignedIn.listen(updateAuthUI);
-
-                        // Update button text to show ready state
-                        const authButton = document.getElementById('authButton');
-                        if (!isSignedIn && authButton.textContent.includes('loading')) {
-                            authButton.innerHTML = '<i class="fab fa-google mr-2"></i>Connect Google';
-                        }
-                    }).catch(error => {
-                        console.error('Failed to initialize Google API:', error);
-                        gapi_loaded = false;
-
-                        // Show user-friendly error message
-                        const authButton = document.getElementById('authButton');
-                        authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Setup Required';
-                        authButton.disabled = true;
-
-                        // More specific error handling
-                        if (error.error && error.error === 'idpiframe_initialization_failed') {
-                            alert('Google OAuth setup issue: Please ensure your domain is properly configured in Google Cloud Console.');
-                        } else {
-                            alert('Failed to initialize Google API: ' + (error.details || error.error || error));
+            // Initialize gapi client (only for API calls, not auth)
+            gapi.load('client', () => {
+                console.log('Google API client loaded, initializing...');
+                
+                gapi.client.init({
+                    apiKey: window.GOOGLE_CONFIG.apiKey,
+                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest']
+                }).then(() => {
+                    console.log('Google API client initialized successfully');
+                    gapi_loaded = true;
+                    
+                    // Initialize the token client for OAuth (new way)
+                    tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: window.GOOGLE_CONFIG.clientId,
+                        scope: 'https://www.googleapis.com/auth/calendar.readonly',
+                        callback: (response) => {
+                            if (response.error !== undefined) {
+                                console.error('OAuth error:', response.error);
+                                alert('Authentication failed: ' + response.error);
+                                return;
+                            }
+                            console.log('OAuth successful, got access token');
+                            accessToken = response.access_token;
+                            gapi.client.setToken({access_token: accessToken});
+                            isSignedIn = true;
+                            updateAuthUI();
                         }
                     });
-                },
-                onerror: () => {
-                    console.error('Failed to load Google API modules');
+                    
+                    console.log('Token client initialized');
+                    updateAuthUI();
+                    
+                }).catch(error => {
+                    console.error('Failed to initialize Google API client:', error);
+                    gapi_loaded = false;
+                    
                     const authButton = document.getElementById('authButton');
-                    authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>API Error';
+                    authButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Setup Required';
                     authButton.disabled = true;
-                }
+                    
+                    alert('Failed to initialize Google API: ' + (error.details || error.message || error));
+                });
             });
         }
 
@@ -491,39 +498,39 @@
             }
         }
 
-        // Handle authentication
+        // Handle authentication (Modern Google Identity Services)
         function handleAuth() {
-            console.log('Auth button clicked, gapi_loaded:', gapi_loaded);
-
-            if (!gapi_loaded) {
-                console.error('Google API not loaded yet');
+            console.log('Auth button clicked, gapi_loaded:', gapi_loaded, 'isSignedIn:', isSignedIn);
+            
+            if (!gapi_loaded || !tokenClient) {
+                console.error('Google API not ready yet');
                 alert('Google API is still loading. Please try again in a moment.');
                 return;
             }
-
-            const authInstance = gapi.auth2.getAuthInstance();
-            if (!authInstance) {
-                console.error('Auth instance not available');
-                alert('Authentication not available. Please refresh the page.');
-                return;
-            }
-
+            
             if (isSignedIn) {
                 console.log('Signing out...');
-                authInstance.signOut().then(() => {
-                    isSignedIn = false;
-                    updateAuthUI();
-                });
+                // Revoke the token
+                if (accessToken) {
+                    google.accounts.oauth2.revoke(accessToken, () => {
+                        console.log('Token revoked');
+                    });
+                }
+                
+                // Clear the token
+                gapi.client.setToken(null);
+                accessToken = null;
+                isSignedIn = false;
+                updateAuthUI();
+                
+                // Clear calendar list
+                const calendarListEl = document.getElementById('calendarList');
+                calendarListEl.innerHTML = '<div class="text-gray-500 text-center py-4">Connect Google Calendar to sync events</div>';
+                
             } else {
-                console.log('Signing in...');
-                authInstance.signIn().then(() => {
-                    console.log('Sign in successful');
-                    isSignedIn = true;
-                    updateAuthUI();
-                }).catch(error => {
-                    console.error('Sign in failed:', error);
-                    alert('Sign in failed: ' + error.error + '. Make sure you have configured the correct domain in Google Cloud Console.');
-                });
+                console.log('Requesting access token...');
+                // Request an access token (this will open the OAuth popup)
+                tokenClient.requestAccessToken({prompt: ''});
             }
         }
 
