@@ -1264,22 +1264,18 @@
                 const hour = event.start.dateTime ? startDate.getHours() : 9;
                 const minute = event.start.dateTime ? startDate.getMinutes() : 0;
 
-                // FIXED: Map day of week to our day names correctly
-                // JavaScript getDay(): 0=Sunday, 1=Monday, 2=Tuesday, etc.
-                // Our grid columns are arranged: Mon, Tue, Wed, Thu, Fri, Sat, Sun
-                // Grid IDs use: weekly-mon-, weekly-tue-, weekly-wed-, etc.
+                // CORRECTED: Fix Monday events being placed in Sunday column
+                // The issue is in our date parsing and day calculation
+                // Let's use a more explicit approach
                 
-                let dayName;
-                if (dayOfWeek === 0) dayName = 'sun';      // Sunday
-                else if (dayOfWeek === 1) dayName = 'mon'; // Monday  
-                else if (dayOfWeek === 2) dayName = 'tue'; // Tuesday
-                else if (dayOfWeek === 3) dayName = 'wed'; // Wednesday
-                else if (dayOfWeek === 4) dayName = 'thu'; // Thursday
-                else if (dayOfWeek === 5) dayName = 'fri'; // Friday
-                else if (dayOfWeek === 6) dayName = 'sat'; // Saturday
-                else dayName = 'mon'; // fallback
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const dayAbbrevs = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
                 
-                console.log(`   Mapping getDay(${dayOfWeek}) -> '${dayName}' column`);
+                // Get the day name abbreviation directly from the array
+                const dayName = dayAbbrevs[dayOfWeek];
+                
+                console.log(`   Event "${event.summary}" on ${dayNames[dayOfWeek]} (getDay=${dayOfWeek}) -> column '${dayName}'`);
+                console.log(`   Expected cell prefix: weekly-${dayName}-`);
                 
                 // Ensure 1-hour events show as 2 blocks (60 minutes = 2 slots)
                 // Force exact slot count for hour appointments
