@@ -437,6 +437,46 @@ def get_events():
         print(f"❌ Error fetching events: {e}")
         return jsonify({"error": f"Failed to fetch events: {str(e)}"}), 500
 
+@app.route('/api/calendars/selections', methods=['POST'])
+def update_calendar_selections():
+    """Update which calendars the user has selected"""
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        user_id = session['user_id']
+        selected_calendar_ids = request.json.get('selected_calendar_ids', [])
+        
+        conn = get_db_connection()
+        try:
+            cur = conn.cursor()
+            
+            # Reset all calendars to not selected
+            cur.execute(
+                "UPDATE user_calendars SET is_selected = FALSE WHERE user_id = %s",
+                (user_id,)
+            )
+            
+            # Set selected calendars to true
+            if selected_calendar_ids:
+                placeholders = ','.join(['%s'] * len(selected_calendar_ids))
+                cur.execute(
+                    f"UPDATE user_calendars SET is_selected = TRUE WHERE user_id = %s AND calendar_id IN ({placeholders})",
+                    [user_id] + selected_calendar_ids
+                )
+            
+            conn.commit()
+            print(f"💾 Updated calendar selections for user {user_id}: {len(selected_calendar_ids)} calendars selected")
+            
+            return jsonify({"message": "Calendar selections updated", "selected_count": len(selected_calendar_ids)})
+            
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        print(f"❌ Error updating calendar selections: {e}")
+        return jsonify({"error": f"Failed to update selections: {str(e)}"}), 500
+
 if __name__ == '__main__':
     print(f"🚀 Starting reMarkable Calendar Generator server...")
     print(f"   Environment: {os.environ.get('REPLIT_ENVIRONMENT', 'development')}")
