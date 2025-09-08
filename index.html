@@ -1243,6 +1243,10 @@
                     6: 'sat'  // Saturday
                 };
                 const dayName = dayMapping[dayOfWeek];
+                
+                // Ensure 1-hour events show as 2 blocks (60 minutes = 2 slots)
+                // Force exact slot count for hour appointments
+                const actualNumSlots = (durationMinutes >= 60 && durationMinutes <= 60) ? 2 : numSlots;
 
                 // Round to nearest 30-minute slot
                 const roundedMinute = minute < 30 ? 0 : 30;
@@ -1264,7 +1268,7 @@
                 const cellId = `weekly-${dayName}-${startHour}-${startMinute}`;
                 const cell = document.getElementById(cellId);
 
-                console.log(`📍 Event "${event.summary}" on ${startDate.toDateString()} (${dayName}) at ${startHour}:${startMinute.toString().padStart(2, '0')} -> ${cellId}, spanning ${numSlots} slots`);
+                console.log(`📍 Event "${event.summary}" on ${startDate.toDateString()} (${dayName}) at ${startHour}:${startMinute.toString().padStart(2, '0')} -> ${cellId}, spanning ${actualNumSlots} slots`);
 
                 if (cell) {
                     const eventEl = document.createElement('div');
@@ -1276,11 +1280,11 @@
                     eventEl.title = `${startTime} ${event.summary || 'Event'}\nDuration: ${durationMinutes} min\nClick to view day details`;
 
                     // Make event span multiple rows based on duration
-                    if (numSlots > 1) {
+                    if (actualNumSlots > 1) {
                         // Position the event absolutely to span multiple cells
                         eventEl.style.position = 'absolute';
                         // Fix: Ensure proper height calculation for hour-long events
-                        eventEl.style.height = `${(numSlots * 16) - 1}px`; // 16px per 30-min slot
+                        eventEl.style.height = `${(actualNumSlots * 16) - 1}px`; // 16px per 30-min slot
                         eventEl.style.width = 'calc(100% - 1px)';
                         eventEl.style.zIndex = '10';
                         eventEl.style.top = '0';
@@ -1296,7 +1300,7 @@
                         // Clear cells below to prevent overlap
                         let clearHour = startHour;
                         let clearMinute = startMinute;
-                        for (let i = 1; i < numSlots; i++) {
+                        for (let i = 1; i < actualNumSlots; i++) {
                             clearMinute += 30;
                             if (clearMinute >= 60) {
                                 clearMinute = 0;
