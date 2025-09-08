@@ -18,12 +18,19 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-remarkable-calendar-2025")
 
 # Configure session cookies for OAuth
+# Settings optimized for Replit environment
 app.config.update(
-    SESSION_COOKIE_SECURE=True,  # Required for HTTPS
     SESSION_COOKIE_HTTPONLY=True,  # Security best practice
     SESSION_COOKIE_SAMESITE='Lax',  # Allow OAuth redirects
-    PERMANENT_SESSION_LIFETIME=timedelta(hours=1)  # Session timeout
+    SESSION_COOKIE_NAME='calendar_session',  # Custom session name
+    SESSION_COOKIE_PATH='/',  # Ensure cookie works on all paths
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=2)  # Session timeout
 )
+
+# For Replit environment, we need secure cookies with proper SameSite
+if os.environ.get('REPLIT_DEV_DOMAIN'):
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-site OAuth
 
 # Google OAuth configuration
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
