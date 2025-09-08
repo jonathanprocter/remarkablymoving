@@ -21,7 +21,7 @@
         .franklin-weekly-grid {
             display: grid;
             grid-template-columns: 45px repeat(7, minmax(60px, 1fr));
-            grid-template-rows: auto repeat(31, 12px);
+            grid-template-rows: auto repeat(31, 16px);
             gap: 0;
             background: #333333;
             border: 1px solid #333333;
@@ -56,13 +56,13 @@
         .franklin-time-label {
             background: #f8f9fa;
             padding: 0;
-            font-size: 6px;
+            font-size: 8px;
             font-weight: bold;
             text-align: center;
             border-right: 1px solid #333333;
             border-bottom: 1px solid #f0f0f0;
-            height: 12px;
-            line-height: 12px;
+            height: 16px;
+            line-height: 16px;
         }
         .franklin-time-label.hour-start {
             border-bottom: 1px solid #cccccc;
@@ -70,12 +70,12 @@
         .franklin-day-cell {
             background: #ffffff;
             padding: 0;
-            min-height: 11px;
-            max-height: 12px;
+            min-height: 15px;
+            max-height: 16px;
             border-right: 1px solid #dddddd;
             border-bottom: 1px solid #f0f0f0;
             position: relative;
-            font-size: 5px;
+            font-size: 7px;
             overflow: hidden;
         }
         .franklin-day-cell.hour-start {
@@ -104,15 +104,15 @@
         .franklin-priority-section {
             background: #f8f9fa;
             border: 1px solid #333333;
-            padding: 6px;
-            margin: 3px 0;
+            padding: 3px 5px;
+            margin: 2px 0;
         }
         .franklin-section-title {
             font-weight: bold;
-            font-size: 10px;
+            font-size: 9px;
             border-bottom: 1px solid #333333;
-            padding-bottom: 2px;
-            margin-bottom: 4px;
+            padding-bottom: 1px;
+            margin-bottom: 2px;
             text-transform: uppercase;
         }
         .franklin-daily-time-column {
@@ -647,14 +647,12 @@
                                         <div class="franklin-section-title">PRIORITY TASKS</div>
                                         <div id="weeklyPriorityTasks" class="text-xs">
                                             □ ___________________<br>
-                                            □ ___________________<br>
                                             □ ___________________
                                         </div>
                                     </div>
                                     <div class="franklin-priority-section">
                                         <div class="franklin-section-title">WEEKLY GOALS</div>
                                         <div id="weeklyGoals" class="text-xs">
-                                            • ___________________<br>
                                             • ___________________<br>
                                             • ___________________
                                         </div>
@@ -1209,12 +1207,13 @@
                     if (numSlots > 1) {
                         // Position the event absolutely to span multiple cells
                         eventEl.style.position = 'absolute';
-                        eventEl.style.height = `${(numSlots * 12) - 1}px`; // 12px per 30-min slot
+                        eventEl.style.height = `${(numSlots * 16) - 1}px`; // 16px per 30-min slot
                         eventEl.style.width = 'calc(100% - 1px)';
                         eventEl.style.zIndex = '10';
                         eventEl.style.top = '0';
                         eventEl.style.left = '0';
                         eventEl.style.boxSizing = 'border-box';
+                        eventEl.style.display = 'block';
                         cell.style.position = 'relative';
 
                         // Clear cells below to prevent overlap
@@ -1230,6 +1229,8 @@
                                 const clearCellId = `weekly-${dayName}-${clearHour}-${clearMinute}`;
                                 const clearCell = document.getElementById(clearCellId);
                                 if (clearCell) {
+                                    // Clear the cell completely to prevent duplicate events
+                                    clearCell.innerHTML = '';
                                     clearCell.style.borderTop = 'none';
                                 }
                             }
