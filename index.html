@@ -842,7 +842,10 @@
         
         // Update Franklin style weekly view with events
         function updateEventsSummary() {
-            if (!calendarEvents || calendarEvents.length === 0) return;
+            if (!calendarEvents || calendarEvents.length === 0) {
+                console.log('⚠️ No calendar events available for weekly view');
+                return;
+            }
             
             // Get current week range
             const weekStartInput = document.getElementById('weekStart');
@@ -857,8 +860,8 @@
                 weekRangeEl.textContent = `Week of ${weekStart.toLocaleDateString('en-US', options)}`;
             }
             
-            // Clear all day columns first
-            const timeSlots = [7, 9, 12, 14, 17, 19, 22];
+            // Clear all day cells first
+            const timeSlots = [7, 10, 13, 16, 19, 22];
             const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
             
             timeSlots.forEach(hour => {
@@ -868,15 +871,16 @@
                 });
             });
             
-            // Filter and place events
+            // Filter events for current week
             const weekEvents = calendarEvents.filter(event => {
                 if (!event.start) return false;
                 const eventDate = new Date(event.start.dateTime || event.start.date);
                 return eventDate >= weekStart && eventDate < weekEnd;
             });
             
-            console.log(`📅 Showing ${weekEvents.length} events for Franklin weekly view`);
+            console.log(`📅 Displaying ${weekEvents.length} events in weekly view for week of ${weekStart.toDateString()}`);
             
+            // Place events in appropriate time/day cells
             weekEvents.forEach(event => {
                 const eventDate = new Date(event.start.dateTime || event.start.date);
                 const dayOfWeek = eventDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
@@ -886,14 +890,13 @@
                 const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
                 const dayName = dayNames[dayOfWeek];
                 
-                // Find the appropriate time slot (7, 9, 12, 14, 17, 19, 22)
+                // Find the appropriate time slot (7, 10, 13, 16, 19, 22)
                 let timeSlot = 7;
                 if (hour >= 22 || hour < 7) timeSlot = 22;
                 else if (hour >= 19) timeSlot = 19;
-                else if (hour >= 17) timeSlot = 17;
-                else if (hour >= 14) timeSlot = 14;
-                else if (hour >= 12) timeSlot = 12;
-                else if (hour >= 9) timeSlot = 9;
+                else if (hour >= 16) timeSlot = 16;
+                else if (hour >= 13) timeSlot = 13;
+                else if (hour >= 10) timeSlot = 10;
                 else timeSlot = 7;
                 
                 const cellId = `weekly-${dayName}-${timeSlot}`;
@@ -902,15 +905,24 @@
                 if (cell) {
                     const eventEl = document.createElement('div');
                     eventEl.className = 'franklin-event';
-                    eventEl.textContent = event.summary || 'Event';
+                    const startTime = event.start.dateTime ? 
+                        eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                        'All day';
+                    eventEl.textContent = `${startTime} ${event.summary || 'Event'}`;
                     cell.appendChild(eventEl);
+                    console.log(`📍 Placed "${event.summary}" in ${cellId}`);
+                } else {
+                    console.log(`⚠️ Could not find cell ${cellId} for event "${event.summary}"`);
                 }
             });
         }
         
         // Update Franklin style daily view with events
         function updateDailyView() {
-            if (!calendarEvents || calendarEvents.length === 0) return;
+            if (!calendarEvents || calendarEvents.length === 0) {
+                console.log('⚠️ No calendar events available for daily view');
+                return;
+            }
             
             // Get the current page (day) we're viewing
             const currentDayIndex = currentPage - 1; // Pages 1-7 are Mon-Sun
@@ -940,7 +952,7 @@
                 }
             }
             
-            // Filter events for this specific day using the synced calendarEvents
+            // Filter events for this specific day
             const dayEvents = calendarEvents.filter(event => {
                 if (!event.start) return false;
                 const eventDate = new Date(event.start.dateTime || event.start.date);
@@ -948,7 +960,9 @@
             });
             
             console.log(`📅 Daily view for ${targetDay.toDateString()}: ${dayEvents.length} events found`);
-            console.log('Available events:', dayEvents.map(e => e.summary));
+            if (dayEvents.length > 0) {
+                console.log('Day events:', dayEvents.map(e => `${e.summary} at ${new Date(e.start.dateTime || e.start.date).toLocaleTimeString()}`));
+            }
             
             // Place events in 30-minute time slots
             dayEvents.forEach(event => {
@@ -969,12 +983,14 @@
                         const time = event.start.dateTime ? 
                             eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
                             'All day';
-                        eventEl.innerHTML = `<strong>${time}</strong><br>${event.summary || 'Untitled Event'}`;
+                        eventEl.innerHTML = `<strong>${time}</strong><br><span style="font-size: 7px;">${event.summary || 'Untitled Event'}</span>`;
                         slot.appendChild(eventEl);
                         console.log(`📌 Placed event "${event.summary}" at ${slotId}`);
                     } else {
                         console.log(`⚠️ Could not find slot ${slotId} for event "${event.summary}"`);
                     }
+                } else {
+                    console.log(`⚠️ Event "${event.summary}" at ${hour}:${minute} is outside time range (07:00-22:00)`);
                 }
             });
             
@@ -1034,7 +1050,7 @@
             }
             
             if (statusEl) {
-                statusEl.textContent = `Synced successfully - Ready for export`;
+                statusEl.textContent = `✓ Synced successfully`;
             }
         }
         
