@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-    
+
     <script src="config.js"></script>
     <style>
         .remarkable-preview {
@@ -1189,7 +1189,7 @@
             const weekStartInput = document.getElementById('weekStart');
             const weekStart = weekStartInput ? new Date(weekStartInput.value) : new Date();
             const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekEnd.getDate() + 7);
+            weekEnd.setDate(weekStart.getDate() + 7);
 
             // Update week range header
             const weekRangeEl = document.getElementById('weeklyDateRange');
@@ -1232,7 +1232,7 @@
                     const [year, month, day] = event.start.date.split('-').map(Number);
                     startDate = new Date(year, month - 1, day, 0, 0, 0);
                 }
-                
+
                 let endDate;
                 if (event.end.dateTime) {
                     endDate = new Date(event.end.dateTime);
@@ -1241,18 +1241,49 @@
                     const [year, month, day] = event.end.date.split('-').map(Number);
                     endDate = new Date(year, month - 1, day, 0, 0, 0);
                 }
-                
+
                 // Get the correct day of week from the parsed date
                 const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
-                
-                // Debug logging to identify the issue
-                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                console.log(`📌 Event: "${event.summary}"`);
-                console.log(`   Raw start: ${event.start.dateTime || event.start.date}`);
-                console.log(`   Parsed date: ${startDate.toString()}`);
-                console.log(`   Actual day: ${dayNames[dayOfWeek]} (getDay=${dayOfWeek})`);
 
-                // Calculate event duration in minutes
+                // COMPREHENSIVE FIX: Ensure Monday events map to Monday column
+                // Problem: JavaScript getDay() returns 0=Sunday, 1=Monday, etc.
+                // Solution: Create explicit mapping to our grid column names
+
+                // Define day mapping arrays (avoiding duplicate declarations)
+                const jsGetDayToColumnName = {
+                    0: 'sun',    // Sunday -> 'sun' column
+                    1: 'mon',    // Monday -> 'mon' column  
+                    2: 'tue',    // Tuesday -> 'tue' column
+                    3: 'wed',    // Wednesday -> 'wed' column
+                    4: 'thu',    // Thursday -> 'thu' column
+                    5: 'fri',    // Friday -> 'fri' column
+                    6: 'sat'     // Saturday -> 'sat' column
+                };
+
+                const jsGetDayToFullName = {
+                    0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 
+                    4: 'Thursday', 5: 'Friday', 6: 'Saturday'
+                };
+
+                // Get the correct column name for this day
+                const dayName = jsGetDayToColumnName[dayOfWeek];
+                const fullDayName = jsGetDayToFullName[dayOfWeek];
+
+                console.log(`   📅 Event "${event.summary}"`);
+                console.log(`   📍 Date: ${startDate.toDateString()}`);  
+                console.log(`   🔢 getDay() = ${dayOfWeek} (JS: 0=Sun, 1=Mon, 2=Tue, etc.)`);
+                console.log(`   📋 Full day name: ${fullDayName}`);
+                console.log(`   🎯 Target column: '${dayName}'`);
+                console.log(`   🏷️ Cell ID prefix: weekly-${dayName}-`);
+
+                // Validate mapping
+                if (!dayName) {
+                    console.error(`❌ Invalid dayOfWeek: ${dayOfWeek}`);
+                    return;
+                }
+
+                // Ensure 1-hour events show as 2 blocks (60 minutes = 2 slots)
+                // Force exact slot count for hour appointments
                 const durationMs = endDate - startDate;
                 const durationMinutes = Math.max(30, Math.round(durationMs / 60000)); // Minimum 30 minutes
 
@@ -1261,21 +1292,46 @@
                 const numSlots = durationMinutes === 60 ? 2 : Math.ceil(durationMinutes / 30);
 
                 // Get start time components
-                const hour = event.start.dateTime ? startDate.getHours() : 9;
-                const minute = event.start.dateTime ? startDate.getMinutes() : 0;
+                const hour = startDate.getHours();
+                const minute = startDate.getMinutes();
 
                 // CORRECTED: Fix Monday events being placed in Sunday column
                 // The issue is in our date parsing and day calculation
                 // Let's use a more explicit approach
-                
-                const dayAbbrevs = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-                
-                // Get the day name abbreviation directly from the array
-                const dayName = dayAbbrevs[dayOfWeek];
-                
-                console.log(`   Event "${event.summary}" on ${dayNames[dayOfWeek]} (getDay=${dayOfWeek}) -> column '${dayName}'`);
-                console.log(`   Expected cell prefix: weekly-${dayName}-`);
-                
+
+                // Define day mapping arrays (avoiding duplicate declarations)
+                const jsGetDayToColumnName = {
+                    0: 'sun',    // Sunday -> 'sun' column
+                    1: 'mon',    // Monday -> 'mon' column  
+                    2: 'tue',    // Tuesday -> 'tue' column
+                    3: 'wed',    // Wednesday -> 'wed' column
+                    4: 'thu',    // Thursday -> 'thu' column
+                    5: 'fri',    // Friday -> 'fri' column
+                    6: 'sat'     // Saturday -> 'sat' column
+                };
+
+                const jsGetDayToFullName = {
+                    0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 
+                    4: 'Thursday', 5: 'Friday', 6: 'Saturday'
+                };
+
+                // Get the correct column name for this day
+                const dayName = jsGetDayToColumnName[dayOfWeek];
+                const fullDayName = jsGetDayToFullName[dayOfWeek];
+
+                console.log(`   📅 Event "${event.summary}"`);
+                console.log(`   📍 Date: ${startDate.toDateString()}`);  
+                console.log(`   🔢 getDay() = ${dayOfWeek} (JS: 0=Sun, 1=Mon, 2=Tue, etc.)`);
+                console.log(`   📋 Full day name: ${fullDayName}`);
+                console.log(`   🎯 Target column: '${dayName}'`);
+                console.log(`   🏷️ Cell ID prefix: weekly-${dayName}-`);
+
+                // Validate mapping
+                if (!dayName) {
+                    console.error(`❌ Invalid dayOfWeek: ${dayOfWeek}`);
+                    return;
+                }
+
                 // Ensure 1-hour events show as 2 blocks (60 minutes = 2 slots)
                 // Force exact slot count for hour appointments
                 const actualNumSlots = (durationMinutes >= 60 && durationMinutes <= 60) ? 2 : numSlots;
@@ -1308,7 +1364,7 @@
                     const startTime = event.start.dateTime ?
                         startDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) :
                         '';
-                    
+
                     // Create formatted content with time and title
                     const eventContent = `<div style="font-size: 6px; font-weight: bold;">${startTime}</div><div style="font-size: 7px; margin-top: 1px;">${event.summary || 'Event'}</div>`;
                     eventEl.innerHTML = eventContent;
@@ -1321,7 +1377,7 @@
                     eventEl.style.top = '0';
                     eventEl.style.zIndex = '10';
                     eventEl.style.boxSizing = 'border-box';
-                    
+
                     // Calculate height based on duration
                     if (actualNumSlots > 1) {
                         // Multi-slot events: calculate total height spanning all slots
@@ -1331,7 +1387,7 @@
                         // Single-slot events: fill the cell
                         eventEl.style.height = '15px';
                     }
-                    
+
                     // Ensure parent cell has position relative
                     cell.style.position = 'relative';
 
@@ -1392,7 +1448,7 @@
                 console.log('⚠️ Week start not set');
                 return;
             }
-            
+
             const weekStart = new Date(weekStartInput.value);
 
             // Calculate the specific day
@@ -1572,7 +1628,7 @@
             const weekStartInput = document.getElementById('weekStart');
             const weekStart = weekStartInput ? new Date(weekStartInput.value) : new Date();
             const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekEnd.getDate() + 7);
+            weekEnd.setDate(weekStart.getDate() + 7);
 
             // Filter events for current week
             const weekEvents = calendarEvents.filter(event => {
@@ -1609,7 +1665,8 @@
                 const date = new Date(targetDate);
                 const day = date.getDay();
                 const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
-                const monday = new Date(date.setDate(diff));
+                const monday = new Date(date);
+                monday.setDate(diff);
 
                 // Update week start if different
                 const weekStartInput = document.getElementById('weekStart');
@@ -1968,12 +2025,12 @@
             const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If Sunday, go back 6 days
             monday.setDate(today.getDate() + diff);
             document.getElementById('weekStart').value = monday.toISOString().split('T')[0];
-            
+
             // Set the initial page to today's day of the week
             // 0 = Week view, 1 = Monday, 2 = Tuesday, ..., 7 = Sunday
             const todayPageIndex = dayOfWeek === 0 ? 7 : dayOfWeek; // Sunday = 7, Mon = 1, etc.
             currentPage = todayPageIndex;
-            
+
             // Update navigation to highlight today
             setTimeout(() => switchPage(todayPageIndex), 100);
         }
