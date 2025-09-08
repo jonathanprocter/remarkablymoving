@@ -179,20 +179,23 @@ function getOptimizedCSS() {
     
     .grid-cell {
       position: relative;
-      min-height: 8mm;
+      min-height: 10mm;
+      vertical-align: top;
     }
     
     .weekly-event {
       background: #000;
       color: #fff;
-      padding: 1px 2px;
+      padding: 2px 3px;
       margin: 0.5px;
-      font-size: 7px;
+      font-size: 8px;
       border-radius: 1px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      line-height: 1.1;
+      line-height: 1.2;
+      display: block;
+      width: calc(100% - 4px);
     }
     
     .weekly-footer {
@@ -235,12 +238,14 @@ function getOptimizedCSS() {
     
     /* Daily Layout - Portrait for reMarkable Pro Move */
     .daily-page {
-      width: 8.8in;
-      height: 11.6in;
+      width: calc(8.8in - 16mm);  /* Account for padding */
+      height: calc(11.6in - 16mm); /* Account for padding */
       padding: 8mm;
       page-break-before: always;
       page-break-after: always;
       display: flex;
+      margin: 0 auto;
+      box-sizing: border-box;
     }
     
     .daily-main {
@@ -480,6 +485,7 @@ function getWeeklyEventsForTimeSlot(weekData, dayKey, timeSlot) {
   const dayEvents = weekData.events?.[dayKey] || [];
   const [hour, minute] = timeSlot.split(':').map(Number);
   const slotTime = hour * 60 + minute;
+  const slotEndTime = slotTime + 60; // Full hour slot
   
   return dayEvents
     .filter(event => {
@@ -487,7 +493,8 @@ function getWeeklyEventsForTimeSlot(weekData, dayKey, timeSlot) {
       const eventStartTime = eventHour * 60 + eventMinute;
       const eventEndTime = eventStartTime + (event.duration || 60);
       
-      return eventStartTime <= slotTime && slotTime < eventEndTime;
+      // Show event if it overlaps with this hour slot
+      return (eventStartTime < slotEndTime && eventEndTime > slotTime);
     })
     .map(event => `<div class="weekly-event">${event.title}</div>`)
     .join('');
