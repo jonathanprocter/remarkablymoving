@@ -17,6 +17,14 @@ app = Flask(__name__)
 # This ensures sessions persist across server restarts
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-remarkable-calendar-2025")
 
+# Configure session cookies for OAuth
+app.config.update(
+    SESSION_COOKIE_SECURE=True,  # Required for HTTPS
+    SESSION_COOKIE_HTTPONLY=True,  # Security best practice
+    SESSION_COOKIE_SAMESITE='Lax',  # Allow OAuth redirects
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=1)  # Session timeout
+)
+
 # Google OAuth configuration
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
@@ -217,13 +225,16 @@ def google_auth():
             prompt='consent'
         )
         
-        # Store state and client config in session for security
+        # Mark session as permanent and store state
+        session.permanent = True  # Enable permanent session
         session['state'] = state
         session['client_config'] = client_config
+        session.modified = True  # Force session save
         
         print(f"🔐 Starting OAuth flow...")
         print(f"   Authorization URL: {authorization_url}")
         print(f"   State: {state}")
+        print(f"   Session ID: {session.get('_id', 'new session')}")
         
         return redirect(authorization_url)
         
@@ -235,8 +246,19 @@ def google_auth():
 def oauth2callback():
     """Handle OAuth callback from Google"""
     try:
+        # Debug session state
+        print(f"📝 OAuth callback received")
+        print(f"   Session state: {session.get('state', 'NONE')}")
+        print(f"   Request state: {request.args.get('state', 'NONE')}")
+        print(f"   Session keys: {list(session.keys())}")
+        
         # Verify state parameter
-        if 'state' not in session or request.args.get('state') != session['state']:
+        if 'state' not in session:
+            print("❌ No state in session")
+            return jsonify({"error": "Session expired - please try again"}), 400
+            
+        if request.args.get('state') != session['state']:
+            print(f"❌ State mismatch")
             return jsonify({"error": "Invalid state parameter"}), 400
         
         # Get authorization code
