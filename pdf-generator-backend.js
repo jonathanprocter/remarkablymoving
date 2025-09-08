@@ -90,6 +90,7 @@ function getOptimizedCSS() {
     /* reMarkable Pro Move E-ink Optimized Styles */
     @page {
       margin: 0;
+      size: 8.8in 11.6in;  /* Default to portrait for daily pages */
     }
     
     /* Weekly page - landscape orientation */
@@ -238,12 +239,8 @@ function getOptimizedCSS() {
       height: 11.6in;
       padding: 8mm;
       page-break-before: always;
+      page-break-after: always;
       display: flex;
-    }
-    
-    /* Set portrait orientation for daily pages */
-    @page daily {
-      size: 8.8in 11.6in;  /* Portrait for daily pages */
     }
     
     .daily-main {
@@ -417,7 +414,7 @@ function generateDailyPage(weekData, day) {
   const dayEvents = weekData.events?.[day.key] || [];
   
   return `
-    <div class="daily-page" style="page: daily;">
+    <div class="daily-page">
         <div class="daily-main">
             <div class="daily-header">
                 <div class="daily-title">DAILY PLANNER - ${day.name}</div>
