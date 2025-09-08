@@ -1301,12 +1301,12 @@
 
                 // Get the correct column name for this day (using existing dayColumnMapping)
                 const dayName2 = dayColumnMapping[dayOfWeek];
-                const fullDayName = jsGetDayToFullName[dayOfWeek];
+                const fullDayName2 = jsGetDayToFullName[dayOfWeek];
 
                 console.log(`   📅 Event "${event.summary}"`);
                 console.log(`   📍 Date: ${startDate.toDateString()}`);  
                 console.log(`   🔢 getDay() = ${dayOfWeek} (JS: 0=Sun, 1=Mon, 2=Tue, etc.)`);
-                console.log(`   📋 Full day name: ${fullDayName}`);
+                console.log(`   📋 Full day name: ${fullDayName2}`);
                 console.log(`   🎯 Target column: '${dayName2}'`);
                 console.log(`   🏷️ Cell ID prefix: weekly-${dayName2}-`);
 
