@@ -21,13 +21,13 @@
         .franklin-weekly-grid {
             display: grid;
             grid-template-columns: 45px repeat(7, minmax(60px, 1fr));
-            grid-template-rows: auto repeat(31, 15px);
+            grid-template-rows: auto repeat(31, 12px);
             gap: 0;
             background: #333333;
             border: 1px solid #333333;
             font-family: 'Courier New', monospace;
-            overflow: auto;
-            max-height: 400px;
+            overflow: hidden;
+            height: auto;
             width: 100%;
         }
         .franklin-daily-grid {
@@ -55,14 +55,14 @@
         }
         .franklin-time-label {
             background: #f8f9fa;
-            padding: 1px;
-            font-size: 7px;
+            padding: 0;
+            font-size: 6px;
             font-weight: bold;
             text-align: center;
             border-right: 1px solid #333333;
             border-bottom: 1px solid #f0f0f0;
-            height: 15px;
-            line-height: 13px;
+            height: 12px;
+            line-height: 12px;
         }
         .franklin-time-label.hour-start {
             border-bottom: 1px solid #cccccc;
@@ -70,12 +70,13 @@
         .franklin-day-cell {
             background: #ffffff;
             padding: 0;
-            min-height: 14px;
+            min-height: 11px;
+            max-height: 12px;
             border-right: 1px solid #dddddd;
             border-bottom: 1px solid #f0f0f0;
             position: relative;
-            font-size: 6px;
-            overflow: visible;
+            font-size: 5px;
+            overflow: hidden;
         }
         .franklin-day-cell.hour-start {
             border-bottom: 1px solid #cccccc;
@@ -1207,7 +1208,7 @@
                     // Make event span multiple rows based on duration
                     if (numSlots > 1) {
                         eventEl.style.position = 'absolute';
-                        eventEl.style.height = `${numSlots * 15 - 2}px`; // 15px per row minus border
+                        eventEl.style.height = `${numSlots * 12 - 1}px`; // 12px per row minus border
                         eventEl.style.width = 'calc(100% - 2px)';
                         eventEl.style.zIndex = '1';
                         eventEl.style.top = '0';
@@ -1313,13 +1314,18 @@
                         // Make event span multiple rows based on duration
                         if (numSlots > 1) {
                             eventEl.style.position = 'absolute';
-                            eventEl.style.height = `${numSlots * 30 - 2}px`; // 30px per row minus border
+                            eventEl.style.height = `${numSlots * 30 - 2}px`; // Exactly 30px per row minus border
                             eventEl.style.width = 'calc(100% - 4px)';
                             eventEl.style.zIndex = '1';
                             eventEl.style.top = '0';
                             eventEl.style.left = '0';
                             eventEl.style.padding = '2px';
+                            eventEl.style.boxSizing = 'border-box';
                             slot.style.position = 'relative';
+                            
+                            // Ensure it doesn't overflow beyond its slots
+                            eventEl.style.maxHeight = `${numSlots * 30 - 2}px`;
+                            eventEl.style.overflow = 'hidden';
                         }
                         
                         // Add click handler to go back to weekly view
