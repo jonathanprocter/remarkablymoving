@@ -3,12 +3,15 @@
 This is a web-based calendar generator specifically designed for reMarkable e-ink tablets. The application creates PDF calendars optimized for the reMarkable's display characteristics, with features like time slot management, Google Calendar integration, and e-ink display optimization. The tool allows users to generate custom calendar layouts that work well on reMarkable devices for productivity and planning purposes.
 
 **reMarkable Pro Move PDF Export Integration (Sep 9, 2025)**:
-- Optimized Python-based PDF generator for reMarkable Pro Move (7.3" screen) specifications
+- Professional Python-based PDF generator with clean grid layouts for reMarkable Pro Move (7.3" screen)
 - Correct dimensions: 163mm × 91mm (landscape weekly), 91mm × 163mm (portrait daily)
 - Military time format (0700-2200 hrs) with :30 intervals (e.g., 0730, 0830)
 - 8-page format: Page 1 landscape (weekly overview), Pages 2-8 portrait (Monday-Sunday)
-- Bidirectional hyperlinks between weekly overview and daily pages
-- Font sizes optimized for 7.3" screen (5-14pt range for readability)
+- **Enhanced Grid Structure**: Visible borders, alternating line weights for hours/half-hours
+- **Professional Layout**: Shaded headers, day numbers, clean time column separation
+- **Daily Pages Include**: Notes section with lines, Priority box for top tasks
+- **Event Display**: Light blue blocks with title/time/location, smart text truncation
+- Font sizes optimized for 7.3" screen (3-10pt range for maximum content)
 - Direct Google Calendar integration for generating PDFs from authenticated events
 - Dynamic page sizing ensures proper fit for reMarkable Pro Move display
 
