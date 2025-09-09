@@ -550,30 +550,45 @@ def get_events():
 
 @app.route('/api/generate-planner-pdf', methods=['POST'])
 def generate_planner_pdf():
-    """Proxy to Node.js PDF generation service"""
+    """Generate PDF using Python-based reMarkable Pro optimized generator"""
     try:
-        # Forward request to Node.js server
-        pdf_server_url = 'http://localhost:3001/api/generate-planner-pdf'
+        # Import our reMarkable PDF generator
+        from remarkable_pdf_generator import generate_pdf_from_week_data, transform_google_calendar_events
         
         # Get request data
         request_data = request.get_json()
+        week_data = request_data.get('weekData', {})
+        start_date = request_data.get('startDate', datetime.now().strftime('%Y-%m-%d'))
         
-        # Make request to PDF server
-        response = requests.post(
-            pdf_server_url,
-            json=request_data,
-            headers={'Content-Type': 'application/json'},
-            stream=True
-        )
+        # Try to get events from the current session/database if available
+        if 'credentials' in session:
+            try:
+                # Get events from the last API call or database
+                # This is optional - the frontend should send the events
+                pass
+            except Exception as e:
+                print(f"⚠️ Could not fetch additional events: {e}")
         
-        if response.status_code == 200:
-            # Return PDF response
-            return response.content, 200, {
-                'Content-Type': 'application/pdf',
-                'Content-Disposition': f'attachment; filename="planner-{request_data.get("startDate", "")}.pdf"'
-            }
-        else:
-            return jsonify({"error": "PDF generation failed"}), response.status_code
+        # Generate PDF filename
+        pdf_filename = f"remarkable_calendar_{start_date.replace('-', '')}.pdf"
+        
+        # Generate the PDF
+        output_file = generate_pdf_from_week_data(week_data, start_date, pdf_filename)
+        
+        # Read the generated PDF file
+        with open(output_file, 'rb') as pdf_file:
+            pdf_content = pdf_file.read()
+        
+        # Clean up the temporary file
+        os.remove(output_file)
+        
+        print(f"✅ Generated reMarkable Pro optimized PDF: {pdf_filename}")
+        
+        # Return PDF response
+        return pdf_content, 200, {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': f'attachment; filename="{pdf_filename}"'
+        }
             
     except Exception as e:
         print(f"❌ Error generating PDF: {e}")
