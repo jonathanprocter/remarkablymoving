@@ -2,15 +2,15 @@
 
 This is a web-based calendar generator specifically designed for reMarkable e-ink tablets. The application creates PDF calendars optimized for the reMarkable's display characteristics, with features like time slot management, Google Calendar integration, and e-ink display optimization. The tool allows users to generate custom calendar layouts that work well on reMarkable devices for productivity and planning purposes.
 
-**reMarkable Pro PDF Export Integration (Sep 9, 2025)**:
-- Integrated Python-based PDF generator using reportlab library optimized for reMarkable Pro specifications
-- Replaced JavaScript/Puppeteer-based PDF generation with native Python implementation for better performance
-- Implemented true reMarkable Pro dimensions: 2160x1620 pixels (landscape), 1620x2160 pixels (portrait)
-- Added bidirectional hyperlinks between weekly overview and daily pages for seamless navigation
-- Supports military time format (07:00-22:00) with 30-minute intervals throughout the day
-- Generates complete 8-page PDF layout: 1 landscape weekly overview + 7 portrait daily views
-- Direct Google Calendar integration for generating PDFs from authenticated calendar events
-- Two PDF generation methods: from current calendar view data or directly from Google Calendar API
+**reMarkable Pro Move PDF Export Integration (Sep 9, 2025)**:
+- Optimized Python-based PDF generator for reMarkable Pro Move (7.3" screen) specifications
+- Correct dimensions: 163mm × 91mm (landscape weekly), 91mm × 163mm (portrait daily)
+- Military time format (0700-2200 hrs) with :30 intervals (e.g., 0730, 0830)
+- 8-page format: Page 1 landscape (weekly overview), Pages 2-8 portrait (Monday-Sunday)
+- Bidirectional hyperlinks between weekly overview and daily pages
+- Font sizes optimized for 7.3" screen (5-14pt range for readability)
+- Direct Google Calendar integration for generating PDFs from authenticated events
+- Dynamic page sizing ensures proper fit for reMarkable Pro Move display
 
 **Latest Update (Sep 2025)**: 
 - Extended sync capability to load complete calendar history from 2015-2030, with optimized chunked API requests and PostgreSQL storage for comprehensive calendar template generation.

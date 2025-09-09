@@ -1,72 +1,87 @@
 #!/usr/bin/env python3
 """
-reMarkable Pro Calendar PDF Generator
-Optimized for reMarkable Pro (2160x1620 landscape, 1620x2160 portrait)
+reMarkable Pro Move Calendar PDF Generator
+Optimized for reMarkable Pro Move (7.3" screen)
+Dimensions: 1696×954 pixels
+Physical size: 163mm × 91mm (landscape), 91mm × 163mm (portrait)
 """
 
 import datetime
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import landscape, portrait
-from reportlab.lib.units import inch
+from reportlab.lib.units import inch, mm
 from reportlab.lib import colors
 import json
 import sys
 
-# reMarkable Pro specifications
-REMARKABLE_WIDTH = 1620
-REMARKABLE_HEIGHT = 2160
+# reMarkable Pro Move specifications (7.3" screen)
+# Physical dimensions in mm converted to points (1mm = 2.834645669 points)
+REMARKABLE_MOVE_WIDTH_MM = 91  # Portrait width / Landscape height
+REMARKABLE_MOVE_HEIGHT_MM = 163  # Portrait height / Landscape width
 
-# Define page sizes
-landscape_size = (REMARKABLE_HEIGHT, REMARKABLE_WIDTH)
-portrait_size = (REMARKABLE_WIDTH, REMARKABLE_HEIGHT)
+# Convert mm to points for ReportLab
+REMARKABLE_MOVE_WIDTH_PT = REMARKABLE_MOVE_WIDTH_MM * mm
+REMARKABLE_MOVE_HEIGHT_PT = REMARKABLE_MOVE_HEIGHT_MM * mm
+
+# Define page sizes for reMarkable Pro Move
+landscape_size = (REMARKABLE_MOVE_HEIGHT_PT, REMARKABLE_MOVE_WIDTH_PT)  # 163mm × 91mm
+portrait_size = (REMARKABLE_MOVE_WIDTH_PT, REMARKABLE_MOVE_HEIGHT_PT)   # 91mm × 163mm
+
+def format_time_military(hour, minute):
+    """Format time in military format with leading zeros"""
+    return f"{hour:02d}{minute:02d}"
 
 def create_weekly_view_with_events(c, week_start_date, events):
-    """Create the landscape weekly overview page"""
+    """Create the landscape weekly overview page (Page 1)"""
     c.setPageSize(landscape_size)
-    c.setFont("Helvetica-Bold", 36)
-    c.drawString(inch, landscape_size[1] - inch, f"WEEKLY OVERVIEW - WEEK OF {week_start_date.strftime('%B %d, %Y').upper()}")
+    
+    # Smaller font sizes for 7.3" screen
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(10*mm, landscape_size[1] - 10*mm, 
+                f"WEEK OF {week_start_date.strftime('%B %d, %Y').upper()}")
     
     # Draw weekly grid
     days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
-    x_start = inch
-    y_start = landscape_size[1] - 2 * inch
-    col_width = (landscape_size[0] - 2 * inch) / 8
-    row_height = (landscape_size[1] - 4 * inch) / 31
+    x_start = 8*mm
+    y_start = landscape_size[1] - 15*mm
+    col_width = (landscape_size[0] - 16*mm) / 8  # 8 columns: time + 7 days
+    row_height = (landscape_size[1] - 20*mm) / 31  # 31 half-hour slots
     
-    # Draw header with clickable day links
-    c.setFont("Helvetica-Bold", 24)
+    # Draw header with days (smaller font for Pro Move)
+    c.setFont("Helvetica-Bold", 8)
     for i, day in enumerate(days):
-        x_pos = x_start + (i + 1) * col_width + 20
-        c.drawString(x_pos, y_start + 10, day)
+        x_pos = x_start + (i + 1) * col_width + 2*mm
+        c.drawString(x_pos, y_start + 1*mm, day[:3])  # Abbreviated day names
         # Add clickable links to daily pages
-        link_rect = (x_start + (i + 1) * col_width, y_start, 
+        link_rect = (x_start + (i + 1) * col_width, y_start - row_height, 
                     x_start + (i + 2) * col_width, y_start + row_height)
         c.linkRect(day, f"day_{i+1}", link_rect)
     
-    # Draw time slots (07:00-22:00 in military time)
-    c.setFont("Helvetica", 18)
+    # Draw time slots (0700-2200 hrs with :30 intervals)
+    c.setFont("Helvetica", 6)
     for i in range(31):  # 31 half-hour slots from 07:00 to 22:00
-        time = f"{(i // 2) + 7:02d}:{30 * (i % 2):02d}"
-        c.drawString(x_start + 10, y_start - i * row_height, time)
+        hour = (i // 2) + 7
+        minute = 30 * (i % 2)
+        time_str = format_time_military(hour, minute)
+        c.drawString(x_start + 1*mm, y_start - (i + 1) * row_height + row_height/3, time_str)
     
     # Draw grid lines
     c.setStrokeColor(colors.black)
-    c.setLineWidth(1)
+    c.setLineWidth(0.5)
     
-    # Vertical lines (extend to bottom as per requirements)
+    # Vertical lines
     for i in range(9):  # 8 columns plus left border
         c.line(x_start + i * col_width, y_start + row_height, 
                x_start + i * col_width, y_start - 30 * row_height)
     
     # Horizontal lines
-    for i in range(32):
+    for i in range(32):  # 31 time slots plus header
         c.line(x_start, y_start - (i-1) * row_height, 
                x_start + 8 * col_width, y_start - (i-1) * row_height)
     
-    # Add events to weekly view
-    c.setFont("Helvetica", 12)
+    # Add events to weekly view (smaller text for Pro Move)
+    c.setFont("Helvetica", 5)
     for event in events:
-        # Handle different date formats
         event_date_str = event.get('date')
         if not event_date_str:
             continue
@@ -88,7 +103,6 @@ def create_weekly_view_with_events(c, week_start_date, events):
                 start_time = datetime.time(9, 0)
             
             if not end_time_str:
-                # Calculate end time from duration if available
                 duration = event.get('duration', 60)
                 end_hour = start_time.hour + (start_time.minute + duration) // 60
                 end_minute = (start_time.minute + duration) % 60
@@ -104,58 +118,74 @@ def create_weekly_view_with_events(c, week_start_date, events):
             end_hour = end_time.hour + end_time.minute / 60
             
             if 7 <= start_hour <= 22:
-                start_row = int((start_hour - 7) * 2)
-                end_row = int((end_hour - 7) * 2)
+                start_row = (start_hour - 7) * 2
+                end_row = (end_hour - 7) * 2
                 
-                event_x = x_start + (day_offset + 1) * col_width + 5
+                event_x = x_start + (day_offset + 1) * col_width + 1*mm
                 event_y_start = y_start - start_row * row_height
                 event_height = max((end_row - start_row) * row_height, row_height / 2)
                 
-                # Draw event block (proportional to duration)
+                # Draw event block
                 c.setFillColor(colors.lightblue)
-                c.rect(event_x, event_y_start - event_height, col_width - 10, event_height, fill=1)
+                c.rect(event_x, event_y_start - event_height, 
+                       col_width - 2*mm, event_height, fill=1)
                 
-                # Add event text
+                # Add event text (truncated for small space)
                 c.setFillColor(colors.black)
-                title = event.get('title', event.get('summary', 'Untitled'))[:20]
-                c.drawString(event_x + 5, event_y_start - 15, title)
+                title = event.get('title', event.get('summary', 'Untitled'))[:12]
+                c.drawString(event_x + 1*mm, event_y_start - 3*mm, title)
     
     c.showPage()
 
 def create_daily_view_with_events(c, date, day_name, page_num, day_events):
-    """Create portrait daily view pages"""
+    """Create portrait daily view pages (Pages 2-8)"""
     c.setPageSize(portrait_size)
-    c.setFont("Helvetica-Bold", 36)
-    c.drawString(inch, portrait_size[1] - inch, f"{day_name.upper()} - {date.strftime('%B %d, %Y')}")
     
-    # Add link back to weekly view (bidirectional linking)
-    c.setFont("Helvetica", 18)
-    c.drawString(inch, portrait_size[1] - 1.5*inch, "← Back to Weekly Overview")
-    c.linkRect("← Back to Weekly", "weekly_view", (inch, portrait_size[1] - 1.5*inch, 3*inch, portrait_size[1] - inch))
+    # Header with day and date (smaller font for Pro Move)
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(8*mm, portrait_size[1] - 10*mm, 
+                f"{day_name.upper()} - {date.strftime('%B %d, %Y')}")
+    
+    # Add link back to weekly view
+    c.setFont("Helvetica", 8)
+    c.drawString(8*mm, portrait_size[1] - 15*mm, "← Back to Weekly")
+    c.linkRect("← Back", "weekly_view", 
+              (8*mm, portrait_size[1] - 17*mm, 30*mm, portrait_size[1] - 13*mm))
     
     # Draw daily schedule
-    x_start = inch
-    y_start = portrait_size[1] - 2 * inch
-    row_height = (portrait_size[1] - 4 * inch) / 31
+    x_start = 8*mm
+    y_start = portrait_size[1] - 20*mm
+    time_col_width = 15*mm
+    event_col_width = portrait_size[0] - x_start - time_col_width - 8*mm
+    row_height = (portrait_size[1] - 30*mm) / 31  # 31 half-hour slots
     
-    # Draw time slots (07:00-22:00 in military time with 30-minute intervals)
-    c.setFont("Helvetica", 18)
-    for i in range(31):
-        time = f"{(i // 2) + 7:02d}:{30 * (i % 2):02d}"
-        c.drawString(x_start + 10, y_start - i * row_height, time)
+    # Draw time slots (0700-2200 hrs with :30 intervals)
+    c.setFont("Helvetica", 7)
+    for i in range(31):  # 31 half-hour slots
+        hour = (i // 2) + 7
+        minute = 30 * (i % 2)
+        time_str = format_time_military(hour, minute)
+        c.drawString(x_start + 2*mm, y_start - i * row_height - row_height/2, time_str)
     
     # Draw grid lines
     c.setStrokeColor(colors.black)
-    c.setLineWidth(1)
-    c.line(x_start + 1.5*inch, y_start + row_height, 
-           x_start + 1.5*inch, y_start - 30 * row_height)
+    c.setLineWidth(0.5)
     
+    # Vertical line separating time from events
+    c.line(x_start + time_col_width, y_start + row_height, 
+           x_start + time_col_width, y_start - 30 * row_height)
+    
+    # Right border
+    c.line(portrait_size[0] - 8*mm, y_start + row_height,
+           portrait_size[0] - 8*mm, y_start - 30 * row_height)
+    
+    # Horizontal lines for each time slot
     for i in range(32):
         c.line(x_start, y_start - (i-1) * row_height, 
-               portrait_size[0] - inch, y_start - (i-1) * row_height)
+               portrait_size[0] - 8*mm, y_start - (i-1) * row_height)
     
     # Add events to daily view
-    c.setFont("Helvetica", 14)
+    c.setFont("Helvetica", 7)
     for event in day_events:
         start_time_str = event.get('start_time', event.get('time', '09:00'))
         end_time_str = event.get('end_time', '')
@@ -180,43 +210,57 @@ def create_daily_view_with_events(c, date, day_name, page_num, day_events):
         end_hour = end_time.hour + end_time.minute / 60
         
         if 7 <= start_hour <= 22:
-            start_row = int((start_hour - 7) * 2)
-            end_row = int((end_hour - 7) * 2)
+            start_row = (start_hour - 7) * 2
+            end_row = (end_hour - 7) * 2
             
-            event_x = x_start + 1.5*inch + 10
+            event_x = x_start + time_col_width + 2*mm
             event_y_start = y_start - start_row * row_height
-            event_height = max((end_row - start_row) * row_height, row_height / 2)
-            event_width = portrait_size[0] - x_start - 1.5*inch - 2*inch
+            event_height = max((end_row - start_row) * row_height, row_height)
             
-            # Draw event block (proportional to duration)
+            # Draw event block
             c.setFillColor(colors.lightblue)
-            c.rect(event_x, event_y_start - event_height, event_width, event_height, fill=1)
+            c.rect(event_x, event_y_start - event_height, 
+                   event_col_width - 4*mm, event_height, fill=1)
             
             # Add event text
             c.setFillColor(colors.black)
+            c.setFont("Helvetica-Bold", 7)
             title = event.get('title', event.get('summary', 'Untitled'))
-            c.drawString(event_x + 5, event_y_start - 20, title)
+            # Truncate long titles
+            if len(title) > 25:
+                title = title[:22] + "..."
+            c.drawString(event_x + 2*mm, event_y_start - 4*mm, title)
             
+            # Add description if available
             description = event.get('description', event.get('location', ''))
             if description:
-                c.setFont("Helvetica", 12)
-                c.drawString(event_x + 5, event_y_start - 35, description[:50])
-                c.setFont("Helvetica", 14)
+                c.setFont("Helvetica", 6)
+                desc_text = description[:35]
+                if len(description) > 35:
+                    desc_text += "..."
+                c.drawString(event_x + 2*mm, event_y_start - 7*mm, desc_text)
+    
+    # Add space for notes at bottom
+    c.setFont("Helvetica", 7)
+    c.drawString(x_start, 15*mm, "Notes:")
+    c.line(x_start, 13*mm, portrait_size[0] - 8*mm, 13*mm)
+    c.line(x_start, 10*mm, portrait_size[0] - 8*mm, 10*mm)
+    c.line(x_start, 7*mm, portrait_size[0] - 8*mm, 7*mm)
     
     c.showPage()
 
 def generate_calendar_pdf(filename, week_start_date, events):
-    """Generate the complete PDF with weekly and daily views"""
-    c = canvas.Canvas(filename)
+    """Generate the complete 8-page PDF with weekly and daily views"""
+    c = canvas.Canvas(filename, pagesize=landscape_size)
     c.setAuthor("reMarkable Calendar Exporter")
-    c.setTitle("Weekly Calendar Overview - reMarkable Pro Optimized")
+    c.setTitle("Weekly Calendar - reMarkable Pro Move Optimized")
     
-    # Create weekly view with events
+    # Page 1: Weekly overview (landscape)
     c.bookmarkPage("weekly_view")
     c.addOutlineEntry("Weekly Overview", "weekly_view", 0, 0)
     create_weekly_view_with_events(c, week_start_date, events)
     
-    # Create daily views with events
+    # Pages 2-8: Daily views (portrait) - Monday through Sunday
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     for i, day in enumerate(days):
         date = week_start_date + datetime.timedelta(days=i)
@@ -237,7 +281,10 @@ def generate_calendar_pdf(filename, week_start_date, events):
         create_daily_view_with_events(c, date, day, i + 2, day_events)
     
     c.save()
-    print(f"PDF generated successfully: {filename}")
+    print(f"✅ PDF generated successfully: {filename}")
+    print(f"   Format: 8 pages (1 landscape weekly + 7 portrait daily)")
+    print(f"   Dimensions: {REMARKABLE_MOVE_HEIGHT_MM}×{REMARKABLE_MOVE_WIDTH_MM}mm (landscape), {REMARKABLE_MOVE_WIDTH_MM}×{REMARKABLE_MOVE_HEIGHT_MM}mm (portrait)")
+    print(f"   Optimized for: reMarkable Pro Move (7.3\" screen)")
     return filename
 
 def transform_google_calendar_events(google_events):
@@ -321,7 +368,7 @@ def generate_pdf_from_week_data(week_data, start_date, output_filename=None):
     
     # Generate output filename if not provided
     if not output_filename:
-        output_filename = f"remarkable_calendar_{week_start.strftime('%Y%m%d')}.pdf"
+        output_filename = f"remarkable_move_calendar_{week_start.strftime('%Y%m%d')}.pdf"
     
     # Generate the PDF
     generate_calendar_pdf(output_filename, week_start, all_events)
@@ -334,7 +381,7 @@ def main():
     today = datetime.date.today()
     week_start_date = today - datetime.timedelta(days=today.weekday())
     
-    # Sample events (replace with your own data)
+    # Sample events
     events = [
         {
             "title": "Team Meeting",
@@ -353,7 +400,7 @@ def main():
     ]
     
     # Generate PDF
-    filename = f"remarkable_calendar_{week_start_date.strftime('%Y%m%d')}.pdf"
+    filename = f"remarkable_move_calendar_{week_start_date.strftime('%Y%m%d')}.pdf"
     generate_calendar_pdf(filename, week_start_date, events)
 
 if __name__ == "__main__":
