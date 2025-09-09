@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["nano", "chromium", "glib", "nss", "nspr", "atk", "cups", "libdrm", "dbus", "pango", "cairo", "alsa-lib"]
+packages = ["alsa-lib", "atk", "cairo", "chromium", "cups", "dbus", "freetype", "glib", "glibcLocales", "libdrm", "nano", "nspr", "nss", "pango"]
 
 [workflows]
 runButton = "Project"
