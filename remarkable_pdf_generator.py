@@ -72,7 +72,7 @@ def create_weekly_view_with_events(c, week_start_date, events):
     c.rect(grid_left, grid_bottom, grid_width, grid_height, fill=0, stroke=1)
     
     # Draw header background
-    c.setFillColor(colors.Color(0.95, 0.95, 0.95))  # Light gray
+    c.setFillColor(colors.lightgrey)  # Light gray
     c.rect(grid_left + time_col_width, grid_top - header_height, 
            grid_width - time_col_width, header_height, fill=1, stroke=0)
     
@@ -114,10 +114,10 @@ def create_weekly_view_with_events(c, week_start_date, events):
         # Thicker lines for hours (even slots)
         if i % 2 == 0:
             c.setLineWidth(0.3)
-            c.setStrokeColor(colors.Color(0.6, 0.6, 0.6))
+            c.setStrokeColor(colors.grey)
         else:
             c.setLineWidth(0.2)
-            c.setStrokeColor(colors.Color(0.8, 0.8, 0.8))
+            c.setStrokeColor(colors.lightgrey)
         
         c.line(grid_left, y, grid_right, y)
     
@@ -184,7 +184,7 @@ def create_weekly_view_with_events(c, week_start_date, events):
                 if event_height > 0:
                     # Draw event block with rounded corners effect
                     c.setFillColor(colors.lightblue)
-                    c.setStrokeColor(colors.Color(0.4, 0.6, 0.8))
+                    c.setStrokeColor(colors.blue)
                     c.setLineWidth(0.5)
                     c.rect(event_x, event_y_top - event_height, 
                            event_width, event_height, fill=1, stroke=1)
@@ -271,7 +271,7 @@ def create_daily_view_with_events(c, date, day_name, page_num, day_events):
            grid_left + time_col_width, grid_top)
     
     # Shade time column slightly
-    c.setFillColor(colors.Color(0.98, 0.98, 0.98))
+    c.setFillColor(colors.whitesmoke)
     c.rect(grid_left, grid_bottom, time_col_width, grid_height, fill=1, stroke=0)
     
     # Draw horizontal lines for time slots
@@ -281,10 +281,10 @@ def create_daily_view_with_events(c, date, day_name, page_num, day_events):
         # Different line styles for hours vs half-hours
         if i % 2 == 0:  # Hour lines
             c.setLineWidth(0.4)
-            c.setStrokeColor(colors.Color(0.5, 0.5, 0.5))
+            c.setStrokeColor(colors.grey)
         else:  # Half-hour lines
             c.setLineWidth(0.2)
-            c.setStrokeColor(colors.Color(0.7, 0.7, 0.7))
+            c.setStrokeColor(colors.lightgrey)
         
         c.line(grid_left + time_col_width, y, grid_right, y)
     
@@ -337,7 +337,7 @@ def create_daily_view_with_events(c, date, day_name, page_num, day_events):
             if event_height > 0:
                 # Draw event block
                 c.setFillColor(colors.lightblue)
-                c.setStrokeColor(colors.Color(0.4, 0.6, 0.8))
+                c.setStrokeColor(colors.blue)
                 c.setLineWidth(0.5)
                 c.rect(event_x, event_y_top - event_height, 
                        event_width, event_height, fill=1, stroke=1)
@@ -381,7 +381,7 @@ def create_daily_view_with_events(c, date, day_name, page_num, day_events):
     c.drawString(margin_left, notes_y, "NOTES")
     
     # Draw note lines
-    c.setStrokeColor(colors.Color(0.7, 0.7, 0.7))
+    c.setStrokeColor(colors.grey)
     c.setLineWidth(0.3)
     line_spacing = 4*mm
     notes_width = portrait_size[0] - margin_left - margin_right - 30*mm
@@ -406,7 +406,7 @@ def create_daily_view_with_events(c, date, day_name, page_num, day_events):
     c.drawString(priority_x + 1*mm, priority_y - 2*mm, "TOP PRIORITIES")
     
     # Priority lines
-    c.setStrokeColor(colors.Color(0.8, 0.8, 0.8))
+    c.setStrokeColor(colors.lightgrey)
     c.setLineWidth(0.2)
     for i in range(3):
         y = priority_y - 5*mm - (i * 4*mm)
