@@ -601,9 +601,8 @@ def generate_calendar_pdf():
         return jsonify({"error": "Not authenticated"}), 401
     
     try:
-        # Import our reMarkable PDF generator
-        import remarkable_pdf_generator
-        from remarkable_pdf_generator import RemarkablePDFGenerator, transform_google_calendar_events
+        # Import our reMarkable PDF generator functions
+        from remarkable_pdf_generator import generate_calendar_pdf as generate_pdf, transform_google_calendar_events
         
         # Get request data
         request_data = request.get_json()
@@ -665,9 +664,8 @@ def generate_calendar_pdf():
         # Generate PDF filename
         pdf_filename = f"remarkable_calendar_{week_start.strftime('%Y%m%d')}.pdf"
         
-        # Create PDF generator and generate the PDF
-        pdf_gen = RemarkablePDFGenerator(pdf_filename)
-        pdf_gen.generate_calendar_pdf(week_start, transformed_events)
+        # Generate the PDF using the function-based approach
+        output_file = generate_pdf(pdf_filename, week_start, transformed_events)
         
         # Read the generated PDF file
         with open(pdf_filename, 'rb') as pdf_file:
