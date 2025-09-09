@@ -906,6 +906,33 @@
         let currentPage = 0;
         let calendarEvents = [];
         let weeklyEvents = {}; // For PDF generation
+        
+        // Test function to add sample events for debugging
+        function addTestEvents() {
+            const weekStart = document.getElementById('weekStart').value;
+            const startDate = new Date(weekStart);
+            
+            calendarEvents = [
+                {
+                    summary: "Morning Meeting",
+                    start: { dateTime: new Date(startDate.getTime() + 1 * 24 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000).toISOString() }, // Monday 9:00 AM
+                    end: { dateTime: new Date(startDate.getTime() + 1 * 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000).toISOString() }   // Monday 10:00 AM
+                },
+                {
+                    summary: "Lunch Break",
+                    start: { dateTime: new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000 + 12 * 60 * 60 * 1000).toISOString() }, // Tuesday 12:00 PM
+                    end: { dateTime: new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000 + 13 * 60 * 60 * 1000).toISOString() }   // Tuesday 1:00 PM
+                },
+                {
+                    summary: "Project Review",
+                    start: { dateTime: new Date(startDate.getTime() + 3 * 24 * 60 * 60 * 1000 + 14 * 60 * 60 * 1000).toISOString() }, // Wednesday 2:00 PM
+                    end: { dateTime: new Date(startDate.getTime() + 3 * 24 * 60 * 60 * 1000 + 15.5 * 60 * 60 * 1000).toISOString() } // Wednesday 3:30 PM
+                }
+            ];
+            
+            console.log(`🧪 Added ${calendarEvents.length} test events`);
+            refreshPreview();
+        }
 
         // Initialize Backend API (Server-side OAuth)
         async function initializeBackend() {
@@ -1138,6 +1165,9 @@
 
                 // Update UI with success message
                 console.log(`✅ Successfully synced ${calendarEvents.length} events from ${range}!`);
+                
+                // Immediately refresh both weekly and daily views
+                refreshPreview();
 
                 // Show success notification
                 const notification = document.createElement('div');
@@ -1218,9 +1248,15 @@
             });
 
             console.log(`📅 Displaying ${weekEvents.length} events in weekly view for week of ${weekStart.toDateString()}`);
+            
+            if (weekEvents.length === 0) {
+                console.log('⚠️ No events found for current week - weekly view will be empty');
+                return;
+            }
 
             // Place events in appropriate time/day cells with 30-minute slots and duration spanning
-            weekEvents.forEach(event => {
+            weekEvents.forEach((event, index) => {
+                console.log(`🔍 Processing event ${index + 1}/${weekEvents.length}: "${event.summary}"`);
                 // Parse date correctly accounting for timezone
                 let startDate;
                 if (event.start.dateTime) {
@@ -1327,6 +1363,7 @@
                 console.log(`📍 Event "${event.summary}" on ${startDate.toDateString()} (${dayName}) at ${startHour}:${startMinute.toString().padStart(2, '0')} -> ${cellId}, spanning ${actualNumSlots} slots`);
 
                 if (cell) {
+                    console.log(`✅ Found cell ${cellId} - placing event "${event.summary}"`);
                     const eventEl = document.createElement('div');
                     eventEl.className = 'franklin-event';
                     const startTime = event.start.dateTime ?
@@ -1394,7 +1431,9 @@
 
                     cell.appendChild(eventEl);
                 } else {
-                    console.log(`⚠️ Could not find cell ${cellId} for event "${event.summary}"`);
+                    console.log(`❌ Could not find cell ${cellId} for event "${event.summary}"`);
+                    console.log(`   Available cells starting with 'weekly-${dayName}':`, 
+                        Array.from(document.querySelectorAll(`[id^="weekly-${dayName}"]`)).map(el => el.id));
                 }
             });
         }
@@ -1408,7 +1447,11 @@
 
             // Get the current page (day) we're viewing
             const currentDayIndex = currentPage - 1; // Pages 1-7 are Mon-Sun
-            if (currentDayIndex < 0 || currentDayIndex > 6) return;
+            console.log(`🔍 updateDailyView: currentPage=${currentPage}, currentDayIndex=${currentDayIndex}`);
+            if (currentDayIndex < 0 || currentDayIndex > 6) {
+                console.log(`⚠️ Invalid currentDayIndex: ${currentDayIndex}`);
+                return;
+            }
 
             // Get current week range
             const weekStartInput = document.getElementById('weekStart');
@@ -1422,6 +1465,7 @@
             // Calculate the specific day
             const targetDay = new Date(weekStart);
             targetDay.setDate(weekStart.getDate() + currentDayIndex);
+            console.log(`🔍 updateDailyView: weekStart=${weekStart.toDateString()}, targetDay=${targetDay.toDateString()}`);
 
             // Update daily header
             const dailyHeaderEl = document.getElementById('dailyDateHeader');
@@ -1644,9 +1688,12 @@
                     refreshPreview(); // Reload events for new week
                 }
 
-                // Calculate which day of the week this is (1-7 for Mon-Sun)
-                const targetDay = new Date(targetDate).getDay();
-                pageIndex = targetDay === 0 ? 7 : targetDay; // Sunday = 7, Mon = 1, etc.
+            // Calculate which day of the week this is (1-7 for Mon-Sun)
+            const targetDay = new Date(targetDate).getDay();
+            // JavaScript getDay(): 0=Sunday, 1=Monday, 2=Tuesday, etc.
+            // Our page indices: 0=Week, 1=Monday, 2=Tuesday, ..., 7=Sunday
+            pageIndex = targetDay === 0 ? 7 : targetDay; // Sunday = 7, Mon = 1, etc.
+            console.log(`🔍 switchPage: targetDate=${targetDate}, targetDay=${targetDay}, pageIndex=${pageIndex}`);
             }
 
             currentPage = pageIndex;
@@ -1738,6 +1785,7 @@
             // JavaScript getDay(): 0=Sunday, 1=Monday, 2=Tuesday, etc.
             // Our page indices: 0=Week, 1=Monday, 2=Tuesday, ..., 7=Sunday
             const dayIndex = day === 0 ? 7 : day; // Sunday maps to page 7, others map directly
+            console.log(`🔍 navigateToDay: eventDate=${date.toDateString()}, day=${day}, dayIndex=${dayIndex}, monday=${monday.toDateString()}`);
 
             // Switch to the correct daily page
             currentPage = dayIndex;
@@ -1765,11 +1813,12 @@
 
                 const {jsPDF} = window.jspdf;
 
-                // Create PDF with standard A4 landscape for better compatibility
+                // Create PDF optimized for reMarkable Pro Move (7.3" screen)
+                // Custom format: 163mm × 91mm (landscape), 91mm × 163mm (portrait)
                 const doc = new jsPDF({
                     orientation: 'landscape',
                     unit: 'mm',
-                    format: 'a4'
+                    format: [163, 91] // Custom format for reMarkable Pro Move
                 });
 
                 const weekStart = document.getElementById('weekStart').value || new Date().toISOString().split('T')[0];
@@ -1780,9 +1829,9 @@
                 // Generate a simpler PDF that works reliably
                 generateSimpleWeeklyPDF(doc, startDate);
 
-                // Add daily pages
+                // Add daily pages (portrait orientation for reMarkable Pro Move)
                 for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-                    doc.addPage();
+                    doc.addPage([91, 163], 'portrait'); // Portrait format for daily pages
                     const currentDate = new Date(startDate);
                     currentDate.setDate(startDate.getDate() + dayOffset);
                     generateSimpleDailyPDF(doc, currentDate, dayOffset);
@@ -1879,39 +1928,41 @@
         // Generate simple daily page for PDF
         function generateSimpleDailyPDF(doc, date, dayIndex) {
             try {
+                console.log(`📄 Generating daily PDF for dayIndex: ${dayIndex}, date: ${date}`);
                 const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-                // Title
+                // Ensure dayIndex is valid
+                if (dayIndex < 0 || dayIndex >= dayNames.length) {
+                    console.error(`❌ Invalid dayIndex: ${dayIndex}. Using date.getDay() instead.`);
+                    dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1; // Convert Sunday=0 to Saturday=6, Monday=1 to Monday=0
+                }
+
+                // Title (optimized for 91mm width)
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(20);
-                doc.text(dayNames[dayIndex], 148, 15, {align: 'center'});
+                doc.setFontSize(14);
+                doc.text(dayNames[dayIndex], 45.5, 10, {align: 'center'}); // Center on 91mm width
 
                 // Date
-                doc.setFontSize(12);
-                doc.text(date.toLocaleDateString(), 148, 25, {align: 'center'});
-
-                // Create schedule grid
-                const startX = 10;
-                const startY = 35;
-                const timeWidth = 20;
-                const scheduleWidth = 120;
-                const notesWidth = 120;
-                const rowHeight = 6;
-
-                // Headers
                 doc.setFontSize(10);
-                doc.rect(startX, startY, timeWidth, rowHeight);
-                doc.text('Time', startX + timeWidth / 2, startY + 4, {align: 'center'});
+                doc.text(date.toLocaleDateString(), 45.5, 18, {align: 'center'});
 
-                doc.rect(startX + timeWidth, startY, scheduleWidth, rowHeight);
-                doc.text('Schedule', startX + timeWidth + scheduleWidth / 2, startY + 4, {align: 'center'});
+                // Create schedule grid (optimized for 91mm width × 163mm height)
+                const startX = 5;
+                const startY = 25;
+                const timeWidth = 15;
+                const scheduleWidth = 50;
+                const notesWidth = 21;
+                      const rowHeight = 3.5;
 
-                doc.rect(startX + timeWidth + scheduleWidth, startY, notesWidth, rowHeight);
-                doc.text('Notes', startX + timeWidth + scheduleWidth + notesWidth / 2, startY + 4, {align: 'center'});
-
-                // Time slots
-                doc.setFont('helvetica', 'normal');
+                // Headers (optimized for smaller dimensions)
                 doc.setFontSize(8);
+                doc.text('TIME', startX + timeWidth/2, startY - 2, {align: 'center'});
+                doc.text('APPOINTMENTS', startX + timeWidth + scheduleWidth/2, startY - 2, {align: 'center'});
+                doc.text('NOTES', startX + timeWidth + scheduleWidth + notesWidth/2, startY - 2, {align: 'center'});
+
+                // Time slots (optimized for e-ink display)
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7);
                 let rowY = startY + rowHeight;
 
                 for (let hour = 7; hour <= 22; hour++) {
@@ -1930,17 +1981,23 @@
                         doc.rect(startX + timeWidth + scheduleWidth, rowY, notesWidth, rowHeight);
 
                         // Add events for this time slot
-                        if (weeklyEvents && weeklyEvents[dayIndex]) {
-                            const slotEvents = weeklyEvents[dayIndex].filter(event => {
-                                const eventStart = new Date(event.start);
-                                return eventStart.getHours() === hour && eventStart.getMinutes() === minute;
+                        if (calendarEvents && calendarEvents.length > 0) {
+                            const slotEvents = calendarEvents.filter(event => {
+                                if (!event.start) return false;
+                                const eventDate = new Date(event.start.dateTime || event.start.date);
+                                const eventHour = eventDate.getHours();
+                                const eventMinute = eventDate.getMinutes();
+                                
+                                // Check if event is on this day and at this time slot
+                                return eventDate.toDateString() === date.toDateString() && 
+                                       eventHour === hour && eventMinute === minute;
                             });
 
                             if (slotEvents.length > 0) {
+                                doc.setFontSize(6);
+                                const eventText = slotEvents[0].summary || slotEvents[0].title || 'Event';
+                                doc.text(eventText, startX + timeWidth + 1, rowY + 2, {maxWidth: scheduleWidth - 2});
                                 doc.setFontSize(7);
-                                const eventText = slotEvents[0].title;
-                                doc.text(eventText, startX + timeWidth + 2, rowY + 4, {maxWidth: scheduleWidth - 4});
-                                doc.setFontSize(8);
                             }
                         }
 
@@ -2004,6 +2061,7 @@
             // 0 = Week view, 1 = Monday, 2 = Tuesday, ..., 7 = Sunday
             const todayPageIndex = dayOfWeek === 0 ? 7 : dayOfWeek; // Sunday = 7, Mon = 1, etc.
             currentPage = todayPageIndex;
+            console.log(`🔍 initializeDateInput: today=${today.toDateString()}, dayOfWeek=${dayOfWeek}, todayPageIndex=${todayPageIndex}, monday=${monday.toDateString()}`);
 
             // Update navigation to highlight today
             setTimeout(() => switchPage(todayPageIndex), 100);
