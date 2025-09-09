@@ -1,0 +1,131 @@
+# Comprehensive Prompt for reMarkable Pro Move Weekly Planner Implementation
+
+## Project Overview
+
+Create an optimized 8-page PDF weekly planner for the reMarkable Pro Move tablet that features bi-directional linking between a weekly overview and individual daily pages. The planner must be optimized for e-ink display, stylus interaction, and efficient navigation.
+
+## Technical Requirements
+
+### Page Structure
+
+- **Page 1**: Weekly overview grid (Monday-Sunday)
+- **Pages 2-8**: Individual daily pages (Monday through Sunday)
+- **Paper size**: reMarkable Pro Move dimensions (229.5 x 297mm / Letter size compatible)
+- **Export format**: PDF with interactive links
+
+### Design Specifications
+
+#### Weekly Overview Page (Page 1)
+
+1. **Grid Layout**:
+- Time slots: 7:00 AM - 10:00 PM in 1-hour increments (for cleaner view)
+- Column width ratio: Weekdays 15% each, Weekend days 12.5% each
+- Cell height: Minimum 20mm for handwriting space
+- Alternating gray bands (5% gray) every other hour for visual hierarchy
+1. **Navigation Elements**:
+- Clickable day headers with format: `[📅 MON - p.2]`
+- Each cell containing an appointment shows a small link indicator (→)
+- Header bar with title “WEEK OF SEPTEMBER 09, 2025”
+1. **Visual Design**:
+- Black lines: 2pt for major divisions, 1pt for hour divisions
+- Font: Helvetica or Arial, 12pt for headers, 10pt for times
+- 10mm margins on all sides for gesture zones
+
+#### Daily Pages (Pages 2-8)
+
+1. **Three-Column Layout**:
+- Left (20%): Time slots (30-minute intervals)
+- Center (60%): Appointment/event space with horizontal ruled lines
+- Right (20%): Notes/priorities section
+1. **Navigation Bar** (Fixed at top):
+   
+   ```
+   [←] [WEEK] [→]
+   ```
+- Each button: 15mm x 10mm with 2pt border
+- Positioned 10mm from top edge
+1. **Quick Jump Footer**:
+   
+   ```
+   [M] [T] [W] [T] [F] [S] [S]
+    2   3   4   5   6   7   8
+   ```
+- Single letter buttons: 10mm x 10mm
+- Small page numbers below each letter
+1. **Time Display**:
+- Business hours (9:00-17:00) with 5% gray background
+- Dotted lines between 30-minute marks
+- Bold lines at hour marks
+
+### Interactive Linking Requirements
+
+1. **From Weekly to Daily**:
+- Any text/appointment in a weekly cell links to corresponding day/time
+- Day headers link to top of respective daily page
+- Visual indicator (→) shows linkable content
+1. **From Daily to Weekly**:
+- [WEEK] button returns to weekly overview
+- Maintains scroll position context where possible
+1. **Daily Navigation**:
+- [←] links to previous day
+- [→] links to next day
+- Letter buttons [M][T][W][T][F][S][S] jump directly to specific days
+
+### E-ink Optimization
+
+1. **Contrast**: Pure black (#000000) on white (#FFFFFF)
+1. **Grays**: Maximum 5% gray for organizational elements only
+1. **Line weights**: Minimum 0.5pt, maximum 2pt
+1. **Anti-aliasing**: Disabled for crisp lines
+1. **Fonts**: Sans-serif only, minimum 10pt size
+
+### Button Specifications
+
+- **Size**: Minimum 10mm x 10mm tap target
+- **Border**: 2pt black border, white fill
+- **Padding**: 3mm internal padding
+- **Spacing**: 5mm between buttons
+- **Hover state**: Not required (e-ink limitation)
+- **Active state**: Bold border (3pt) when selected
+
+### HTML/CSS Implementation Requirements
+
+Use the following HTML template as the exact specification for layout and styling:
+
+## Implementation Notes
+
+### PDF Generation
+
+1. Use a headless browser (Puppeteer, wkhtmltopdf) to convert HTML to PDF
+1. Ensure PDF links are preserved during conversion
+1. Set PDF page size to Letter/A4 for reMarkable compatibility
+1. Enable JavaScript for link generation if using dynamic content
+
+### Link Implementation
+
+For PDF interactivity, use one of these methods:
+
+1. **HTML anchors**: Convert to PDF internal links
+1. **JavaScript**: Add event listeners before PDF generation
+1. **PDF libraries**: Use PDFKit or similar to add link annotations post-generation
+
+### Testing Checklist
+
+- [ ] All navigation buttons are minimum 10mm x 10mm
+- [ ] Text remains readable at 100% zoom
+- [ ] Links work bi-directionally between weekly and daily views
+- [ ] Gray values don’t exceed 5% for e-ink optimization
+- [ ] Business hours (9-17) are visually distinct
+- [ ] Page numbers correspond correctly to navigation
+- [ ] Gesture zones (10mm margins) are clear of interactive elements
+- [ ] Print/export maintains all formatting and links
+
+### File Delivery
+
+Export as:
+
+1. **Primary**: Interactive PDF with embedded links
+1. **Backup**: PNG/SVG templates for reMarkable native templates
+1. **Source**: HTML file for future modifications
+
+This template provides the exact specifications needed to create a fully functional, optimized weekly planner for the reMarkable Pro Move with all requested navigation features and bi-directional linking capabilities.​​​​​​​​​​​​​​​​
