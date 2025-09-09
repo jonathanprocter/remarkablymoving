@@ -210,6 +210,145 @@ class CalendarPDFIntegration {
     return new Date(d.setDate(diff));
   }
 
+  // Generate PDF directly from Google Calendar
+  async generateFromCalendar(weekStartDate) {
+    try {
+      // Show loading state
+      this.showLoadingState('generate-from-calendar-btn');
+      
+      // Get selected calendar IDs from the UI if available
+      const selectedCalendars = this.getSelectedCalendars();
+      
+      // Prepare request data
+      const requestData = {
+        weekStart: weekStartDate || this.currentWeekStart.toISOString(),
+        calendarIds: selectedCalendars
+      };
+      
+      // Make API request to the new endpoint
+      const response = await fetch('/api/generate-calendar-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`PDF generation failed: ${response.statusText}`);
+      }
+      
+      // Get the PDF blob
+      const pdfBlob = await response.blob();
+      
+      // Download the PDF
+      const dateStr = new Date(weekStartDate || this.currentWeekStart).toISOString().split('T')[0];
+      this.downloadPDF(pdfBlob, dateStr);
+      
+      // Hide loading state
+      this.hideLoadingState('generate-from-calendar-btn');
+      
+      // Show success message
+      this.showSuccess('reMarkable Pro PDF generated successfully!');
+      
+      return true;
+    } catch (error) {
+      console.error('Error generating PDF from calendar:', error);
+      this.hideLoadingState('generate-from-calendar-btn');
+      this.showError('Failed to generate PDF. Please make sure you are authenticated.');
+      return false;
+    }
+  }
+  
+  // Get selected calendars from the UI
+  getSelectedCalendars() {
+    const checkboxes = document.querySelectorAll('input[name="calendar-selection"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+  }
+  
+  // Download the generated PDF
+  downloadPDF(pdfBlob, dateStr) {
+    const url = window.URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `remarkable-calendar-${dateStr}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+  
+  // UI helper methods
+  showLoadingState(buttonId) {
+    const button = document.getElementById(buttonId);
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner"></span> Generating PDF...';
+    }
+  }
+  
+  hideLoadingState(buttonId) {
+    const button = document.getElementById(buttonId);
+    if (button) {
+      button.disabled = false;
+      if (buttonId === 'generate-from-calendar-btn') {
+        button.innerHTML = '📅 Generate from Google Calendar';
+      } else {
+        button.innerHTML = '📱 Generate reMarkable PDF';
+      }
+    }
+  }
+  
+  showSuccess(message) {
+    const notification = document.createElement('div');
+    notification.className = 'success-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #4CAF50;
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 3000);
+  }
+  
+  showError(message) {
+    const notification = document.createElement('div');
+    notification.className = 'error-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #f44336;
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 5000);
+  }
+
   // Setup the PDF generation UI
   setupUI() {
     // Check if UI already exists
@@ -264,6 +403,26 @@ class CalendarPDFIntegration {
     pdfButton.onmouseout = () => pdfButton.style.background = '#2196F3';
     pdfButton.onclick = () => this.handleGeneratePDF();
 
+    // Add Google Calendar PDF button
+    const calendarPdfButton = document.createElement('button');
+    calendarPdfButton.id = 'generate-from-calendar-btn';
+    calendarPdfButton.className = 'pdf-generate-btn';
+    calendarPdfButton.innerHTML = '📅 Generate from Google Calendar';
+    calendarPdfButton.style.cssText = `
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+      margin-left: 5px;
+    `;
+    calendarPdfButton.onmouseover = () => calendarPdfButton.style.background = '#45a049';
+    calendarPdfButton.onmouseout = () => calendarPdfButton.style.background = '#4CAF50';
+    calendarPdfButton.onclick = () => this.generateFromCalendar(this.currentWeekStart.toISOString());
+
     // Add label
     const label = document.createElement('label');
     label.textContent = 'Week starting:';
@@ -273,6 +432,7 @@ class CalendarPDFIntegration {
     controlContainer.appendChild(label);
     controlContainer.appendChild(weekSelector);
     controlContainer.appendChild(pdfButton);
+    controlContainer.appendChild(calendarPdfButton);
 
     // Insert into page - try multiple locations
     const insertLocations = [

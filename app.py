@@ -594,6 +594,103 @@ def generate_planner_pdf():
         print(f"❌ Error generating PDF: {e}")
         return jsonify({"error": f"Failed to generate PDF: {str(e)}"}), 500
 
+@app.route('/api/generate-calendar-pdf', methods=['POST'])
+def generate_calendar_pdf():
+    """Generate PDF directly from Google Calendar events for the specified week"""
+    if 'credentials' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        # Import our reMarkable PDF generator
+        from remarkable_pdf_generator import RemarkablePDFGenerator, transform_google_calendar_events
+        
+        # Get request data
+        request_data = request.get_json()
+        week_start_str = request_data.get('weekStart', None)
+        calendar_ids = request_data.get('calendarIds', [])
+        
+        # Calculate week start date
+        if week_start_str:
+            week_start = datetime.fromisoformat(week_start_str.replace('Z', '+00:00')).date()
+        else:
+            # Default to current week's Monday
+            today = datetime.now().date()
+            week_start = today - timedelta(days=today.weekday())
+        
+        # Calculate week end date
+        week_end = week_start + timedelta(days=6)
+        
+        # Create credentials object from session
+        granted_scopes = session['credentials'].get('scopes', SCOPES)
+        creds = Credentials.from_authorized_user_info(session['credentials'], granted_scopes)
+        
+        # Build the Calendar API service
+        service = build('calendar', 'v3', credentials=creds)
+        
+        # If no calendar IDs provided, get primary calendar
+        if not calendar_ids:
+            calendars_result = service.calendarList().list().execute()
+            calendars = calendars_result.get('items', [])
+            # Get primary calendar or first available
+            for cal in calendars:
+                if cal.get('primary', False):
+                    calendar_ids = [cal['id']]
+                    break
+            if not calendar_ids and calendars:
+                calendar_ids = [calendars[0]['id']]
+        
+        # Fetch events from Google Calendar
+        all_events = []
+        for calendar_id in calendar_ids:
+            try:
+                events_result = service.events().list(
+                    calendarId=calendar_id,
+                    timeMin=week_start.isoformat() + 'T00:00:00Z',
+                    timeMax=week_end.isoformat() + 'T23:59:59Z',
+                    singleEvents=True,
+                    orderBy='startTime',
+                    maxResults=100
+                ).execute()
+                
+                events = events_result.get('items', [])
+                all_events.extend(events)
+                
+            except Exception as e:
+                print(f"⚠️ Error fetching events from calendar {calendar_id}: {e}")
+        
+        # Transform Google Calendar events to our format
+        transformed_events = transform_google_calendar_events(all_events)
+        
+        # Generate PDF filename
+        pdf_filename = f"remarkable_calendar_{week_start.strftime('%Y%m%d')}.pdf"
+        
+        # Create PDF generator and generate the PDF
+        pdf_gen = RemarkablePDFGenerator(pdf_filename)
+        pdf_gen.generate_calendar_pdf(week_start, transformed_events)
+        
+        # Read the generated PDF file
+        with open(pdf_filename, 'rb') as pdf_file:
+            pdf_content = pdf_file.read()
+        
+        # Clean up the temporary file
+        os.remove(pdf_filename)
+        
+        print(f"✅ Generated reMarkable Pro optimized PDF from Google Calendar events")
+        print(f"   Week: {week_start.strftime('%B %d, %Y')} - {week_end.strftime('%B %d, %Y')}")
+        print(f"   Events: {len(transformed_events)}")
+        
+        # Return PDF response
+        return pdf_content, 200, {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': f'attachment; filename="{pdf_filename}"'
+        }
+        
+    except Exception as e:
+        print(f"❌ Error generating calendar PDF: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Failed to generate calendar PDF: {str(e)}"}), 500
+
 @app.route('/api/calendars/selections', methods=['POST'])
 def update_calendar_selections():
     """Update which calendars the user has selected"""
