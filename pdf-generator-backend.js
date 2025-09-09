@@ -94,8 +94,10 @@ router.post('/generate-planner-pdf', async (req, res) => {
     // Set content
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     
-    // Generate PDF with reMarkable Pro Move dimensions
-    // Optimized for 7.3" screen (91mm × 163mm)
+    // Generate PDF with reMarkable Paper Pro Move dimensions
+    // Optimized for 7.3" screen with proper orientations
+    // Weekly: 163mm x 91mm (landscape)
+    // Daily: 91mm x 163mm (portrait)
     const pdf = await page.pdf({
       printBackground: true,
       preferCSSPageSize: true,  // Let CSS control page sizes
@@ -172,12 +174,14 @@ function generatePlannerHTML(weekData, startDate) {
 function getOptimizedCSS() {
   return `
     /* reMarkable Paper Pro Move Specifications */
+    /* 7.3" display with 227 DPI */
     :root {
       --portrait-width: 91mm;
       --portrait-height: 163mm;
       --landscape-width: 163mm;
       --landscape-height: 91mm;
       --margin: 2mm;
+      --dpi: 227;
       
       /* Typography optimized for e-ink */
       --font-xlarge: 9pt;
@@ -199,15 +203,15 @@ function getOptimizedCSS() {
       margin: var(--margin);
     }
     
-    /* First page (weekly) - landscape */
+    /* First page (weekly) - landscape for reMarkable Paper Pro Move */
     @page :first {
-      size: 163mm 91mm;
+      size: 163mm 91mm landscape;
       margin: var(--margin);
     }
     
-    /* Daily pages - Portrait */
+    /* Daily pages - Portrait for reMarkable Paper Pro Move */
     @page :not(:first) {
-      size: 91mm 163mm;
+      size: 91mm 163mm portrait;
       margin: var(--margin);
     }
     
@@ -619,6 +623,7 @@ function generateWeeklyPage(weekData, weekDays, eventManager) {
             <div class="weekly-header">
                 <h1>WEEKLY PLANNER</h1>
                 <span>WEEK OF ${weekDays[0].date}</span>
+                <span style="font-size: 6pt; color: #666;">reMarkable Paper Pro Move</span>
             </div>
             
             <div class="weekly-content">
@@ -676,6 +681,11 @@ function generateDailyPage(weekData, day, eventManager) {
     <div class="page daily-page" data-date="${day.dateObj.toISOString().split('T')[0]}" data-day="${dayAbbr}">
         <div class="daily-container">
             <div class="daily-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2mm;">
+                    <button style="background: #333; color: white; padding: 1mm 3mm; border: none; border-radius: 2px; font-size: 6pt; cursor: pointer;">
+                        ← Weekly View
+                    </button>
+                </div>
                 <span class="daily-title">DAILY PLANNER - ${day.name}</span>
                 <span class="daily-date">${day.date}</span>
             </div>
@@ -738,8 +748,10 @@ function generateDailyPage(weekData, day, eventManager) {
                 </div>
                 
                 <div class="status-line">
+                    <button style="background: transparent; border: 1px solid #666; padding: 1mm 2mm; font-size: 5pt; cursor: pointer;">← Yesterday</button>
                     <span class="event-count" id="count-${dayAbbr}">${dayEvents.length} events</span>
                     <span class="week-total">Week: <span id="total-events">${getTotalEventCount(weekData)}</span> total</span>
+                    <button style="background: transparent; border: 1px solid #666; padding: 1mm 2mm; font-size: 5pt; cursor: pointer;">Tomorrow →</button>
                 </div>
             </div>
         </div>

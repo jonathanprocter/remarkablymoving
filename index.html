@@ -331,9 +331,9 @@
                             Template Preview
                         </h2>
                         <div class="flex items-center space-x-2">
-                            <span class="text-sm text-gray-600">2880 × 2160px</span>
+                            <span class="text-sm text-gray-600" id="viewDimensions">Landscape: 163×91mm</span>
                             <div class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                                reMarkable Pro Move Optimized
+                                reMarkable Paper Pro Move Optimized (227 DPI)
                             </div>
                         </div>
                     </div>
@@ -1682,6 +1682,9 @@
                 weeklyPreview.classList.remove('hidden');
                 dailyPreview.classList.add('hidden');
                 updateEventsSummary(); // Refresh weekly view
+                // Update dimensions display for weekly view
+                const dimEl = document.getElementById('viewDimensions');
+                if (dimEl) dimEl.textContent = 'Landscape: 163×91mm';
             } else {
                 weeklyPreview.classList.add('hidden');
                 dailyPreview.classList.remove('hidden');
@@ -1708,6 +1711,9 @@
                     }
                 }
                 updateDailyView(); // Refresh daily view
+                // Update dimensions display for daily view  
+                const dimEl = document.getElementById('viewDimensions');
+                if (dimEl) dimEl.textContent = 'Portrait: 91×163mm';
             }
         }
 

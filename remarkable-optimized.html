@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>reMarkable Pro Move Calendar - Optimized</title>
+    <style>
+        /* reMarkable Paper Pro Move Optimized Styles */
+        :root {
+            /* Device specifications */
+            --rm-width-landscape: 163mm;
+            --rm-height-landscape: 91mm;
+            --rm-width-portrait: 91mm;
+            --rm-height-portrait: 163mm;
+            --rm-dpi: 227; /* reMarkable Pro Move DPI */
+            
+            /* Minimalistic color scheme */
+            --rm-black: #000000;
+            --rm-dark-gray: #333333;
+            --rm-medium-gray: #666666;
+            --rm-light-gray: #999999;
+            --rm-lighter-gray: #cccccc;
+            --rm-off-white: #f5f5f5;
+            --rm-white: #ffffff;
+            --rm-accent: #2c3e50; /* Subtle blue-gray accent */
+            
+            /* Typography optimized for e-ink */
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+            --font-size-xl: 18px;
+            --font-size-lg: 14px;
+            --font-size-md: 12px;
+            --font-size-sm: 10px;
+            --font-size-xs: 8px;
+            
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-family);
+            background: var(--rm-white);
+            color: var(--rm-black);
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Container for preview */
+        .preview-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+        
+        /* Weekly View - Landscape Optimized */
+        .weekly-view {
+            width: 100%;
+            aspect-ratio: 163/91; /* reMarkable landscape ratio */
+            background: var(--rm-white);
+            border: 2px solid var(--rm-black);
+            display: flex;
+            flex-direction: column;
+            padding: var(--spacing-md);
+            position: relative;
+        }
+        
+        .weekly-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--rm-black);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .weekly-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .weekly-date-range {
+            font-size: var(--font-size-md);
+            color: var(--rm-medium-gray);
+        }
+        
+        .weekly-grid-container {
+            flex: 1;
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .weekly-calendar-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            grid-template-rows: 30px repeat(31, minmax(18px, 1fr));
+            gap: 0;
+            border: 1px solid var(--rm-dark-gray);
+            background: var(--rm-white);
+        }
+        
+        .grid-header-time {
+            background: var(--rm-dark-gray);
+            color: var(--rm-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            border-right: 1px solid var(--rm-lighter-gray);
+        }
+        
+        .grid-header-day {
+            background: var(--rm-dark-gray);
+            color: var(--rm-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            padding: var(--spacing-xs);
+            border-right: 1px solid var(--rm-lighter-gray);
+        }
+        
+        .grid-time-label {
+            background: var(--rm-off-white);
+            font-size: var(--font-size-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--rm-lighter-gray);
+            border-bottom: 1px solid var(--rm-lighter-gray);
+            font-weight: 500;
+        }
+        
+        .grid-time-label.hour-mark {
+            border-bottom: 1px solid var(--rm-medium-gray);
+        }
+        
+        .grid-day-cell {
+            background: var(--rm-white);
+            border-right: 1px solid var(--rm-lighter-gray);
+            border-bottom: 1px solid var(--rm-lighter-gray);
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .grid-day-cell.hour-mark {
+            border-bottom: 1px solid var(--rm-medium-gray);
+        }
+        
+        .grid-day-cell:hover {
+            background: var(--rm-off-white);
+        }
+        
+        .calendar-event {
+            position: absolute;
+            background: var(--rm-accent);
+            color: var(--rm-white);
+            padding: 2px 4px;
+            font-size: var(--font-size-xs);
+            border-radius: 2px;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: calc(100% - 2px);
+            left: 1px;
+            top: 0;
+            z-index: 10;
+            transition: all 0.2s;
+            border-left: 3px solid var(--rm-dark-gray);
+        }
+        
+        .calendar-event:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 20;
+        }
+        
+        .weekly-sidebar {
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+        
+        .sidebar-section {
+            border: 1px solid var(--rm-dark-gray);
+            padding: var(--spacing-sm);
+            background: var(--rm-white);
+        }
+        
+        .sidebar-title {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            padding-bottom: var(--spacing-xs);
+            border-bottom: 1px solid var(--rm-lighter-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .sidebar-content {
+            font-size: var(--font-size-xs);
+            line-height: 1.6;
+        }
+        
+        /* Daily View - Portrait Optimized */
+        .daily-view {
+            width: 100%;
+            aspect-ratio: 91/163; /* reMarkable portrait ratio */
+            background: var(--rm-white);
+            border: 2px solid var(--rm-black);
+            display: flex;
+            flex-direction: column;
+            padding: var(--spacing-md);
+            position: relative;
+        }
+        
+        .daily-header {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--rm-black);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .daily-nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .nav-button {
+            background: var(--rm-dark-gray);
+            color: var(--rm-white);
+            border: none;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .nav-button:hover {
+            background: var(--rm-accent);
+            transform: translateY(-1px);
+        }
+        
+        .nav-button.primary {
+            background: var(--rm-accent);
+        }
+        
+        .daily-title-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        
+        .daily-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+        }
+        
+        .daily-date {
+            font-size: var(--font-size-md);
+            color: var(--rm-medium-gray);
+        }
+        
+        .daily-content {
+            flex: 1;
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .daily-schedule {
+            flex: 1;
+            border: 1px solid var(--rm-dark-gray);
+        }
+        
+        .daily-time-slot {
+            display: flex;
+            border-bottom: 1px solid var(--rm-lighter-gray);
+            min-height: 24px;
+            position: relative;
+        }
+        
+        .daily-time-slot.hour-mark {
+            border-bottom: 1px solid var(--rm-medium-gray);
+        }
+        
+        .daily-time-label {
+            width: 60px;
+            background: var(--rm-off-white);
+            font-size: var(--font-size-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--rm-medium-gray);
+            font-weight: 500;
+        }
+        
+        .daily-time-content {
+            flex: 1;
+            padding: 2px 4px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .daily-time-content:hover {
+            background: var(--rm-off-white);
+        }
+        
+        .daily-event {
+            background: var(--rm-accent);
+            color: var(--rm-white);
+            padding: 2px 6px;
+            margin: 1px 0;
+            font-size: var(--font-size-xs);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid var(--rm-dark-gray);
+        }
+        
+        .daily-event:hover {
+            transform: translateX(2px);
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+        }
+        
+        .daily-sidebar {
+            width: 140px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+        
+        .daily-bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--rm-lighter-gray);
+        }
+        
+        .bottom-nav-button {
+            background: transparent;
+            border: 1px solid var(--rm-medium-gray);
+            color: var(--rm-dark-gray);
+            padding: var(--spacing-xs) var(--spacing-md);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .bottom-nav-button:hover {
+            background: var(--rm-dark-gray);
+            color: var(--rm-white);
+            transform: translateY(-1px);
+        }
+        
+        /* Minimalistic checkboxes */
+        .task-checkbox {
+            width: 12px;
+            height: 12px;
+            border: 1px solid var(--rm-dark-gray);
+            display: inline-block;
+            margin-right: var(--spacing-xs);
+            vertical-align: middle;
+            cursor: pointer;
+        }
+        
+        .task-checkbox.checked::after {
+            content: '✓';
+            display: block;
+            text-align: center;
+            line-height: 12px;
+            font-size: 10px;
+        }
+        
+        /* Print styles for PDF export */
+        @media print {
+            .weekly-view {
+                page: weekly;
+                width: var(--rm-width-landscape);
+                height: var(--rm-height-landscape);
+            }
+            
+            .daily-view {
+                page: daily;
+                width: var(--rm-width-portrait);
+                height: var(--rm-height-portrait);
+            }
+            
+            @page weekly {
+                size: 163mm 91mm landscape;
+                margin: 2mm;
+            }
+            
+            @page daily {
+                size: 91mm 163mm portrait;
+                margin: 2mm;
+            }
+        }
+        
+        /* Loading state */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            font-size: var(--font-size-md);
+            color: var(--rm-medium-gray);
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <!-- Weekly View (Landscape) -->
+        <div id="weeklyView" class="weekly-view">
+            <div class="weekly-header">
+                <h1 class="weekly-title">WEEKLY PLANNER</h1>
+                <span class="weekly-date-range" id="weeklyDateRange">Loading...</span>
+            </div>
+            
+            <div class="weekly-grid-container">
+                <div class="weekly-calendar-grid" id="weeklyGrid">
+                    <!-- Grid will be generated by JavaScript -->
+                </div>
+                
+                <div class="weekly-sidebar">
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Priority Tasks</div>
+                        <div class="sidebar-content" id="weeklyPriorityTasks">
+                            <div><span class="task-checkbox"></span>Review quarterly reports</div>
+                            <div><span class="task-checkbox"></span>Team meeting preparation</div>
+                            <div><span class="task-checkbox"></span>Client follow-up</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Weekly Goals</div>
+                        <div class="sidebar-content" id="weeklyGoals">
+                            • Complete project milestone<br>
+                            • Review team performance<br>
+                            • Plan next sprint
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Notes</div>
+                        <div class="sidebar-content" id="weeklyNotes">
+                            <div id="eventSyncStatus">Ready to sync</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Daily View (Portrait) -->
+        <div id="dailyView" class="daily-view hidden">
+            <div class="daily-header">
+                <div class="daily-nav-buttons">
+                    <button class="nav-button primary" onclick="returnToWeeklyView()">
+                        ← Return to Weekly View
+                    </button>
+                </div>
+                
+                <div class="daily-title-section">
+                    <h2 class="daily-title" id="dailyTitle">MONDAY</h2>
+                    <span class="daily-date" id="dailyDate">Loading...</span>
+                </div>
+            </div>
+            
+            <div class="daily-content">
+                <div class="daily-schedule" id="dailySchedule">
+                    <!-- Schedule will be generated by JavaScript -->
+                </div>
+                
+                <div class="daily-sidebar">
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Top 3 Priorities</div>
+                        <div class="sidebar-content">
+                            <div>1. _________________</div>
+                            <div>2. _________________</div>
+                            <div>3. _________________</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Daily Goals</div>
+                        <div class="sidebar-content">
+                            <div><span class="task-checkbox"></span>Morning review</div>
+                            <div><span class="task-checkbox"></span>Key deliverables</div>
+                            <div><span class="task-checkbox"></span>End of day report</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Notes</div>
+                        <div class="sidebar-content" id="dailyNotes">
+                            <small>Events synced: <span id="dailyEventCount">0</span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="daily-bottom-nav">
+                <button class="bottom-nav-button" onclick="navigateDay(-1)">
+                    ← Yesterday
+                </button>
+                <button class="bottom-nav-button" onclick="navigateDay(1)">
+                    Tomorrow →
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global state
+        let currentView = 'weekly';
+        let currentDate = new Date();
+        let currentWeekStart = null;
+        let currentDayIndex = 0;
+        let calendarEvents = [];
+        
+        // Initialize the calendar
+        function initializeCalendar() {
+            setCurrentWeek();
+            generateWeeklyGrid();
+            generateDailySchedule();
+            updateDateDisplays();
+            setupEventListeners();
+        }
+        
+        // Set current week (Monday as start)
+        function setCurrentWeek() {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+            currentWeekStart = new Date(today.setDate(diff));
+            currentWeekStart.setHours(0, 0, 0, 0);
+        }
+        
+        // Generate weekly grid
+        function generateWeeklyGrid() {
+            const grid = document.getElementById('weeklyGrid');
+            grid.innerHTML = '';
+            
+            // Days of week
+            const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+            
+            // Header row
+            grid.innerHTML += '<div class="grid-header-time">TIME</div>';
+            days.forEach(day => {
+                grid.innerHTML += `<div class="grid-header-day">${day}</div>`;
+            });
+            
+            // Time slots (7:00 to 22:00 in 30-minute intervals)
+            for (let hour = 7; hour <= 22; hour++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    if (hour === 22 && minute === 30) break;
+                    
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const isHourMark = minute === 0;
+                    
+                    // Time label
+                    grid.innerHTML += `<div class="grid-time-label ${isHourMark ? 'hour-mark' : ''}">${timeStr}</div>`;
+                    
+                    // Day cells
+                    days.forEach((day, dayIndex) => {
+                        const cellId = `weekly-${day.toLowerCase()}-${hour}-${minute}`;
+                        grid.innerHTML += `
+                            <div class="grid-day-cell ${isHourMark ? 'hour-mark' : ''}" 
+                                 id="${cellId}"
+                                 data-day="${dayIndex}"
+                                 data-hour="${hour}"
+                                 data-minute="${minute}"
+                                 onclick="handleWeeklyCellClick(${dayIndex}, ${hour}, ${minute})">
+                            </div>
+                        `;
+                    });
+                }
+            }
+        }
+        
+        // Generate daily schedule
+        function generateDailySchedule() {
+            const schedule = document.getElementById('dailySchedule');
+            schedule.innerHTML = '';
+            
+            // Time slots (7:00 to 22:00 in 30-minute intervals)
+            for (let hour = 7; hour <= 22; hour++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    if (hour === 22 && minute === 30) break;
+                    
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const isHourMark = minute === 0;
+                    const slotId = `daily-${hour}-${minute}`;
+                    
+                    schedule.innerHTML += `
+                        <div class="daily-time-slot ${isHourMark ? 'hour-mark' : ''}">
+                            <div class="daily-time-label">${timeStr}</div>
+                            <div class="daily-time-content" 
+                                 id="${slotId}"
+                                 data-hour="${hour}"
+                                 data-minute="${minute}"
+                                 onclick="handleDailyCellClick(${hour}, ${minute})">
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // Update date displays
+        function updateDateDisplays() {
+            // Weekly date range
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            const rangeText = `${currentWeekStart.toLocaleDateString('en-US', options)} - ${weekEnd.toLocaleDateString('en-US', options)}`;
+            document.getElementById('weeklyDateRange').textContent = rangeText;
+            
+            // Daily date
+            if (currentView === 'daily') {
+                const currentDay = new Date(currentWeekStart);
+                currentDay.setDate(currentDay.getDate() + currentDayIndex);
+                
+                const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+                const dayName = dayNames[currentDay.getDay()];
+                
+                document.getElementById('dailyTitle').textContent = dayName;
+                document.getElementById('dailyDate').textContent = currentDay.toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+            }
+        }
+        
+        // Handle weekly cell click (navigate to daily view)
+        function handleWeeklyCellClick(dayIndex, hour, minute) {
+            console.log(`Navigating from weekly to daily: Day ${dayIndex}, ${hour}:${minute}`);
+            currentDayIndex = dayIndex;
+            showDailyView();
+            
+            // Scroll to the clicked time in daily view
+            setTimeout(() => {
+                const dailySlot = document.getElementById(`daily-${hour}-${minute}`);
+                if (dailySlot) {
+                    dailySlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    dailySlot.style.background = 'var(--rm-off-white)';
+                    setTimeout(() => {
+                        dailySlot.style.background = '';
+                    }, 1000);
+                }
+            }, 100);
+        }
+        
+        // Handle daily cell click (can be extended for event creation)
+        function handleDailyCellClick(hour, minute) {
+            console.log(`Daily cell clicked: ${hour}:${minute}`);
+            // Could open event creation dialog here
+        }
+        
+        // Return to weekly view
+        function returnToWeeklyView() {
+            showWeeklyView();
+        }
+        
+        // Navigate days (yesterday/tomorrow)
+        function navigateDay(direction) {
+            currentDayIndex += direction;
+            
+            // Handle week boundaries
+            if (currentDayIndex < 0) {
+                currentDayIndex = 6;
+                currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+            } else if (currentDayIndex > 6) {
+                currentDayIndex = 0;
+                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            }
+            
+            updateDateDisplays();
+            loadDailyEvents();
+        }
+        
+        // Show weekly view
+        function showWeeklyView() {
+            document.getElementById('weeklyView').classList.remove('hidden');
+            document.getElementById('dailyView').classList.add('hidden');
+            currentView = 'weekly';
+            updateDateDisplays();
+        }
+        
+        // Show daily view
+        function showDailyView() {
+            document.getElementById('weeklyView').classList.add('hidden');
+            document.getElementById('dailyView').classList.remove('hidden');
+            currentView = 'daily';
+            updateDateDisplays();
+            loadDailyEvents();
+        }
+        
+        // Load events for current day
+        function loadDailyEvents() {
+            // Clear existing events
+            document.querySelectorAll('.daily-time-content').forEach(slot => {
+                slot.innerHTML = '';
+            });
+            
+            // Filter and display events for current day
+            const currentDay = new Date(currentWeekStart);
+            currentDay.setDate(currentDay.getDate() + currentDayIndex);
+            
+            const dayEvents = calendarEvents.filter(event => {
+                const eventDate = new Date(event.start.dateTime || event.start.date);
+                return eventDate.toDateString() === currentDay.toDateString();
+            });
+            
+            // Update event count
+            document.getElementById('dailyEventCount').textContent = dayEvents.length;
+            
+            // Place events in time slots
+            dayEvents.forEach(event => {
+                placeEventInDailyView(event);
+            });
+        }
+        
+        // Place event in daily view
+        function placeEventInDailyView(event) {
+            const startDate = new Date(event.start.dateTime || event.start.date);
+            const hour = startDate.getHours();
+            const minute = startDate.getMinutes() < 30 ? 0 : 30;
+            
+            const slotId = `daily-${hour}-${minute}`;
+            const slot = document.getElementById(slotId);
+            
+            if (slot) {
+                const eventEl = document.createElement('div');
+                eventEl.className = 'daily-event';
+                eventEl.textContent = event.summary || 'Event';
+                eventEl.onclick = (e) => {
+                    e.stopPropagation();
+                    returnToWeeklyView();
+                };
+                slot.appendChild(eventEl);
+            }
+        }
+        
+        // Add sample events for demonstration
+        function addSampleEvents() {
+            const sampleEvents = [
+                { 
+                    summary: 'Team Standup', 
+                    start: { dateTime: new Date(currentWeekStart.getTime() + 9 * 3600000).toISOString() }
+                },
+                { 
+                    summary: 'Client Meeting', 
+                    start: { dateTime: new Date(currentWeekStart.getTime() + 14 * 3600000).toISOString() }
+                },
+                { 
+                    summary: 'Project Review', 
+                    start: { dateTime: new Date(currentWeekStart.getTime() + 24 * 3600000 + 11 * 3600000).toISOString() }
+                },
+                { 
+                    summary: 'Design Session', 
+                    start: { dateTime: new Date(currentWeekStart.getTime() + 48 * 3600000 + 15 * 3600000).toISOString() }
+                }
+            ];
+            
+            calendarEvents = sampleEvents;
+            
+            // Place events in weekly view
+            sampleEvents.forEach(event => {
+                placeEventInWeeklyView(event);
+            });
+        }
+        
+        // Place event in weekly view
+        function placeEventInWeeklyView(event) {
+            const startDate = new Date(event.start.dateTime || event.start.date);
+            const dayIndex = (startDate.getDay() + 6) % 7; // Convert to Monday = 0
+            const hour = startDate.getHours();
+            const minute = startDate.getMinutes() < 30 ? 0 : 30;
+            
+            const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+            const cellId = `weekly-${days[dayIndex]}-${hour}-${minute}`;
+            const cell = document.getElementById(cellId);
+            
+            if (cell) {
+                const eventEl = document.createElement('div');
+                eventEl.className = 'calendar-event';
+                eventEl.textContent = event.summary || 'Event';
+                eventEl.onclick = (e) => {
+                    e.stopPropagation();
+                    currentDayIndex = dayIndex;
+                    showDailyView();
+                };
+                cell.appendChild(eventEl);
+            }
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Checkbox click handlers
+            document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('click', function() {
+                    this.classList.toggle('checked');
+                });
+            });
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCalendar();
+            addSampleEvents(); // Add sample events for demonstration
+        });
+    </script>
+</body>
+</html>
