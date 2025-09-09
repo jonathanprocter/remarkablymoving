@@ -602,6 +602,7 @@ def generate_calendar_pdf():
     
     try:
         # Import our reMarkable PDF generator
+        import remarkable_pdf_generator
         from remarkable_pdf_generator import RemarkablePDFGenerator, transform_google_calendar_events
         
         # Get request data
