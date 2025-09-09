@@ -11,6 +11,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import landscape, portrait
 from reportlab.lib.units import inch, mm
 from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
 import json
 import sys
 
@@ -27,60 +28,86 @@ REMARKABLE_MOVE_HEIGHT_PT = REMARKABLE_MOVE_HEIGHT_MM * mm
 landscape_size = (REMARKABLE_MOVE_HEIGHT_PT, REMARKABLE_MOVE_WIDTH_PT)  # 163mm × 91mm
 portrait_size = (REMARKABLE_MOVE_WIDTH_PT, REMARKABLE_MOVE_HEIGHT_PT)   # 91mm × 163mm
 
-def format_time_military(hour, minute):
-    """Format time in military format with leading zeros"""
-    return f"{hour:02d}{minute:02d}"
-
 def create_weekly_view_with_events(c, week_start_date, events):
     """Create the landscape weekly overview page (Page 1)"""
     c.setPageSize(landscape_size)
     
-    # Smaller font sizes for 7.3" screen
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(10*mm, landscape_size[1] - 10*mm, 
-                f"WEEK OF {week_start_date.strftime('%B %d, %Y').upper()}")
+    # Title
+    c.setFont("Helvetica-Bold", 12)
+    title_y = landscape_size[1] - 8*mm
+    c.drawCentredString(landscape_size[0]/2, title_y, 
+                       f"WEEK OF {week_start_date.strftime('%B %d, %Y').upper()}")
     
-    # Draw weekly grid
-    days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
-    x_start = 8*mm
-    y_start = landscape_size[1] - 15*mm
-    col_width = (landscape_size[0] - 16*mm) / 8  # 8 columns: time + 7 days
-    row_height = (landscape_size[1] - 20*mm) / 31  # 31 half-hour slots
+    # Define layout parameters
+    margin = 5*mm
+    grid_top = landscape_size[1] - 12*mm
+    grid_bottom = 5*mm
+    grid_height = grid_top - grid_bottom
     
-    # Draw header with days (smaller font for Pro Move)
-    c.setFont("Helvetica-Bold", 8)
+    # Column setup (time column + 7 day columns)
+    time_col_width = 12*mm
+    day_col_width = (landscape_size[0] - 2*margin - time_col_width) / 7
+    
+    # Row setup (31 half-hour slots from 07:00 to 22:00)
+    header_height = 6*mm
+    time_slots = 31  # 07:00 to 22:00 in 30-minute intervals
+    row_height = (grid_height - header_height) / time_slots
+    
+    # Days of the week header
+    days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+    c.setFont("Helvetica-Bold", 7)
+    
+    # Draw day headers
     for i, day in enumerate(days):
-        x_pos = x_start + (i + 1) * col_width + 2*mm
-        c.drawString(x_pos, y_start + 1*mm, day[:3])  # Abbreviated day names
-        # Add clickable links to daily pages
-        link_rect = (x_start + (i + 1) * col_width, y_start - row_height, 
-                    x_start + (i + 2) * col_width, y_start + row_height)
-        c.linkRect(day, f"day_{i+1}", link_rect)
+        x = margin + time_col_width + (i * day_col_width) + day_col_width/2
+        y = grid_top - header_height/2
+        c.drawCentredString(x, y, day)
     
-    # Draw time slots (0700-2200 hrs with :30 intervals)
-    c.setFont("Helvetica", 6)
-    for i in range(31):  # 31 half-hour slots from 07:00 to 22:00
-        hour = (i // 2) + 7
-        minute = 30 * (i % 2)
-        time_str = format_time_military(hour, minute)
-        c.drawString(x_start + 1*mm, y_start - (i + 1) * row_height + row_height/3, time_str)
-    
-    # Draw grid lines
+    # Draw grid structure
     c.setStrokeColor(colors.black)
     c.setLineWidth(0.5)
     
-    # Vertical lines
-    for i in range(9):  # 8 columns plus left border
-        c.line(x_start + i * col_width, y_start + row_height, 
-               x_start + i * col_width, y_start - 30 * row_height)
+    # Draw outer border
+    c.rect(margin, grid_bottom, landscape_size[0] - 2*margin, grid_height)
     
-    # Horizontal lines
-    for i in range(32):  # 31 time slots plus header
-        c.line(x_start, y_start - (i-1) * row_height, 
-               x_start + 8 * col_width, y_start - (i-1) * row_height)
+    # Draw header separator
+    c.line(margin, grid_top - header_height, 
+           landscape_size[0] - margin, grid_top - header_height)
     
-    # Add events to weekly view (smaller text for Pro Move)
+    # Draw vertical lines
+    # Time column separator
+    c.line(margin + time_col_width, grid_bottom, 
+           margin + time_col_width, grid_top)
+    
+    # Day column separators
+    for i in range(1, 7):
+        x = margin + time_col_width + (i * day_col_width)
+        c.line(x, grid_bottom, x, grid_top - header_height)
+    
+    # Draw horizontal lines for time slots
+    c.setLineWidth(0.25)
+    for i in range(1, time_slots):
+        y = grid_top - header_height - (i * row_height)
+        # Full lines for hour marks
+        if i % 2 == 0:
+            c.setLineWidth(0.3)
+        else:
+            c.setLineWidth(0.2)
+        c.line(margin, y, landscape_size[0] - margin, y)
+    
+    # Draw time labels
     c.setFont("Helvetica", 5)
+    for i in range(time_slots):
+        hour = 7 + (i // 2)
+        minute = (i % 2) * 30
+        time_str = f"{hour:02d}:{minute:02d}"
+        
+        x = margin + time_col_width/2
+        y = grid_top - header_height - (i * row_height) - row_height/2
+        c.drawCentredString(x, y, time_str)
+    
+    # Add events to weekly view
+    c.setFont("Helvetica", 4)
     for event in events:
         event_date_str = event.get('date')
         if not event_date_str:
@@ -118,22 +145,33 @@ def create_weekly_view_with_events(c, week_start_date, events):
             end_hour = end_time.hour + end_time.minute / 60
             
             if 7 <= start_hour <= 22:
-                start_row = (start_hour - 7) * 2
-                end_row = (end_hour - 7) * 2
+                # Calculate row positions
+                start_slot = (start_hour - 7) * 2
+                end_slot = (end_hour - 7) * 2
                 
-                event_x = x_start + (day_offset + 1) * col_width + 1*mm
-                event_y_start = y_start - start_row * row_height
-                event_height = max((end_row - start_row) * row_height, row_height / 2)
+                # Calculate event position
+                event_x = margin + time_col_width + (day_offset * day_col_width) + 1*mm
+                event_y_top = grid_top - header_height - (start_slot * row_height)
+                event_height = (end_slot - start_slot) * row_height
                 
-                # Draw event block
-                c.setFillColor(colors.lightblue)
-                c.rect(event_x, event_y_start - event_height, 
-                       col_width - 2*mm, event_height, fill=1)
-                
-                # Add event text (truncated for small space)
-                c.setFillColor(colors.black)
-                title = event.get('title', event.get('summary', 'Untitled'))[:12]
-                c.drawString(event_x + 1*mm, event_y_start - 3*mm, title)
+                if event_height > 0:
+                    # Draw event block
+                    c.setFillColor(colors.lightblue)  # Light blue
+                    c.rect(event_x, event_y_top - event_height, 
+                           day_col_width - 2*mm, event_height, fill=1, stroke=1)
+                    
+                    # Add event text
+                    c.setFillColor(colors.black)
+                    c.setFont("Helvetica", 4)
+                    title = event.get('title', event.get('summary', 'Event'))
+                    # Truncate title to fit
+                    max_chars = int(day_col_width / 1.2)
+                    if len(title) > max_chars:
+                        title = title[:max_chars-2] + ".."
+                    
+                    text_y = event_y_top - 2*mm
+                    if text_y > event_y_top - event_height + 1*mm:
+                        c.drawString(event_x + 0.5*mm, text_y, title)
     
     c.showPage()
 
@@ -141,51 +179,75 @@ def create_daily_view_with_events(c, date, day_name, page_num, day_events):
     """Create portrait daily view pages (Pages 2-8)"""
     c.setPageSize(portrait_size)
     
-    # Header with day and date (smaller font for Pro Move)
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(8*mm, portrait_size[1] - 10*mm, 
-                f"{day_name.upper()} - {date.strftime('%B %d, %Y')}")
+    # Header
+    c.setFont("Helvetica-Bold", 10)
+    header_y = portrait_size[1] - 8*mm
+    c.drawCentredString(portrait_size[0]/2, header_y, 
+                       f"{day_name.upper()}")
     
-    # Add link back to weekly view
     c.setFont("Helvetica", 8)
-    c.drawString(8*mm, portrait_size[1] - 15*mm, "← Back to Weekly")
-    c.linkRect("← Back", "weekly_view", 
-              (8*mm, portrait_size[1] - 17*mm, 30*mm, portrait_size[1] - 13*mm))
+    c.drawCentredString(portrait_size[0]/2, header_y - 4*mm,
+                       f"{date.strftime('%B %d, %Y')}")
     
-    # Draw daily schedule
-    x_start = 8*mm
-    y_start = portrait_size[1] - 20*mm
-    time_col_width = 15*mm
-    event_col_width = portrait_size[0] - x_start - time_col_width - 8*mm
-    row_height = (portrait_size[1] - 30*mm) / 31  # 31 half-hour slots
+    # Back to weekly link
+    c.setFont("Helvetica", 6)
+    c.setFillColor(colors.blue)
+    c.drawString(5*mm, portrait_size[1] - 5*mm, "← Weekly")
+    c.linkRect("", "weekly_view", 
+              (5*mm, portrait_size[1] - 6*mm, 20*mm, portrait_size[1] - 3*mm))
+    c.setFillColor(colors.black)
     
-    # Draw time slots (0700-2200 hrs with :30 intervals)
-    c.setFont("Helvetica", 7)
-    for i in range(31):  # 31 half-hour slots
-        hour = (i // 2) + 7
-        minute = 30 * (i % 2)
-        time_str = format_time_military(hour, minute)
-        c.drawString(x_start + 2*mm, y_start - i * row_height - row_height/2, time_str)
+    # Grid layout parameters
+    margin = 5*mm
+    grid_top = portrait_size[1] - 15*mm
+    grid_bottom = 25*mm  # Leave space for notes
+    grid_height = grid_top - grid_bottom
+    grid_width = portrait_size[0] - 2*margin
     
-    # Draw grid lines
+    # Time column width
+    time_col_width = 12*mm
+    event_col_width = grid_width - time_col_width
+    
+    # Time slots (31 half-hour slots)
+    time_slots = 31
+    row_height = grid_height / time_slots
+    
+    # Draw main grid border
+    c.setStrokeColor(colors.black)
+    c.setLineWidth(0.5)
+    c.rect(margin, grid_bottom, grid_width, grid_height)
+    
+    # Draw time column separator
+    c.line(margin + time_col_width, grid_bottom, 
+           margin + time_col_width, grid_top)
+    
+    # Draw horizontal lines for time slots
+    for i in range(1, time_slots):
+        y = grid_top - (i * row_height)
+        # Thicker lines for hours
+        if i % 2 == 0:
+            c.setLineWidth(0.3)
+            c.setStrokeColor(colors.gray)
+        else:
+            c.setLineWidth(0.2)
+            c.setStrokeColor(colors.lightgrey)
+        c.line(margin + time_col_width, y, margin + grid_width, y)
+    
     c.setStrokeColor(colors.black)
     c.setLineWidth(0.5)
     
-    # Vertical line separating time from events
-    c.line(x_start + time_col_width, y_start + row_height, 
-           x_start + time_col_width, y_start - 30 * row_height)
-    
-    # Right border
-    c.line(portrait_size[0] - 8*mm, y_start + row_height,
-           portrait_size[0] - 8*mm, y_start - 30 * row_height)
-    
-    # Horizontal lines for each time slot
-    for i in range(32):
-        c.line(x_start, y_start - (i-1) * row_height, 
-               portrait_size[0] - 8*mm, y_start - (i-1) * row_height)
+    # Draw time labels
+    c.setFont("Helvetica", 6)
+    for i in range(time_slots):
+        hour = 7 + (i // 2)
+        minute = (i % 2) * 30
+        time_str = f"{hour:02d}:{minute:02d}"
+        
+        x = margin + time_col_width/2
+        y = grid_top - (i * row_height) - row_height/2
+        c.drawCentredString(x, y, time_str)
     
     # Add events to daily view
-    c.setFont("Helvetica", 7)
     for event in day_events:
         start_time_str = event.get('start_time', event.get('time', '09:00'))
         end_time_str = event.get('end_time', '')
@@ -210,42 +272,70 @@ def create_daily_view_with_events(c, date, day_name, page_num, day_events):
         end_hour = end_time.hour + end_time.minute / 60
         
         if 7 <= start_hour <= 22:
-            start_row = (start_hour - 7) * 2
-            end_row = (end_hour - 7) * 2
+            # Calculate position
+            start_slot = (start_hour - 7) * 2
+            end_slot = (end_hour - 7) * 2
             
-            event_x = x_start + time_col_width + 2*mm
-            event_y_start = y_start - start_row * row_height
-            event_height = max((end_row - start_row) * row_height, row_height)
+            event_x = margin + time_col_width + 1*mm
+            event_y_top = grid_top - (start_slot * row_height)
+            event_height = (end_slot - start_slot) * row_height
             
-            # Draw event block
-            c.setFillColor(colors.lightblue)
-            c.rect(event_x, event_y_start - event_height, 
-                   event_col_width - 4*mm, event_height, fill=1)
-            
-            # Add event text
-            c.setFillColor(colors.black)
-            c.setFont("Helvetica-Bold", 7)
-            title = event.get('title', event.get('summary', 'Untitled'))
-            # Truncate long titles
-            if len(title) > 25:
-                title = title[:22] + "..."
-            c.drawString(event_x + 2*mm, event_y_start - 4*mm, title)
-            
-            # Add description if available
-            description = event.get('description', event.get('location', ''))
-            if description:
-                c.setFont("Helvetica", 6)
-                desc_text = description[:35]
-                if len(description) > 35:
-                    desc_text += "..."
-                c.drawString(event_x + 2*mm, event_y_start - 7*mm, desc_text)
+            if event_height > 0:
+                # Draw event block
+                c.setFillColor(colors.Color(0.85, 0.95, 1.0))  # Light blue
+                c.rect(event_x, event_y_top - event_height, 
+                       event_col_width - 2*mm, event_height, fill=1, stroke=1)
+                
+                # Add event text
+                c.setFillColor(colors.black)
+                c.setFont("Helvetica-Bold", 6)
+                title = event.get('title', event.get('summary', 'Event'))
+                
+                # Calculate available space for text
+                text_lines = []
+                text_y = event_y_top - 3*mm
+                
+                # Title
+                if text_y > event_y_top - event_height + 2*mm:
+                    max_width = event_col_width - 4*mm
+                    if len(title) * 1.8 > max_width/mm:
+                        title = title[:int(max_width/mm/1.8)-2] + ".."
+                    c.drawString(event_x + 1*mm, text_y, title)
+                    
+                    # Time
+                    c.setFont("Helvetica", 5)
+                    time_text = f"{start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')}"
+                    if text_y - 3*mm > event_y_top - event_height + 1*mm:
+                        c.drawString(event_x + 1*mm, text_y - 3*mm, time_text)
+                    
+                    # Description if space allows
+                    description = event.get('description', event.get('location', ''))
+                    if description and text_y - 6*mm > event_y_top - event_height + 1*mm:
+                        c.setFont("Helvetica", 4)
+                        desc_text = description[:40]
+                        if len(description) > 40:
+                            desc_text += "..."
+                        c.drawString(event_x + 1*mm, text_y - 6*mm, desc_text)
     
-    # Add space for notes at bottom
-    c.setFont("Helvetica", 7)
-    c.drawString(x_start, 15*mm, "Notes:")
-    c.line(x_start, 13*mm, portrait_size[0] - 8*mm, 13*mm)
-    c.line(x_start, 10*mm, portrait_size[0] - 8*mm, 10*mm)
-    c.line(x_start, 7*mm, portrait_size[0] - 8*mm, 7*mm)
+    # Notes section at bottom
+    c.setFont("Helvetica-Bold", 7)
+    c.drawString(margin, grid_bottom - 5*mm, "NOTES:")
+    
+    # Draw note lines
+    c.setStrokeColor(colors.lightgrey)
+    c.setLineWidth(0.3)
+    line_spacing = 4*mm
+    for i in range(3):
+        y = grid_bottom - 8*mm - (i * line_spacing)
+        c.line(margin, y, portrait_size[0] - margin, y)
+    
+    # Priority/Goals section (small box on right)
+    priority_x = portrait_size[0] - margin - 25*mm
+    c.setStrokeColor(colors.black)
+    c.setLineWidth(0.5)
+    c.rect(priority_x, grid_bottom - 20*mm, 25*mm, 15*mm)
+    c.setFont("Helvetica", 5)
+    c.drawString(priority_x + 1*mm, grid_bottom - 7*mm, "Priorities:")
     
     c.showPage()
 
@@ -254,6 +344,9 @@ def generate_calendar_pdf(filename, week_start_date, events):
     c = canvas.Canvas(filename, pagesize=landscape_size)
     c.setAuthor("reMarkable Calendar Exporter")
     c.setTitle("Weekly Calendar - reMarkable Pro Move Optimized")
+    
+    # Set document metadata
+    c.setPageSize(landscape_size)
     
     # Page 1: Weekly overview (landscape)
     c.bookmarkPage("weekly_view")
@@ -304,8 +397,8 @@ def transform_google_calendar_events(google_events):
             # All-day event
             date_str = event['start']['date']
             start_time = '09:00'
-            end_time = '10:00'
-            duration = 60
+            end_time = '17:00'  # Full day events span business hours
+            duration = 480
         else:
             continue
         
@@ -391,11 +484,32 @@ def main():
             "description": "Weekly team sync"
         },
         {
+            "title": "Lunch Break",
+            "date": week_start_date.strftime('%Y-%m-%d'),
+            "start_time": "12:00",
+            "end_time": "13:00",
+            "description": "Team lunch"
+        },
+        {
             "title": "Project Review",
             "date": (week_start_date + datetime.timedelta(days=2)).strftime('%Y-%m-%d'),
             "start_time": "14:00",
             "end_time": "15:30",
             "description": "Quarterly project review"
+        },
+        {
+            "title": "Client Call",
+            "date": (week_start_date + datetime.timedelta(days=3)).strftime('%Y-%m-%d'),
+            "start_time": "10:00",
+            "end_time": "11:00",
+            "description": "Monthly sync with client"
+        },
+        {
+            "title": "Planning Session",
+            "date": (week_start_date + datetime.timedelta(days=4)).strftime('%Y-%m-%d'),
+            "start_time": "09:30",
+            "end_time": "11:30",
+            "description": "Sprint planning"
         }
     ]
     
